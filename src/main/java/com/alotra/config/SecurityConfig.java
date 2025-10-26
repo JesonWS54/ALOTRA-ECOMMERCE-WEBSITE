@@ -33,143 +33,116 @@ import java.util.List;
 @EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
 
-    @Autowired
-    private UserDetailsServiceImpl userDetailsService;
+	@Autowired
+	private UserDetailsServiceImpl userDetailsService;
 
-    @Autowired
-    private JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+	@Autowired
+	private JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
 
-    @Autowired
-    private JwtAuthenticationFilter jwtAuthenticationFilter;
+	@Autowired
+	private JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    /**
-     * Password encoder bean - BCrypt for password hashing
-     */
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+	/**
+	 * Password encoder bean - BCrypt for password hashing
+	 */
+	@Bean
+	public PasswordEncoder passwordEncoder() {
+		return new BCryptPasswordEncoder();
+	}
 
-    /**
-     * Authentication provider - connects UserDetailsService and PasswordEncoder
-     */
-    @Bean
-    public DaoAuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-        authProvider.setUserDetailsService(userDetailsService);
-        authProvider.setPasswordEncoder(passwordEncoder());
-        return authProvider;
-    }
+	/**
+	 * Authentication provider - connects UserDetailsService and PasswordEncoder
+	 */
+	@Bean
+	public DaoAuthenticationProvider authenticationProvider() {
+		DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+		authProvider.setUserDetailsService(userDetailsService);
+		authProvider.setPasswordEncoder(passwordEncoder());
+		return authProvider;
+	}
 
-    /**
-     * Authentication manager bean
-     */
-    @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
-        return authConfig.getAuthenticationManager();
-    }
+	/**
+	 * Authentication manager bean
+	 */
+	@Bean
+	public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
+		return authConfig.getAuthenticationManager();
+	}
 
-    /**
-     * Security filter chain - main security configuration
-     */
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http
-                // Disable CSRF (not needed for JWT-based API)
-                .csrf(csrf -> csrf.disable())
-                
-                // Configure CORS
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                
-                // Configure exception handling
-                .exceptionHandling(exception -> exception
-                        .authenticationEntryPoint(jwtAuthenticationEntryPoint)
-                )
-                
-                // Configure session management (stateless for JWT)
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
-                
-                // Configure authorization rules
-                .authorizeHttpRequests(auth -> auth
-                        // Public endpoints - no authentication required
-                        .requestMatchers(
-                                "/api/auth/**",
-                                "/api/test/**",
-                                "/",
-                                "/home",
-                                "/menu",
-                                "/about",
-                                "/contact",
-                                "/api/products/**",
-                                "/api/categories/**",
-                                "/webjars/**",
-                                "/css/**",
-                                "/js/**",
-                                "/images/**"
-                        ).permitAll()
-                        
-                        // Admin endpoints - require ADMIN role
-                        .requestMatchers("/admin/**", "/api/admin/**")
-                        .hasRole("ADMIN")
-                        
-                        // User endpoints - require USER or ADMIN role
-                        .requestMatchers("/api/user/**")
-                        .hasAnyRole("USER", "ADMIN")
-                        
-                        // All other requests require authentication
-                        .anyRequest().authenticated()
-                );
-        
-        // Set authentication provider
-        http.authenticationProvider(authenticationProvider());
-        
-        // Add JWT filter before UsernamePasswordAuthenticationFilter
-        http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-        
-        return http.build();
-    }
+	/**
+	 * Security filter chain - main security configuration
+	 */
+	@Bean
+	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+		http.csrf(csrf -> csrf.disable()).authorizeHttpRequests(auth -> auth
+				// Authentication endpoints
+				.requestMatchers("/api/auth/**").permitAll()
 
-    /**
-     * CORS configuration - allow frontend to access API
-     */
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        
-        // Allow origins
-        configuration.setAllowedOrigins(Arrays.asList(
-                "http://localhost:3000",  // React development
-                "http://localhost:8080",  // Spring Boot
-                "http://localhost:4200"   // Angular (optional)
-        ));
-        
-        // Allow methods
-        configuration.setAllowedMethods(Arrays.asList(
-                "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"
-        ));
-        
-        // Allow headers
-        configuration.setAllowedHeaders(Arrays.asList(
-                "Authorization",
-                "Content-Type",
-                "Accept",
-                "X-Requested-With"
-        ));
-        
-        // Allow credentials
-        configuration.setAllowCredentials(true);
-        
-        // Max age
-        configuration.setMaxAge(3600L);
-        
-        // Expose headers
-        configuration.setExposedHeaders(List.of("Authorization"));
-        
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-        
-        return source;
-    }
+				// Test endpoints
+				.requestMatchers("/api/test/**").permitAll()
+
+				// ===== WEBSOCKET ENDPOINTS (THÊM MỚI) =====
+				.requestMatchers("/ws/**").permitAll() // WebSocket connection
+				.requestMatchers("/app/**").permitAll() // STOMP app destinations
+				.requestMatchers("/topic/**").permitAll() // STOMP topics
+				.requestMatchers("/queue/**").permitAll() // STOMP queues
+				.requestMatchers("/user/**").permitAll() // User destinations
+
+				// ===== STATIC RESOURCES (THÊM MỚI) =====
+				.requestMatchers("/static/**").permitAll().requestMatchers("/websocket-test.html").permitAll()
+				.requestMatchers("/*.html").permitAll().requestMatchers("/*.css").permitAll().requestMatchers("/*.js")
+				.permitAll().requestMatchers("/favicon.ico").permitAll()
+
+				// ===== IMAGE UPLOAD (NẾU CÒN BỊ BLOCK) =====
+				.requestMatchers("/api/images/**").permitAll()
+
+				// ===== NOTIFICATIONS (NẾU MUỐN PUBLIC) =====
+				.requestMatchers("/api/notifications/test").permitAll().requestMatchers("/api/notifications/info")
+				.permitAll()
+
+				// All other requests require authentication
+				.anyRequest().authenticated());
+
+		// Set authentication provider
+		http.authenticationProvider(authenticationProvider());
+
+		// Add JWT filter before UsernamePasswordAuthenticationFilter
+		http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+
+		return http.build();
+	}
+
+	/**
+	 * CORS configuration - allow frontend to access API
+	 */
+	@Bean
+	public CorsConfigurationSource corsConfigurationSource() {
+		CorsConfiguration configuration = new CorsConfiguration();
+
+		// Allow origins
+		configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000", // React development
+				"http://localhost:8080", // Spring Boot
+				"http://localhost:4200" // Angular (optional)
+		));
+
+		// Allow methods
+		configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+
+		// Allow headers
+		configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept", "X-Requested-With"));
+
+		// Allow credentials
+		configuration.setAllowCredentials(true);
+
+		// Max age
+		configuration.setMaxAge(3600L);
+
+		// Expose headers
+		configuration.setExposedHeaders(List.of("Authorization"));
+
+		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+		source.registerCorsConfiguration("/**", configuration);
+
+		return source;
+	}
 }
