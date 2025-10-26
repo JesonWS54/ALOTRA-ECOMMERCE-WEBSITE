@@ -3,9 +3,9 @@ package com.alotra.service;
 import com.alotra.entity.Category;
 import com.alotra.repository.CategoryRepository;
 import com.alotra.repository.ProductRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,13 +14,12 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * CategoryService - Business logic for category management
+ * CategoryService - FINAL VERSION
+ * Phù hợp với Entity tiếng Anh
  */
 @Service
 @Transactional
 public class CategoryService {
-
-    private static final Logger logger = LoggerFactory.getLogger(CategoryService.class);
 
     @Autowired
     private CategoryRepository categoryRepository;
@@ -28,220 +27,214 @@ public class CategoryService {
     @Autowired
     private ProductRepository productRepository;
 
-    // ==================== CREATE ====================
+    // ==================== CRUD OPERATIONS ====================
 
     /**
-     * Create new category
+     * Tạo danh mục mới
      */
     public Category createCategory(Category category) {
-        logger.info("Creating new category: {}", category.getName());
-
-        // Generate slug from name if not provided
         if (category.getSlug() == null || category.getSlug().isEmpty()) {
             category.setSlug(generateSlug(category.getName()));
         }
-
-        // Validate unique slug
-        if (categoryRepository.findBySlug(category.getSlug()).isPresent()) {
-            throw new RuntimeException("Category with slug '" + category.getSlug() + "' already exists");
-        }
-
-        // Set default values
-        if (category.getIsActive() == null) {
-            category.setIsActive(true);
-        }
-        if (category.getDisplayOrder() == null) {
-            category.setDisplayOrder(0);
-        }
-
         category.setCreatedAt(LocalDateTime.now());
         category.setUpdatedAt(LocalDateTime.now());
-
-        Category savedCategory = categoryRepository.save(category);
-
-        logger.info("Category created successfully with id: {}", savedCategory.getId());
-        return savedCategory;
+        return categoryRepository.save(category);
     }
 
-    // ==================== READ ====================
-
     /**
-     * Get category by ID
+     * Lấy danh mục theo ID
      */
     public Optional<Category> getCategoryById(Long id) {
         return categoryRepository.findById(id);
     }
 
     /**
-     * Get category by slug
+     * Lấy danh mục theo slug
      */
     public Optional<Category> getCategoryBySlug(String slug) {
         return categoryRepository.findBySlug(slug);
     }
 
     /**
-     * Get all categories
+     * Lấy danh mục theo tên
+     */
+    public Optional<Category> getCategoryByName(String name) {
+        return categoryRepository.findByName(name);
+    }
+
+    /**
+     * Lấy tất cả danh mục
      */
     public List<Category> getAllCategories() {
         return categoryRepository.findAll();
     }
 
     /**
-     * Get active categories only
+     * Lấy danh mục với phân trang
+     */
+    public Page<Category> getAllCategories(Pageable pageable) {
+        return categoryRepository.findAll(pageable);
+    }
+
+    /**
+     * Lấy danh mục đang hoạt động
      */
     public List<Category> getActiveCategories() {
         return categoryRepository.findByIsActive(true);
     }
 
     /**
-     * Get categories ordered by display order
-     */
-    public List<Category> getCategoriesOrderedByDisplayOrder() {
-        return categoryRepository.findAllByOrderByDisplayOrderAsc();
-    }
-
-    /**
-     * Get active categories ordered by display order
+     * Lấy danh mục active theo thứ tự
      */
     public List<Category> getActiveCategoriesOrdered() {
-        return categoryRepository.findByIsActiveTrueOrderByDisplayOrderAsc();
+        return categoryRepository.findByIsActiveOrderByDisplayOrderAsc(true);
     }
 
     /**
-     * Search categories by name
+     * Lấy tất cả danh mục active
      */
-    public List<Category> searchCategoriesByName(String keyword) {
-        return categoryRepository.findByNameContainingIgnoreCase(keyword);
+    public List<Category> getAllActiveCategories() {
+        return categoryRepository.findAllActiveCategories();
     }
 
-    // ==================== UPDATE ====================
-
     /**
-     * Update category
+     * Cập nhật danh mục
      */
     public Category updateCategory(Long id, Category categoryDetails) {
-        logger.info("Updating category with id: {}", id);
-
         Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Category not found with id: " + id));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy danh mục với ID: " + id));
 
-        // Update fields
-        if (categoryDetails.getName() != null) {
-            category.setName(categoryDetails.getName());
-        }
-        if (categoryDetails.getSlug() != null) {
-            // Validate unique slug (excluding current category)
-            Optional<Category> existingCategory = categoryRepository.findBySlug(categoryDetails.getSlug());
-            if (existingCategory.isPresent() && !existingCategory.get().getId().equals(id)) {
-                throw new RuntimeException("Category with slug '" + categoryDetails.getSlug() + "' already exists");
-            }
-            category.setSlug(categoryDetails.getSlug());
-        }
-        if (categoryDetails.getDescription() != null) {
-            category.setDescription(categoryDetails.getDescription());
-        }
-        if (categoryDetails.getImageUrl() != null) {
-            category.setImageUrl(categoryDetails.getImageUrl());
-        }
-        if (categoryDetails.getIsActive() != null) {
-            category.setIsActive(categoryDetails.getIsActive());
-        }
-        if (categoryDetails.getDisplayOrder() != null) {
-            category.setDisplayOrder(categoryDetails.getDisplayOrder());
+        // Cập nhật các trường
+        category.setName(categoryDetails.getName());
+        category.setDescription(categoryDetails.getDescription());
+        category.setImageUrl(categoryDetails.getImageUrl());
+        category.setDisplayOrder(categoryDetails.getDisplayOrder());
+        category.setIsActive(categoryDetails.getIsActive());
+
+        // Cập nhật slug nếu tên thay đổi
+        if (!category.getName().equals(categoryDetails.getName())) {
+            category.setSlug(generateSlug(categoryDetails.getName()));
         }
 
         category.setUpdatedAt(LocalDateTime.now());
-
-        Category updatedCategory = categoryRepository.save(category);
-
-        logger.info("Category updated successfully: {}", updatedCategory.getId());
-        return updatedCategory;
-    }
-
-    /**
-     * Update category display order
-     */
-    public Category updateDisplayOrder(Long id, Integer newOrder) {
-        logger.info("Updating display order for category id: {} to {}", id, newOrder);
-
-        Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Category not found with id: " + id));
-
-        category.setDisplayOrder(newOrder);
-        category.setUpdatedAt(LocalDateTime.now());
-
         return categoryRepository.save(category);
     }
 
     /**
-     * Toggle category active status
-     */
-    public Category toggleActiveStatus(Long id) {
-        Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Category not found with id: " + id));
-
-        category.setIsActive(!category.getIsActive());
-        category.setUpdatedAt(LocalDateTime.now());
-
-        logger.info("Toggled active status for category {}: {}", id, category.getIsActive());
-        return categoryRepository.save(category);
-    }
-
-    // ==================== DELETE ====================
-
-    /**
-     * Delete category (soft delete by setting isActive = false)
+     * Xóa danh mục
      */
     public void deleteCategory(Long id) {
-        logger.info("Soft deleting category with id: {}", id);
-
         Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Category not found with id: " + id));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy danh mục với ID: " + id));
 
-        // Check if category has products
-        long productCount = productRepository.countByCategoryId(id);
+        // Kiểm tra xem có sản phẩm nào thuộc danh mục này không
+        long productCount = productRepository.countByCategory(category);
         if (productCount > 0) {
-            throw new RuntimeException("Cannot delete category with existing products. Move or delete products first.");
-        }
-
-        category.setIsActive(false);
-        category.setUpdatedAt(LocalDateTime.now());
-        categoryRepository.save(category);
-
-        logger.info("Category soft deleted successfully: {}", id);
-    }
-
-    /**
-     * Hard delete category (permanently remove from database)
-     */
-    public void hardDeleteCategory(Long id) {
-        logger.warn("Hard deleting category with id: {}", id);
-
-        // Check if category has products
-        long productCount = productRepository.countByCategoryId(id);
-        if (productCount > 0) {
-            throw new RuntimeException("Cannot delete category with existing products. Move or delete products first.");
-        }
-
-        if (!categoryRepository.existsById(id)) {
-            throw new RuntimeException("Category not found with id: " + id);
+            throw new RuntimeException("Không thể xóa danh mục này vì còn " + productCount + " sản phẩm đang sử dụng");
         }
 
         categoryRepository.deleteById(id);
-        logger.info("Category hard deleted successfully: {}", id);
     }
 
-    // ==================== UTILITY METHODS ====================
+    // ==================== BUSINESS LOGIC ====================
 
     /**
-     * Generate slug from category name
+     * Đếm số sản phẩm trong danh mục
+     */
+    public long getProductCount(Long categoryId) {
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy danh mục với ID: " + categoryId));
+        
+        return productRepository.countByCategory(category);
+    }
+
+    /**
+     * Đếm số sản phẩm active trong danh mục
+     */
+    public long getActiveProductCount(Long categoryId) {
+        return productRepository.countByCategoryIdAndIsActive(categoryId, true);
+    }
+
+    /**
+     * Kiểm tra danh mục có sản phẩm không
+     */
+    public boolean hasProducts(Long categoryId) {
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy danh mục với ID: " + categoryId));
+        
+        return productRepository.countByCategory(category) > 0;
+    }
+
+    /**
+     * Chuyển đổi trạng thái hoạt động
+     */
+    public Category toggleActiveStatus(Long id) {
+        Category category = categoryRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy danh mục với ID: " + id));
+        
+        category.setIsActive(!category.getIsActive());
+        category.setUpdatedAt(LocalDateTime.now());
+        return categoryRepository.save(category);
+    }
+
+    /**
+     * Cập nhật thứ tự hiển thị
+     */
+    public Category updateDisplayOrder(Long id, Integer displayOrder) {
+        Category category = categoryRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy danh mục với ID: " + id));
+        
+        category.setDisplayOrder(displayOrder);
+        category.setUpdatedAt(LocalDateTime.now());
+        return categoryRepository.save(category);
+    }
+
+    // ==================== UTILITIES ====================
+
+    /**
+     * Đếm tổng số danh mục
+     */
+    public long countAllCategories() {
+        return categoryRepository.count();
+    }
+
+    /**
+     * Đếm danh mục đang hoạt động
+     */
+    public long countActiveCategories() {
+        return categoryRepository.countByIsActive(true);
+    }
+
+    /**
+     * Kiểm tra danh mục tồn tại
+     */
+    public boolean existsById(Long id) {
+        return categoryRepository.existsById(id);
+    }
+
+    /**
+     * Kiểm tra slug đã tồn tại chưa
+     */
+    public boolean existsBySlug(String slug) {
+        return categoryRepository.existsBySlug(slug);
+    }
+
+    /**
+     * Kiểm tra tên đã tồn tại chưa
+     */
+    public boolean existsByName(String name) {
+        return categoryRepository.existsByName(name);
+    }
+
+    /**
+     * Tạo slug từ tên danh mục
      */
     private String generateSlug(String name) {
         if (name == null || name.isEmpty()) {
             return "";
         }
-
-        return name.toLowerCase()
+        
+        String slug = name.toLowerCase()
                 .replaceAll("[àáạảãâầấậẩẫăằắặẳẵ]", "a")
                 .replaceAll("[èéẹẻẽêềếệểễ]", "e")
                 .replaceAll("[ìíịỉĩ]", "i")
@@ -250,114 +243,10 @@ public class CategoryService {
                 .replaceAll("[ỳýỵỷỹ]", "y")
                 .replaceAll("[đ]", "d")
                 .replaceAll("[^a-z0-9\\s-]", "")
-                .trim()
                 .replaceAll("\\s+", "-")
-                .replaceAll("-+", "-");
-    }
-
-    /**
-     * Check if category exists
-     */
-    public boolean existsById(Long id) {
-        return categoryRepository.existsById(id);
-    }
-
-    /**
-     * Check if slug exists
-     */
-    public boolean existsBySlug(String slug) {
-        return categoryRepository.findBySlug(slug).isPresent();
-    }
-
-    /**
-     * Get product count for category
-     */
-    public long getProductCount(Long categoryId) {
-        return productRepository.countByCategoryId(categoryId);
-    }
-
-    /**
-     * Get active product count for category
-     */
-    public long getActiveProductCount(Long categoryId) {
-        return productRepository.countByCategoryIdAndIsActive(categoryId, true);
-    }
-
-    /**
-     * Get total category count
-     */
-    public long getTotalCategoryCount() {
-        return categoryRepository.count();
-    }
-
-    /**
-     * Get active category count
-     */
-    public long getActiveCategoryCount() {
-        return categoryRepository.countByIsActive(true);
-    }
-
-    /**
-     * Check if category has products
-     */
-    public boolean hasProducts(Long categoryId) {
-        return productRepository.countByCategoryId(categoryId) > 0;
-    }
-
-    /**
-     * Get category with product count
-     */
-    public CategoryWithProductCount getCategoryWithProductCount(Long id) {
-        Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Category not found with id: " + id));
+                .replaceAll("-+", "-")
+                .replaceAll("^-|-$", "");
         
-        long productCount = productRepository.countByCategoryId(id);
-        long activeProductCount = productRepository.countByCategoryIdAndIsActive(id, true);
-        
-        return new CategoryWithProductCount(category, productCount, activeProductCount);
-    }
-
-    /**
-     * Get all categories with product counts
-     */
-    public List<CategoryWithProductCount> getAllCategoriesWithProductCounts() {
-        List<Category> categories = categoryRepository.findAll();
-        
-        return categories.stream()
-                .map(category -> {
-                    long productCount = productRepository.countByCategoryId(category.getId());
-                    long activeProductCount = productRepository.countByCategoryIdAndIsActive(category.getId(), true);
-                    return new CategoryWithProductCount(category, productCount, activeProductCount);
-                })
-                .toList();
-    }
-
-    // ==================== INNER CLASS ====================
-
-    /**
-     * DTO for category with product count
-     */
-    public static class CategoryWithProductCount {
-        private Category category;
-        private long totalProducts;
-        private long activeProducts;
-
-        public CategoryWithProductCount(Category category, long totalProducts, long activeProducts) {
-            this.category = category;
-            this.totalProducts = totalProducts;
-            this.activeProducts = activeProducts;
-        }
-
-        public Category getCategory() {
-            return category;
-        }
-
-        public long getTotalProducts() {
-            return totalProducts;
-        }
-
-        public long getActiveProducts() {
-            return activeProducts;
-        }
+        return slug;
     }
 }

@@ -8,8 +8,6 @@ import com.alotra.repository.CartRepository;
 import com.alotra.repository.CartItemRepository;
 import com.alotra.repository.ProductRepository;
 import com.alotra.repository.UserRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,13 +18,12 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * CartService - Business logic for shopping cart management
+ * CartService - FINAL VERSION
+ * Phù hợp với Entity tiếng Anh
  */
 @Service
 @Transactional
 public class CartService {
-
-    private static final Logger logger = LoggerFactory.getLogger(CartService.class);
 
     @Autowired
     private CartRepository cartRepository;
@@ -43,73 +40,69 @@ public class CartService {
     @Autowired
     private ProductService productService;
 
-    // ==================== CREATE / GET CART ====================
+    // ==================== CART MANAGEMENT ====================
 
     /**
-     * Get or create cart for user
+     * Lấy hoặc tạo giỏ hàng cho user
      */
     public Cart getOrCreateCart(Long userId) {
-        Optional<Cart> existingCart = cartRepository.findByUserId(userId);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng với ID: " + userId));
+
+        Optional<Cart> existingCart = cartRepository.findByUser(user);
         
         if (existingCart.isPresent()) {
             return existingCart.get();
         }
 
-        // Create new cart
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
-
+        // Tạo giỏ hàng mới
         Cart newCart = new Cart();
         newCart.setUser(user);
         newCart.setCreatedAt(LocalDateTime.now());
-        newCart.setUpdatedAt(LocalDateTime.now());
-
-        Cart savedCart = cartRepository.save(newCart);
-        logger.info("Created new cart for user: {}", userId);
-        
-        return savedCart;
+        return cartRepository.save(newCart);
     }
 
     /**
-     * Get cart by user ID
+     * Lấy giỏ hàng theo user ID
      */
     public Optional<Cart> getCartByUserId(Long userId) {
-        return cartRepository.findByUserId(userId);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng với ID: " + userId));
+        return cartRepository.findByUser(user);
     }
 
     /**
-     * Get cart by ID
+     * Lấy giỏ hàng theo user
      */
-    public Optional<Cart> getCartById(Long cartId) {
-        return cartRepository.findById(cartId);
+    public Optional<Cart> getCartByUser(User user) {
+        return cartRepository.findByUser(user);
     }
 
-    // ==================== ADD TO CART ====================
+    // ==================== CART ITEM OPERATIONS ====================
 
     /**
-     * Add product to cart
+     * Thêm sản phẩm vào giỏ hàng
      */
     public CartItem addToCart(Long userId, Long productId, Integer quantity) {
-        logger.info("Adding product {} to cart for user {}, quantity: {}", productId, userId, quantity);
-
-        // Validate product exists and is active
-        Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new RuntimeException("Product not found with id: " + productId));
-
-        if (!product.getIsActive()) {
-            throw new RuntimeException("Product is not available: " + product.getName());
-        }
-
-        // Check stock availability
-        if (!productService.isQuantityAvailable(productId, quantity)) {
-            throw new RuntimeException("Insufficient stock for product: " + product.getName());
+        // Validate input
+        if (quantity <= 0) {
+            throw new RuntimeException("Số lượng phải lớn hơn 0");
         }
 
         // Get or create cart
         Cart cart = getOrCreateCart(userId);
 
+        // Get product
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm với ID: " + productId));
+
+        // Check stock
+        if (!productService.isQuantityAvailable(productId, quantity)) {
+            throw new RuntimeException("Sản phẩm không đủ số lượng trong kho");
+        }
+
         // Check if product already in cart
-        Optional<CartItem> existingItem = cartItemRepository.findByCartIdAndProductId(cart.getId(), productId);
+        Optional<CartItem> existingItem = cartItemRepository.findByCartAndProduct(cart, product);
 
         CartItem cartItem;
         if (existingItem.isPresent()) {
@@ -119,170 +112,137 @@ public class CartService {
 
             // Check stock for new quantity
             if (!productService.isQuantityAvailable(productId, newQuantity)) {
-                throw new RuntimeException("Cannot add more. Insufficient stock for product: " + product.getName());
+                throw new RuntimeException("Tổng số lượng vượt quá số lượng có sẵn trong kho");
             }
 
             cartItem.setQuantity(newQuantity);
-            logger.info("Updated cart item quantity to: {}", newQuantity);
+            cartItem.setUpdatedAt(LocalDateTime.now());
         } else {
-            // Create new cart item
+            // Add new item
             cartItem = new CartItem();
             cartItem.setCart(cart);
             cartItem.setProduct(product);
             cartItem.setQuantity(quantity);
-            cartItem.setPrice(product.getPrice());
-            logger.info("Created new cart item");
+            cartItem.setCreatedAt(LocalDateTime.now());
+            cartItem.setUpdatedAt(LocalDateTime.now());
         }
 
-        CartItem savedItem = cartItemRepository.save(cartItem);
-
-        // Update cart timestamp
-        cart.setUpdatedAt(LocalDateTime.now());
-        cartRepository.save(cart);
-
-        return savedItem;
+        return cartItemRepository.save(cartItem);
     }
 
-    // ==================== UPDATE CART ====================
-
     /**
-     * Update cart item quantity
+     * Cập nhật số lượng sản phẩm trong giỏ
      */
     public CartItem updateCartItemQuantity(Long cartItemId, Integer newQuantity) {
-        logger.info("Updating cart item {} quantity to: {}", cartItemId, newQuantity);
-
         if (newQuantity <= 0) {
-            throw new RuntimeException("Quantity must be greater than 0");
+            throw new RuntimeException("Số lượng phải lớn hơn 0");
         }
 
         CartItem cartItem = cartItemRepository.findById(cartItemId)
-                .orElseThrow(() -> new RuntimeException("Cart item not found with id: " + cartItemId));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy item trong giỏ hàng với ID: " + cartItemId));
 
-        // Check stock availability
-        if (!productService.isQuantityAvailable(cartItem.getProduct().getId(), newQuantity)) {
-            throw new RuntimeException("Insufficient stock for product: " + cartItem.getProduct().getName());
+        // Check stock
+        Long productId = cartItem.getProduct().getId();
+        if (!productService.isQuantityAvailable(productId, newQuantity)) {
+            throw new RuntimeException("Số lượng yêu cầu vượt quá số lượng có sẵn trong kho");
         }
 
         cartItem.setQuantity(newQuantity);
-        CartItem updatedItem = cartItemRepository.save(cartItem);
-
-        // Update cart timestamp
-        Cart cart = cartItem.getCart();
-        cart.setUpdatedAt(LocalDateTime.now());
-        cartRepository.save(cart);
-
-        logger.info("Cart item quantity updated successfully");
-        return updatedItem;
+        cartItem.setUpdatedAt(LocalDateTime.now());
+        return cartItemRepository.save(cartItem);
     }
 
     /**
-     * Increase cart item quantity
+     * Tăng số lượng
      */
     public CartItem increaseQuantity(Long cartItemId) {
         CartItem cartItem = cartItemRepository.findById(cartItemId)
-                .orElseThrow(() -> new RuntimeException("Cart item not found with id: " + cartItemId));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy item trong giỏ hàng với ID: " + cartItemId));
 
-        return updateCartItemQuantity(cartItemId, cartItem.getQuantity() + 1);
+        int newQuantity = cartItem.getQuantity() + 1;
+
+        // Check stock
+        Long productId = cartItem.getProduct().getId();
+        if (!productService.isQuantityAvailable(productId, newQuantity)) {
+            throw new RuntimeException("Số lượng yêu cầu vượt quá số lượng có sẵn trong kho");
+        }
+
+        cartItem.setQuantity(newQuantity);
+        cartItem.setUpdatedAt(LocalDateTime.now());
+        return cartItemRepository.save(cartItem);
     }
 
     /**
-     * Decrease cart item quantity
+     * Giảm số lượng
      */
     public CartItem decreaseQuantity(Long cartItemId) {
         CartItem cartItem = cartItemRepository.findById(cartItemId)
-                .orElseThrow(() -> new RuntimeException("Cart item not found with id: " + cartItemId));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy item trong giỏ hàng với ID: " + cartItemId));
 
         int newQuantity = cartItem.getQuantity() - 1;
-        
+
         if (newQuantity <= 0) {
-            removeFromCart(cartItemId);
+            // Xóa item nếu số lượng = 0
+            cartItemRepository.delete(cartItem);
             return null;
         }
 
-        return updateCartItemQuantity(cartItemId, newQuantity);
+        cartItem.setQuantity(newQuantity);
+        cartItem.setUpdatedAt(LocalDateTime.now());
+        return cartItemRepository.save(cartItem);
     }
 
-    // ==================== REMOVE FROM CART ====================
+    // ==================== REMOVE OPERATIONS ====================
 
     /**
-     * Remove item from cart
+     * Xóa item khỏi giỏ hàng
      */
     public void removeFromCart(Long cartItemId) {
-        logger.info("Removing cart item: {}", cartItemId);
-
-        CartItem cartItem = cartItemRepository.findById(cartItemId)
-                .orElseThrow(() -> new RuntimeException("Cart item not found with id: " + cartItemId));
-
-        Cart cart = cartItem.getCart();
-        
+        if (!cartItemRepository.existsById(cartItemId)) {
+            throw new RuntimeException("Không tìm thấy item trong giỏ hàng với ID: " + cartItemId);
+        }
         cartItemRepository.deleteById(cartItemId);
-
-        // Update cart timestamp
-        cart.setUpdatedAt(LocalDateTime.now());
-        cartRepository.save(cart);
-
-        logger.info("Cart item removed successfully");
     }
 
     /**
-     * Remove product from cart by product ID
+     * Xóa sản phẩm khỏi giỏ hàng của user
      */
     public void removeProductFromCart(Long userId, Long productId) {
-        logger.info("Removing product {} from cart for user {}", productId, userId);
-
         Cart cart = getOrCreateCart(userId);
-        
-        Optional<CartItem> cartItem = cartItemRepository.findByCartIdAndProductId(cart.getId(), productId);
-        
-        if (cartItem.isPresent()) {
-            cartItemRepository.deleteById(cartItem.get().getId());
-            cart.setUpdatedAt(LocalDateTime.now());
-            cartRepository.save(cart);
-            logger.info("Product removed from cart successfully");
-        }
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm với ID: " + productId));
+
+        cartItemRepository.deleteByCartAndProduct(cart, product);
     }
 
     /**
-     * Clear cart (remove all items)
+     * Xóa toàn bộ giỏ hàng
      */
     public void clearCart(Long userId) {
-        logger.info("Clearing cart for user: {}", userId);
-
-        Optional<Cart> cartOpt = cartRepository.findByUserId(userId);
-        
-        if (cartOpt.isPresent()) {
-            Cart cart = cartOpt.get();
-            List<CartItem> items = cartItemRepository.findByCartId(cart.getId());
-            
-            cartItemRepository.deleteAll(items);
-            
-            cart.setUpdatedAt(LocalDateTime.now());
-            cartRepository.save(cart);
-            
-            logger.info("Cart cleared successfully, removed {} items", items.size());
-        }
+        Cart cart = getOrCreateCart(userId);
+        cartItemRepository.deleteByCart(cart);
     }
 
-    // ==================== CART INFORMATION ====================
+    // ==================== CART INFO ====================
 
     /**
-     * Get all items in cart
+     * Lấy tất cả items trong giỏ hàng
      */
     public List<CartItem> getCartItems(Long userId) {
         Cart cart = getOrCreateCart(userId);
-        return cartItemRepository.findByCartId(cart.getId());
+        return cartItemRepository.findByCart(cart);
     }
 
     /**
-     * Get cart item count
+     * Đếm số items trong giỏ hàng
      */
-    public int getCartItemCount(Long userId) {
+    public long getCartItemCount(Long userId) {
         Cart cart = getOrCreateCart(userId);
-        return cartItemRepository.countByCartId(cart.getId());
+        return cartItemRepository.countByCart(cart);
     }
 
     /**
-     * Get total quantity in cart
+     * Tính tổng số lượng sản phẩm
      */
     public int getTotalQuantity(Long userId) {
         List<CartItem> items = getCartItems(userId);
@@ -292,154 +252,62 @@ public class CartService {
     }
 
     /**
-     * Calculate cart total
+     * Tính tổng tiền trong giỏ hàng
      */
     public BigDecimal calculateTotal(Long userId) {
         List<CartItem> items = getCartItems(userId);
         
         return items.stream()
-                .map(item -> item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
+                .map(item -> {
+                    BigDecimal price = item.getProduct().getPrice();
+                    int quantity = item.getQuantity();
+                    return price.multiply(new BigDecimal(quantity));
+                })
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
-    }
-
-    /**
-     * Get cart summary
-     */
-    public CartSummary getCartSummary(Long userId) {
-        List<CartItem> items = getCartItems(userId);
-        
-        int itemCount = items.size();
-        int totalQuantity = items.stream().mapToInt(CartItem::getQuantity).sum();
-        BigDecimal totalAmount = items.stream()
-                .map(item -> item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-        
-        return new CartSummary(items, itemCount, totalQuantity, totalAmount);
     }
 
     // ==================== VALIDATION ====================
 
     /**
-     * Check if product is in cart
+     * Kiểm tra sản phẩm có trong giỏ hàng không
      */
     public boolean isProductInCart(Long userId, Long productId) {
         Cart cart = getOrCreateCart(userId);
-        return cartItemRepository.findByCartIdAndProductId(cart.getId(), productId).isPresent();
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm với ID: " + productId));
+
+        return cartItemRepository.findByCartAndProduct(cart, product).isPresent();
     }
 
     /**
-     * Validate cart items (check stock availability)
+     * Validate giỏ hàng (kiểm tra stock)
      */
-    public CartValidationResult validateCart(Long userId) {
+    public boolean validateCart(Long userId) {
         List<CartItem> items = getCartItems(userId);
-        
-        CartValidationResult result = new CartValidationResult();
-        result.setValid(true);
 
         for (CartItem item : items) {
-            Product product = item.getProduct();
-            
-            // Check if product is still active
-            if (!product.getIsActive()) {
-                result.setValid(false);
-                result.addError(item.getId(), "Product is no longer available: " + product.getName());
-                continue;
-            }
+            Long productId = item.getProduct().getId();
+            Integer quantity = item.getQuantity();
 
-            // Check stock availability
-            if (!productService.isQuantityAvailable(product.getId(), item.getQuantity())) {
-                result.setValid(false);
-                result.addError(item.getId(), "Insufficient stock for product: " + product.getName());
+            if (!productService.isQuantityAvailable(productId, quantity)) {
+                return false;
             }
         }
 
-        return result;
+        return true;
     }
 
     /**
-     * Sync cart prices with current product prices
-     */
-    public void syncCartPrices(Long userId) {
-        logger.info("Syncing cart prices for user: {}", userId);
-        
-        List<CartItem> items = getCartItems(userId);
-        
-        for (CartItem item : items) {
-            Product product = item.getProduct();
-            if (!item.getPrice().equals(product.getPrice())) {
-                item.setPrice(product.getPrice());
-                cartItemRepository.save(item);
-                logger.info("Updated price for cart item {}: {} -> {}", 
-                        item.getId(), item.getPrice(), product.getPrice());
-            }
-        }
-    }
-
-    // ==================== UTILITY METHODS ====================
-
-    /**
-     * Check if cart is empty
+     * Kiểm tra giỏ hàng rỗng
      */
     public boolean isCartEmpty(Long userId) {
         return getCartItemCount(userId) == 0;
     }
 
     /**
-     * Get cart age (in days)
+     * Lấy CartItem theo cart và product
      */
-    public long getCartAge(Long userId) {
-        Optional<Cart> cartOpt = cartRepository.findByUserId(userId);
-        
-        if (cartOpt.isEmpty()) {
-            return 0;
-        }
-
-        Cart cart = cartOpt.get();
-        return java.time.temporal.ChronoUnit.DAYS.between(
-                cart.getCreatedAt().toLocalDate(),
-                LocalDateTime.now().toLocalDate()
-        );
-    }
-
-    // ==================== INNER CLASSES ====================
-
-    /**
-     * DTO for cart summary
-     */
-    public static class CartSummary {
-        private List<CartItem> items;
-        private int itemCount;
-        private int totalQuantity;
-        private BigDecimal totalAmount;
-
-        public CartSummary(List<CartItem> items, int itemCount, int totalQuantity, BigDecimal totalAmount) {
-            this.items = items;
-            this.itemCount = itemCount;
-            this.totalQuantity = totalQuantity;
-            this.totalAmount = totalAmount;
-        }
-
-        // Getters
-        public List<CartItem> getItems() { return items; }
-        public int getItemCount() { return itemCount; }
-        public int getTotalQuantity() { return totalQuantity; }
-        public BigDecimal getTotalAmount() { return totalAmount; }
-    }
-
-    /**
-     * DTO for cart validation result
-     */
-    public static class CartValidationResult {
-        private boolean valid;
-        private java.util.Map<Long, String> errors = new java.util.HashMap<>();
-
-        public boolean isValid() { return valid; }
-        public void setValid(boolean valid) { this.valid = valid; }
-        
-        public java.util.Map<Long, String> getErrors() { return errors; }
-        
-        public void addError(Long cartItemId, String error) {
-            this.errors.put(cartItemId, error);
-        }
+    public Optional<CartItem> getCartItem(Cart cart, Product product) {
+        return cartItemRepository.findByCartAndProduct(cart, product);
     }
 }

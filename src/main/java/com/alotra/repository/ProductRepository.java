@@ -36,6 +36,19 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     
     Page<Product> findByCategoryIdAndIsActive(Long categoryId, Boolean isActive, Pageable pageable);
     
+    // ⭐ ADDED: Count products by category
+    long countByCategory(Category category);
+    
+    long countByCategoryId(Long categoryId);
+    
+ // Thêm vào ProductRepository.java:
+    long countByCategoryIdAndIsActive(Long categoryId, Boolean isActive);
+    
+    // NAME/SEARCH QUERIES
+    List<Product> findByNameContainingIgnoreCase(String name);
+    
+    Page<Product> findByNameContainingIgnoreCase(String name, Pageable pageable);
+    
     // SPECIAL PRODUCTS
     List<Product> findByIsBestseller(Boolean isBestseller);
     

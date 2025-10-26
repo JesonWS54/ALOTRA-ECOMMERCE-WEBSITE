@@ -4,8 +4,6 @@ import com.alotra.entity.Product;
 import com.alotra.entity.Category;
 import com.alotra.repository.ProductRepository;
 import com.alotra.repository.CategoryRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,13 +16,12 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * ProductService - Business logic for product management
+ * ProductService - FINAL VERSION
+ * Phù hợp với Entity tiếng Anh
  */
 @Service
 @Transactional
 public class ProductService {
-
-    private static final Logger logger = LoggerFactory.getLogger(ProductService.class);
 
     @Autowired
     private ProductRepository productRepository;
@@ -32,341 +29,341 @@ public class ProductService {
     @Autowired
     private CategoryRepository categoryRepository;
 
-    @Autowired
-    private NotificationService notificationService;
+    // ⚠️ Comment out nếu NotificationService chưa có hoặc lỗi
+    // @Autowired
+    // private NotificationService notificationService;
 
-    // ==================== CREATE ====================
+    // ==================== CRUD OPERATIONS ====================
 
     /**
-     * Create new product
+     * Tạo sản phẩm mới
      */
     public Product createProduct(Product product) {
-        logger.info("Creating new product: {}", product.getName());
-
-        // Validate category exists
-        if (product.getCategory() != null && product.getCategory().getId() != null) {
-            Category category = categoryRepository.findById(product.getCategory().getId())
-                    .orElseThrow(() -> new RuntimeException("Category not found with id: " + product.getCategory().getId()));
-            product.setCategory(category);
-        }
-
-        // Generate slug from name if not provided
         if (product.getSlug() == null || product.getSlug().isEmpty()) {
             product.setSlug(generateSlug(product.getName()));
         }
-
-        // Set default values
-        if (product.getIsActive() == null) {
-            product.setIsActive(true);
-        }
-        if (product.getStock() == null) {
-            product.setStock(0);
-        }
-        if (product.getAverageRating() == null) {
-            product.setAverageRating(0.0);
-        }
-        if (product.getReviewCount() == null) {
-            product.setReviewCount(0);
-        }
-
         product.setCreatedAt(LocalDateTime.now());
         product.setUpdatedAt(LocalDateTime.now());
-
+        
         Product savedProduct = productRepository.save(product);
-
-        // Send notification
-        notificationService.notifyNewProduct(savedProduct.getId(), savedProduct.getName());
-
-        logger.info("Product created successfully with id: {}", savedProduct.getId());
+        
+        // Log thay vì notification
+        System.out.println("✅ Sản phẩm mới đã tạo: " + savedProduct.getName());
+        
         return savedProduct;
     }
 
-    // ==================== READ ====================
-
     /**
-     * Get product by ID
+     * Lấy sản phẩm theo ID
      */
     public Optional<Product> getProductById(Long id) {
         return productRepository.findById(id);
     }
 
     /**
-     * Get product by slug
+     * Lấy sản phẩm theo slug
      */
     public Optional<Product> getProductBySlug(String slug) {
         return productRepository.findBySlug(slug);
     }
 
     /**
-     * Get all products
+     * Lấy tất cả sản phẩm
      */
     public List<Product> getAllProducts() {
         return productRepository.findAll();
     }
 
     /**
-     * Get all products with pagination
+     * Lấy sản phẩm với phân trang
      */
     public Page<Product> getAllProducts(Pageable pageable) {
         return productRepository.findAll(pageable);
     }
 
     /**
-     * Get active products only
+     * Lấy sản phẩm đang hoạt động
      */
     public List<Product> getActiveProducts() {
         return productRepository.findByIsActive(true);
     }
 
     /**
-     * Get products by category
+     * Lấy sản phẩm đang hoạt động với phân trang
+     */
+    public Page<Product> getActiveProducts(Pageable pageable) {
+        return productRepository.findByIsActive(true, pageable);
+    }
+
+    /**
+     * Cập nhật sản phẩm
+     */
+    public Product updateProduct(Long id, Product productDetails) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm với ID: " + id));
+
+        // Cập nhật các trường
+        product.setName(productDetails.getName());
+        product.setDescription(productDetails.getDescription());
+        product.setLongDescription(productDetails.getLongDescription());
+        product.setPrice(productDetails.getPrice());
+        product.setImageUrl(productDetails.getImageUrl());
+        product.setCalories(productDetails.getCalories());
+        product.setIsVegan(productDetails.getIsVegan());
+        product.setIsSustainable(productDetails.getIsSustainable());
+        product.setIsBestseller(productDetails.getIsBestseller());
+        product.setIsActive(productDetails.getIsActive());
+        product.setStockQuantity(productDetails.getStockQuantity());
+        
+        if (productDetails.getCategory() != null) {
+            product.setCategory(productDetails.getCategory());
+        }
+
+        // Cập nhật slug nếu tên thay đổi
+        if (!product.getName().equals(productDetails.getName())) {
+            product.setSlug(generateSlug(productDetails.getName()));
+        }
+
+        product.setUpdatedAt(LocalDateTime.now());
+        return productRepository.save(product);
+    }
+
+    /**
+     * Xóa sản phẩm
+     */
+    public void deleteProduct(Long id) {
+        if (!productRepository.existsById(id)) {
+            throw new RuntimeException("Không tìm thấy sản phẩm với ID: " + id);
+        }
+        productRepository.deleteById(id);
+    }
+
+    // ==================== CATEGORY QUERIES ====================
+
+    /**
+     * Lấy sản phẩm theo danh mục
      */
     public List<Product> getProductsByCategory(Long categoryId) {
-        return productRepository.findByCategoryId(categoryId);
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy danh mục với ID: " + categoryId));
+        return productRepository.findByCategory(category);
     }
 
     /**
-     * Get active products by category
+     * Lấy sản phẩm theo danh mục với phân trang
      */
-    public List<Product> getActiveProductsByCategory(Long categoryId) {
-        return productRepository.findByCategoryIdAndIsActive(categoryId, true);
+    public Page<Product> getProductsByCategory(Long categoryId, Pageable pageable) {
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy danh mục với ID: " + categoryId));
+        return productRepository.findByCategory(category, pageable);
     }
 
     /**
-     * Search products by name
+     * Lấy sản phẩm active theo danh mục
      */
-    public List<Product> searchProductsByName(String keyword) {
+    public Page<Product> getActiveProductsByCategory(Long categoryId, Pageable pageable) {
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy danh mục với ID: " + categoryId));
+        return productRepository.findByCategoryAndIsActive(category, true, pageable);
+    }
+
+    // ==================== SEARCH ====================
+
+    /**
+     * Tìm kiếm sản phẩm theo tên
+     */
+    public List<Product> searchProducts(String keyword) {
         return productRepository.findByNameContainingIgnoreCase(keyword);
     }
 
     /**
-     * Get products by price range
+     * Tìm kiếm sản phẩm theo tên với phân trang
      */
-    public List<Product> getProductsByPriceRange(BigDecimal minPrice, BigDecimal maxPrice) {
-        return productRepository.findByPriceBetween(minPrice, maxPrice);
+    public Page<Product> searchProducts(String keyword, Pageable pageable) {
+        return productRepository.findByNameContainingIgnoreCase(keyword, pageable);
     }
 
     /**
-     * Get featured products
+     * Tìm kiếm sản phẩm active
      */
-    public List<Product> getFeaturedProducts() {
-        return productRepository.findByIsFeaturedAndIsActive(true, true);
+    public Page<Product> searchActiveProducts(String keyword, Pageable pageable) {
+        return productRepository.searchActiveProducts(keyword, pageable);
+    }
+
+    // ==================== SPECIAL PRODUCTS ====================
+
+    /**
+     * Lấy sản phẩm bestseller
+     */
+    public Page<Product> getBestsellerProducts(Pageable pageable) {
+        return productRepository.findByIsBestsellerAndIsActive(true, true, pageable);
     }
 
     /**
-     * Get products with low stock (below threshold)
+     * Lấy sản phẩm vegan
      */
-    public List<Product> getLowStockProducts(Integer threshold) {
-        return productRepository.findByStockLessThanAndIsActive(threshold, true);
+    public Page<Product> getVeganProducts(Pageable pageable) {
+        return productRepository.findByIsVeganAndIsActive(true, true, pageable);
     }
 
     /**
-     * Get top rated products
+     * Lấy sản phẩm bền vững
      */
-    public List<Product> getTopRatedProducts(int limit) {
-        return productRepository.findTopByOrderByAverageRatingDesc(limit);
+    public List<Product> getSustainableProducts() {
+        return productRepository.findByIsSustainable(true);
     }
 
     /**
-     * Get best selling products
+     * Lấy sản phẩm mới nhất
      */
-    public List<Product> getBestSellingProducts(int limit) {
-        return productRepository.findTopByOrderBySoldCountDesc(limit);
+    public Page<Product> getNewestProducts(Pageable pageable) {
+        return productRepository.findNewestProducts(pageable);
     }
 
     /**
-     * Get newest products
+     * Lấy sản phẩm được đánh giá cao
      */
-    public List<Product> getNewestProducts(int limit) {
-        return productRepository.findTopByOrderByCreatedAtDesc(limit);
+    public Page<Product> getTopRatedProducts(Pageable pageable) {
+        return productRepository.findTopRatedProducts(BigDecimal.valueOf(4.0), pageable);
     }
 
-    // ==================== UPDATE ====================
+    // ==================== STOCK MANAGEMENT ====================
 
     /**
-     * Update product
+     * Cập nhật số lượng tồn kho
      */
-    public Product updateProduct(Long id, Product productDetails) {
-        logger.info("Updating product with id: {}", id);
-
-        Product product = productRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
-
-        // Update fields
-        if (productDetails.getName() != null) {
-            product.setName(productDetails.getName());
-        }
-        if (productDetails.getSlug() != null) {
-            product.setSlug(productDetails.getSlug());
-        }
-        if (productDetails.getDescription() != null) {
-            product.setDescription(productDetails.getDescription());
-        }
-        if (productDetails.getPrice() != null) {
-            product.setPrice(productDetails.getPrice());
-        }
-        if (productDetails.getStock() != null) {
-            product.setStock(productDetails.getStock());
-        }
-        if (productDetails.getImageUrl() != null) {
-            product.setImageUrl(productDetails.getImageUrl());
-        }
-        if (productDetails.getCategory() != null && productDetails.getCategory().getId() != null) {
-            Category category = categoryRepository.findById(productDetails.getCategory().getId())
-                    .orElseThrow(() -> new RuntimeException("Category not found"));
-            product.setCategory(category);
-        }
-        if (productDetails.getIsActive() != null) {
-            product.setIsActive(productDetails.getIsActive());
-        }
-        if (productDetails.getIsFeatured() != null) {
-            product.setIsFeatured(productDetails.getIsFeatured());
-        }
-
+    public Product updateStock(Long productId, Integer newStock) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm với ID: " + productId));
+        
+        product.setStockQuantity(newStock);
         product.setUpdatedAt(LocalDateTime.now());
-
-        Product updatedProduct = productRepository.save(product);
-
-        logger.info("Product updated successfully: {}", updatedProduct.getId());
-        return updatedProduct;
-    }
-
-    /**
-     * Update product stock
-     */
-    public Product updateStock(Long id, Integer newStock) {
-        logger.info("Updating stock for product id: {} to {}", id, newStock);
-
-        Product product = productRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
-
-        product.setStock(newStock);
-        product.setUpdatedAt(LocalDateTime.now());
-
         return productRepository.save(product);
     }
 
     /**
-     * Increase stock (when restocking)
+     * Tăng số lượng tồn kho
      */
-    public Product increaseStock(Long id, Integer quantity) {
-        Product product = productRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
-
-        Integer currentStock = product.getStock() != null ? product.getStock() : 0;
-        product.setStock(currentStock + quantity);
+    public Product increaseStock(Long productId, Integer quantity) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm với ID: " + productId));
+        
+        int currentStock = product.getStockQuantity() != null ? product.getStockQuantity() : 0;
+        product.setStockQuantity(currentStock + quantity);
         product.setUpdatedAt(LocalDateTime.now());
-
-        logger.info("Increased stock for product {}: {} -> {}", id, currentStock, product.getStock());
+        
+        System.out.println("✅ Tăng stock: " + product.getName() + " +" + quantity + " = " + product.getStockQuantity());
+        
         return productRepository.save(product);
     }
 
     /**
-     * Decrease stock (when selling)
+     * Giảm số lượng tồn kho
      */
-    public Product decreaseStock(Long id, Integer quantity) {
-        Product product = productRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
-
-        Integer currentStock = product.getStock() != null ? product.getStock() : 0;
+    public Product decreaseStock(Long productId, Integer quantity) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm với ID: " + productId));
+        
+        int currentStock = product.getStockQuantity() != null ? product.getStockQuantity() : 0;
         
         if (currentStock < quantity) {
-            throw new RuntimeException("Insufficient stock for product: " + product.getName());
+            throw new RuntimeException("Không đủ số lượng trong kho. Còn lại: " + currentStock);
         }
-
-        product.setStock(currentStock - quantity);
+        
+        product.setStockQuantity(currentStock - quantity);
         product.setUpdatedAt(LocalDateTime.now());
-
-        logger.info("Decreased stock for product {}: {} -> {}", id, currentStock, product.getStock());
+        
+        System.out.println("✅ Giảm stock: " + product.getName() + " -" + quantity + " = " + product.getStockQuantity());
+        
         return productRepository.save(product);
     }
 
     /**
-     * Update product rating
+     * Kiểm tra còn hàng
      */
-    public Product updateRating(Long id, Double newAverageRating, Integer newReviewCount) {
-        Product product = productRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
-
-        product.setAverageRating(newAverageRating);
-        product.setReviewCount(newReviewCount);
-        product.setUpdatedAt(LocalDateTime.now());
-
-        return productRepository.save(product);
+    public boolean isInStock(Long productId) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm với ID: " + productId));
+        
+        return product.isInStock();
     }
 
     /**
-     * Toggle product active status
+     * Kiểm tra số lượng có sẵn
+     */
+    public boolean isQuantityAvailable(Long productId, Integer quantity) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm với ID: " + productId));
+        
+        Integer stock = product.getStockQuantity();
+        return stock != null && stock >= quantity;
+    }
+
+    /**
+     * Lấy sản phẩm sắp hết hàng
+     */
+    public List<Product> getLowStockProducts(Integer threshold) {
+        return productRepository.findLowStockProducts(threshold);
+    }
+
+    /**
+     * Lấy sản phẩm hết hàng
+     */
+    public List<Product> getOutOfStockProducts() {
+        return productRepository.findOutOfStockProducts();
+    }
+
+    // ==================== UTILITIES ====================
+
+    /**
+     * Đếm tổng số sản phẩm
+     */
+    public long countAllProducts() {
+        return productRepository.count();
+    }
+
+    /**
+     * Đếm sản phẩm đang hoạt động
+     */
+    public long countActiveProducts() {
+        return productRepository.countActiveProducts();
+    }
+
+    /**
+     * Kiểm tra sản phẩm tồn tại
+     */
+    public boolean existsById(Long id) {
+        return productRepository.existsById(id);
+    }
+
+    /**
+     * Kiểm tra slug tồn tại
+     */
+    public boolean existsBySlug(String slug) {
+        return productRepository.existsBySlug(slug);
+    }
+
+    /**
+     * Chuyển đổi trạng thái hoạt động
      */
     public Product toggleActiveStatus(Long id) {
         Product product = productRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
-
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm với ID: " + id));
+        
         product.setIsActive(!product.getIsActive());
         product.setUpdatedAt(LocalDateTime.now());
-
-        logger.info("Toggled active status for product {}: {}", id, product.getIsActive());
         return productRepository.save(product);
     }
 
     /**
-     * Toggle featured status
-     */
-    public Product toggleFeaturedStatus(Long id) {
-        Product product = productRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
-
-        Boolean currentFeatured = product.getIsFeatured() != null ? product.getIsFeatured() : false;
-        product.setIsFeatured(!currentFeatured);
-        product.setUpdatedAt(LocalDateTime.now());
-
-        logger.info("Toggled featured status for product {}: {}", id, product.getIsFeatured());
-        return productRepository.save(product);
-    }
-
-    // ==================== DELETE ====================
-
-    /**
-     * Delete product (soft delete by setting isActive = false)
-     */
-    public void deleteProduct(Long id) {
-        logger.info("Soft deleting product with id: {}", id);
-
-        Product product = productRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
-
-        product.setIsActive(false);
-        product.setUpdatedAt(LocalDateTime.now());
-        productRepository.save(product);
-
-        logger.info("Product soft deleted successfully: {}", id);
-    }
-
-    /**
-     * Hard delete product (permanently remove from database)
-     */
-    public void hardDeleteProduct(Long id) {
-        logger.warn("Hard deleting product with id: {}", id);
-
-        if (!productRepository.existsById(id)) {
-            throw new RuntimeException("Product not found with id: " + id);
-        }
-
-        productRepository.deleteById(id);
-        logger.info("Product hard deleted successfully: {}", id);
-    }
-
-    // ==================== UTILITY METHODS ====================
-
-    /**
-     * Generate slug from product name
+     * Tạo slug từ tên sản phẩm
      */
     private String generateSlug(String name) {
         if (name == null || name.isEmpty()) {
             return "";
         }
-
-        return name.toLowerCase()
+        
+        String slug = name.toLowerCase()
                 .replaceAll("[àáạảãâầấậẩẫăằắặẳẵ]", "a")
                 .replaceAll("[èéẹẻẽêềếệểễ]", "e")
                 .replaceAll("[ìíịỉĩ]", "i")
@@ -375,64 +372,10 @@ public class ProductService {
                 .replaceAll("[ỳýỵỷỹ]", "y")
                 .replaceAll("[đ]", "d")
                 .replaceAll("[^a-z0-9\\s-]", "")
-                .trim()
                 .replaceAll("\\s+", "-")
-                .replaceAll("-+", "-");
-    }
-
-    /**
-     * Check if product exists
-     */
-    public boolean existsById(Long id) {
-        return productRepository.existsById(id);
-    }
-
-    /**
-     * Check if slug exists
-     */
-    public boolean existsBySlug(String slug) {
-        return productRepository.findBySlug(slug).isPresent();
-    }
-
-    /**
-     * Check if product is in stock
-     */
-    public boolean isInStock(Long id) {
-        Product product = productRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
+                .replaceAll("-+", "-")
+                .replaceAll("^-|-$", "");
         
-        return product.getStock() != null && product.getStock() > 0;
-    }
-
-    /**
-     * Check if quantity is available
-     */
-    public boolean isQuantityAvailable(Long id, Integer quantity) {
-        Product product = productRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
-        
-        Integer stock = product.getStock() != null ? product.getStock() : 0;
-        return stock >= quantity;
-    }
-
-    /**
-     * Get total product count
-     */
-    public long getTotalProductCount() {
-        return productRepository.count();
-    }
-
-    /**
-     * Get active product count
-     */
-    public long getActiveProductCount() {
-        return productRepository.countByIsActive(true);
-    }
-
-    /**
-     * Get products count by category
-     */
-    public long getProductCountByCategory(Long categoryId) {
-        return productRepository.countByCategoryId(categoryId);
+        return slug;
     }
 }
