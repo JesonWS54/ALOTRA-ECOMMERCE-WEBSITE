@@ -62,4 +62,7 @@ public class Review {
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
+    
+    @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private java.util.Set<ReviewImage> reviewImages = new java.util.HashSet<>();
 }

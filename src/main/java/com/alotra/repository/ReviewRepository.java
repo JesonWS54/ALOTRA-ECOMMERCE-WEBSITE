@@ -107,7 +107,7 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
      * Tìm reviews có images (nếu Review có field images)
      * NOTE: Nếu Review không có field images, comment query này
      */
-    @Query("SELECT r FROM Review r WHERE r.product.id = :productId AND r.images IS NOT NULL AND r.images != ''")
+    @Query("SELECT r FROM Review r WHERE r.product.id = :productId AND r.reviewImages IS NOT EMPTY")
     Page<Review> findReviewsWithImages(@Param("productId") Long productId, Pageable pageable);
     
     /**
