@@ -198,6 +198,18 @@
 			<scope>test</scope>
 		</dependency>
 
+		<!-- Thymeleaf Layout Dialect - Để dùng layout pattern -->
+		<dependency>
+			<groupId>nz.net.ultraq.thymeleaf</groupId>
+			<artifactId>thymeleaf-layout-dialect</artifactId>
+		</dependency>
+
+		<!-- Thymeleaf Spring Security - Để dùng sec:authorize -->
+		<dependency>
+			<groupId>org.thymeleaf.extras</groupId>
+			<artifactId>thymeleaf-extras-springsecurity6</artifactId>
+		</dependency>
+
 	</dependencies>
 
 	<build>

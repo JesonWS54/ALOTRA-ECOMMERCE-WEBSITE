@@ -10,50 +10,115 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.util.List;
-import java.util.Optional;
 
+/**
+ * ReviewRepository - COMPLETE VERSION
+ */
 @Repository
 public interface ReviewRepository extends JpaRepository<Review, Long> {
 
+    // ==================== BASIC FINDERS ====================
+
+    /**
+     * Tìm reviews theo product
+     */
     List<Review> findByProduct(Product product);
     
+    /**
+     * Tìm reviews theo product với phân trang
+     */
     Page<Review> findByProduct(Product product, Pageable pageable);
     
-    List<Review> findByProductId(Long productId);
-    
+    /**
+     * Tìm reviews theo product ID với phân trang
+     */
     Page<Review> findByProductId(Long productId, Pageable pageable);
     
+    /**
+     * Tìm reviews theo user
+     */
     List<Review> findByUser(User user);
     
+    /**
+     * Tìm reviews theo user với phân trang
+     */
     Page<Review> findByUser(User user, Pageable pageable);
     
-    List<Review> findByUserId(Long userId);
-    
-    Optional<Review> findByProductIdAndUserId(Long productId, Long userId);
-    
-    boolean existsByProductIdAndUserId(Long productId, Long userId);
-    
+    /**
+     * Tìm reviews theo rating
+     */
     List<Review> findByRating(Integer rating);
     
+    /**
+     * Tìm reviews theo rating với phân trang
+     */
+    Page<Review> findByRating(Integer rating, Pageable pageable);
+    
+    /**
+     * Tìm reviews theo product và rating
+     */
     Page<Review> findByProductIdAndRating(Long productId, Integer rating, Pageable pageable);
     
-    @Query("SELECT r FROM Review r WHERE r.product.id = :productId ORDER BY r.createdAt DESC")
-    Page<Review> findRecentReviewsByProductId(@Param("productId") Long productId, Pageable pageable);
+    /**
+     * Tìm verified purchase reviews
+     */
+    Page<Review> findByIsVerifiedPurchase(Boolean isVerified, Pageable pageable);
     
-    @Query("SELECT r FROM Review r WHERE r.product.id = :productId AND r.isVerifiedPurchase = true")
-    Page<Review> findVerifiedReviewsByProductId(@Param("productId") Long productId, Pageable pageable);
+    /**
+     * Tìm verified reviews của product
+     */
+    Page<Review> findByProductIdAndIsVerifiedPurchase(Long productId, Boolean isVerified, Pageable pageable);
+
+    // ==================== COUNTING ====================
     
-    @Query("SELECT r FROM Review r ORDER BY r.helpfulCount DESC, r.createdAt DESC")
-    Page<Review> findMostHelpfulReviews(Pageable pageable);
-    
-    @Query("SELECT AVG(r.rating) FROM Review r WHERE r.product.id = :productId")
-    Double getAverageRatingByProductId(@Param("productId") Long productId);
-    
-    @Query("SELECT r.rating, COUNT(r) FROM Review r WHERE r.product.id = :productId GROUP BY r.rating")
-    List<Object[]> getRatingDistribution(@Param("productId") Long productId);
-    
+    /**
+     * Đếm reviews theo product ID
+     */
     long countByProductId(Long productId);
     
-    long countByUserId(Long userId);
+    /**
+     * Đếm reviews theo user
+     */
+    long countByUser(User user);
+    
+    /**
+     * Đếm reviews theo product ID và rating
+     */
+    long countByProductIdAndRating(Long productId, Integer rating);
+    
+    // ==================== EXISTENCE CHECK ====================
+    
+    /**
+     * Kiểm tra user đã review product chưa
+     */
+    boolean existsByUserIdAndProductId(Long userId, Long productId);
+    
+    // ==================== CUSTOM QUERIES ====================
+    
+    /**
+     * Tính rating trung bình của product
+     */
+    @Query("SELECT AVG(r.rating) FROM Review r WHERE r.product.id = :productId")
+    BigDecimal getAverageRatingByProduct(@Param("productId") Long productId);
+    
+    /**
+     * Tìm reviews có images (nếu Review có field images)
+     * NOTE: Nếu Review không có field images, comment query này
+     */
+    @Query("SELECT r FROM Review r WHERE r.product.id = :productId AND r.images IS NOT NULL AND r.images != ''")
+    Page<Review> findReviewsWithImages(@Param("productId") Long productId, Pageable pageable);
+    
+    /**
+     * Tìm top reviews (rating cao + helpful count cao)
+     */
+    @Query("SELECT r FROM Review r WHERE r.product.id = :productId ORDER BY r.rating DESC, r.createdAt DESC")
+    List<Review> findTopReviewsByProduct(@Param("productId") Long productId, Pageable pageable);
+    
+    /**
+     * Tìm recent reviews
+     */
+    @Query("SELECT r FROM Review r ORDER BY r.createdAt DESC")
+    List<Review> findRecentReviews(Pageable pageable);
 }

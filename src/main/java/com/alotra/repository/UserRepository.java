@@ -193,4 +193,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
      */
     @Query("UPDATE User u SET u.lastLogin = :loginTime WHERE u.id = :userId")
     void updateLastLogin(@Param("userId") Long userId, @Param("loginTime") LocalDateTime loginTime);
+    
+    Page<User> findByRole(String role, Pageable pageable);
+    long countByIsActive(Boolean isActive);
 }
