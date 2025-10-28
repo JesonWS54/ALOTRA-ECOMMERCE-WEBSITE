@@ -254,7 +254,7 @@ AloTra/
 ├── pom.xml
 ├── README.md
 └── .gitignore
-
+```
 ## 🧠 Tính Năng Chi Tiết
 
 ### 1️⃣ Xác Thực & Phân Quyền
@@ -308,13 +308,13 @@ AloTra/
 ```bash
 git clone https://github.com/JesonWS54/ALOTRA-ECOMMERCE-WEBSITE.git
 cd alotra
----
+```
 ### 3️⃣ Tạo Database (ví dụ SQL)
+```bash
 CREATE DATABASE AloTra
-
-
----
+```
 ### 4️⃣ Cấu Hình Application
+```bash
 spring.datasource.url=jdbc:mysql://localhost:3306/alotra
 spring.datasource.username=<username>
 spring.datasource.password=<password>
@@ -324,24 +324,21 @@ security.jwt.secret=<jwt_secret>
 cloudinary.cloud-name=<cloud_name>
 cloudinary.api-key=<api_key>
 cloudinary.api-secret=<api_secret>
----
+```
 
 ### 5️⃣ Chạy Ứng Dụng
+```bash
 mvn clean install
 mvn spring-boot:run
-
-🎓 Kiến Thức Học Được
-
+```
+##🎓 Kiến Thức Học Được
 Thiết kế & xây dựng RESTful API với Spring Boot
-
 Áp dụng Spring Security & JWT cho xác thực người dùng
-
 Giao tiếp real-time bằng WebSocket
-
 Triển khai upload ảnh lên Cloudinary
-
 Tổ chức kiến trúc 3 tầng: Controller – Service – Repository
-✍️ Tác Giả
+
+##✍️ Tác Giả
 Họ Tên	            	MSSV
 Phạm Quốc Long	     22110366
 Nguyễn Thanh Khang   23110237
