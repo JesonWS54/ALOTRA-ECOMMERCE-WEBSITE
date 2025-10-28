@@ -339,8 +339,9 @@ Triển khai upload ảnh lên Cloudinary
 Tổ chức kiến trúc 3 tầng: Controller – Service – Repository
 
 ## ✍️ Tác Giả
-Họ Tên	            	MSSV
-Phạm Quốc Long	     22110366
-Nguyễn Thanh Khang   23110237
-Huỳnh Tấn Vinh	     23110365
+| Họ Tên | MSSV |
+|:-------|:------:|
+| Phạm Quốc Long | 22110366 |
+| Nguyễn Thanh Khang | 23110237 |
+| Huỳnh Tấn Vinh | 23110365 |
 
