@@ -1,4 +1,4 @@
-# 🧋 ALOTRA E-COMMERCE WEBSITE  
+# ALOTRA E-COMMERCE WEBSITE  
 **Website Bán Trà Sữa AloTra – Đồ Án Môn Lập Trình Web**  
 Trường Đại học Sư Phạm Kỹ Thuật TP. Hồ Chí Minh  
 
