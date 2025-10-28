@@ -72,49 +72,278 @@ Hệ thống được xây dựng với **Spring Boot + Thymeleaf + Bootstrap + 
 ## 🧩 Cấu Trúc Thư Mục
 
 ```bash
-alotra/
+AloTra/
 ├── src/
-│   ├── main/
-│   │   ├── java/
-│   │   │   └── com/
-│   │   │       └── alotra/
-│   │   │           ├── controller/        # REST API Controllers
-│   │   │           ├── dto/               # Data Transfer Objects
-│   │   │           ├── entity/            # Entity Classes (Product, Order, User, etc.)
-│   │   │           ├── repository/        # JPA Repositories
-│   │   │           ├── service/           # Business Logic Services
-│   │   │           ├── security/          # JWT Config, Filters, Authentication
-│   │   │           ├── config/            # AppConfig, WebSocketConfig, CORS, etc.
-│   │   │           ├── websocket/         # WebSocket Handler & Events
-│   │   │           └── AlotraApplication.java  # Spring Boot Main Class
-│   │   └── resources/
-│   │       ├── static/
-│   │       │   ├── css/
-│   │       │   ├── js/
-│   │       │   ├── images/
-│   │       │   └── uploads/              # Local fallback for images
-│   │       ├── templates/
-│   │       │   ├── index.html            # Trang chủ / Home page
-│   │       │   ├── login.html            # Đăng nhập
-│   │       │   ├── register.html         # Đăng ký
-│   │       │   ├── product-list.html     # Danh sách sản phẩm
-│   │       │   ├── product-detail.html   # Chi tiết sản phẩm
-│   │       │   ├── cart.html             # Giỏ hàng
-│   │       │   ├── order.html            # Đơn hàng
-│   │       │   ├── admin/
-│   │       │   │   ├── dashboard.html    # Trang quản trị
-│   │       │   │   ├── products.html     # Quản lý sản phẩm
-│   │       │   │   ├── orders.html       # Quản lý đơn hàng
-│   │       │   │   └── users.html        # Quản lý người dùng
-│   │       │   └── fragments/            # Navbar, Footer, Components
-│   │       ├── application.properties
-│   │       └── application-dev.properties
-│   └── test/
-│       └── java/com/alotra/
-│           └── ...                       # Unit & Integration Tests
+│   └── main/
+│       ├── java/
+│       │   └── com/
+│       │       └── AloTra/
+│       │           ├── config/
+│       │           │   ├── CloudinaryConfig.java
+│       │           │   ├── VnPayConfig.java
+│       │           │   └── WebSocketConfig.java
+│       │           │
+│       │           ├── controller/
+│       │           │   ├── AdminController.java
+│       │           │   ├── CartController.java
+│       │           │   ├── CheckoutController.java
+│       │           │   ├── OrderDetailController.java
+│       │           │   ├── PaymentController.java
+│       │           │   ├── ProductDetailsController.java
+│       │           │   ├── UserHistoryController.java
+│       │           │   ├── UserHomeController.java
+│       │           │   ├── UserMenuController.java
+│       │           │   ├── UserProfileController.java
+│       │           │   ├── VendorManagementController.java
+│       │           │   └── WebController.java
+│       │           │
+│       │           ├── entity/
+│       │           │   ├── Account.java
+│       │           │   ├── Addresses.java
+│       │           │   ├── AppCommission.java
+│       │           │   ├── Cart.java
+│       │           │   ├── CartItem.java
+│       │           │   ├── Category.java
+│       │           │   ├── Order.java
+│       │           │   ├── OrderItem.java
+│       │           │   ├── OrderStatusHistory.java
+│       │           │   ├── Payment.java
+│       │           │   ├── Product.java
+│       │           │   ├── ProductFavorite.java
+│       │           │   ├── ProductImage.java
+│       │           │   ├── ProductView.java
+│       │           │   ├── Review.java
+│       │           │   ├── ReviewMedia.java
+│       │           │   ├── ShippingCarrier.java
+│       │           │   ├── Shop.java
+│       │           │   └── Voucher.java
+│       │           │
+│       │           ├── model/
+│       │           │   ├── AccountDTO.java
+│       │           │   ├── AddressDTO.java
+│       │           │   ├── AppCommissionDTO.java
+│       │           │   ├── CartDTO.java
+│       │           │   ├── CartItemDTO.java
+│       │           │   ├── CartViewDTO.java
+│       │           │   ├── CategoryDTO.java
+│       │           │   ├── NotificationDTO.java
+│       │           │   ├── OrderDTO.java
+│       │           │   ├── OrderItemDTO.java
+│       │           │   ├── OrderStatusHistoryDTO.java
+│       │           │   ├── PaymentDTO.java
+│       │           │   ├── ProductDTO.java
+│       │           │   ├── ProductFavoriteDTO.java
+│       │           │   ├── ProductHomeDTO.java
+│       │           │   ├── ProductImageDTO.java
+│       │           │   ├── ReviewDTO.java
+│       │           │   ├── ReviewMediaDTO.java
+│       │           │   ├── ShippingCarrierDTO.java
+│       │           │   ├── ShopDTO.java
+│       │           │   └── VoucherDTO.java
+│       │           │
+│       │           ├── repository/
+│       │           │   ├── AccountRepository.java
+│       │           │   ├── AddressRepository.java
+│       │           │   ├── AppCommissionRepository.java
+│       │           │   ├── CartItemRepository.java
+│       │           │   ├── CartRepository.java
+│       │           │   ├── CategoryRepository.java
+│       │           │   ├── OrderItemRepository.java
+│       │           │   ├── OrderRepository.java
+│       │           │   ├── PaymentRepository.java
+│       │           │   ├── ProductFavoriteRepository.java
+│       │           │   ├── ProductImageRepository.java
+│       │           │   ├── ProductRepository.java
+│       │           │   ├── ProductViewRepository.java
+│       │           │   ├── ReviewMediaRepository.java
+│       │           │   ├── ReviewRepository.java
+│       │           │   ├── ShippingCarrierRepository.java
+│       │           │   ├── ShopRepository.java
+│       │           │   └── VoucherRepository.java
+│       │           │
+│       │           ├── services/
+│       │           │   ├── impl/
+│       │           │   │   ├── AccountService.java
+│       │           │   │   ├── AddressService.java
+│       │           │   │   ├── AppCommissionService.java
+│       │           │   │   ├── CartService.java
+│       │           │   │   ├── CategoryService.java
+│       │           │   │   ├── CloudinaryService.java
+│       │           │   │   ├── OrderService.java
+│       │           │   │   ├── PaymentService.java
+│       │           │   │   ├── ProductFavoriteService.java
+│       │           │   │   ├── ProductService.java
+│       │           │   │   ├── ProductViewService.java
+│       │           │   │   ├── ReviewService.java
+│       │           │   │   ├── ShippingCarrierService.java
+│       │           │   │   ├── ShopService.java
+│       │           │   │   └── VoucherService.java
+│       │           │   │
+│       │           │   ├── AccountService.java
+│       │           │   ├── PaymentService.java
+│       │           │   └── VoucherService.java
+│       │           │
+│       │           ├── utils/
+│       │           │   └── ...
+│       │           │
+│       │           └── AloTraBubbleTeaApplication.java
+│       │
+│       └── resources/
+│           ├── static/
+│           │   ├── assets/
+│           │   │   ├── css/
+│           │   │   ├── img/
+│           │   │   ├── js/
+│           │   │   ├── scss/
+│           │   │   └── vendor/
+│           │
+│           ├── templates/
+│           │   ├── admin/
+│           │   │   ├── fragments/
+│           │   │   │   ├── footer-admin.html
+│           │   │   │   ├── header-admin.html
+│           │   │   │   └── nav-admin.html
+│           │   │   ├── layout-admin.html
+│           │   │   └── admin-dashboard.html
+│           │   │
+│           │   ├── shipper/
+│           │   │   ├── fragments/
+│           │   │   │   ├── footer.html
+│           │   │   │   ├── header.html
+│           │   │   │   └── nav.html
+│           │   │   └── layout-shipper.html
+│           │   │
+│           │   ├── user/
+│           │   │   ├── fragments/
+│           │   │   │   ├── footer-user.html
+│           │   │   │   ├── header-user.html
+│           │   │   │   └── nav-user.html
+│           │   │   ├── cart.html
+│           │   │   ├── checkout.html
+│           │   │   ├── history.html
+│           │   │   ├── home.html
+│           │   │   ├── layout-user.html
+│           │   │   ├── menu.html
+│           │   │   ├── order-details.html
+│           │   │   ├── payment-result.html
+│           │   │   ├── product-details.html
+│           │   │   └── profile.html
+│           │   │
+│           │   ├── vendor/
+│           │   │   ├── fragments/
+│           │   │   │   ├── footer-vendor.html
+│           │   │   │   ├── header-vendor.html
+│           │   │   │   └── nav-vendor.html
+│           │   │   ├── layout-vendor.html
+│           │   │   ├── management.html
+│           │   │   ├── shop-register.html
+│           │   │   └── vendor-dashboard.html
+│           │   │
+│           │   ├── web/
+│           │   │   ├── fragments/
+│           │   │   │   ├── footer.html
+│           │   │   │   ├── header.html
+│           │   │   │   └── nav.html
+│           │   │   ├── index.html
+│           │   │   ├── layout-web.html
+│           │   │   ├── login.html
+│           │   │   └── register.html
+│           │
+│           └── application.properties
 │
 ├── pom.xml
 ├── README.md
-├── .env.example                          # Mẫu cấu hình biến môi trường
 └── .gitignore
+
+## 🧠 Tính Năng Chi Tiết
+
+### 1️⃣ Xác Thực & Phân Quyền
+- Đăng ký / Đăng nhập bằng **JWT**
+- Phân quyền theo vai trò: **Admin / Employee / Customer**
+- Bảo mật API bằng Header: Authorization: Bearer <token>
+
+
+---
+
+### 2️⃣ Quản Lý Sản Phẩm
+- **CRUD** sản phẩm, danh mục, khuyến mãi
+- Upload hình ảnh sản phẩm qua **Cloudinary**
+- Hiển thị danh sách, phân trang, tìm kiếm
+
+---
+
+### 3️⃣ Quản Lý Đơn Hàng
+- Nhận, xử lý và cập nhật đơn hàng
+- Trạng thái: Pending → Preparing → Delivering → Completed / Cancelled
+- Gửi thông báo **real-time** cho khách và quản trị qua **WebSocket**
+
+---
+
+### 4️⃣ Quản Lý Kho & Báo Cáo
+- Theo dõi **tồn kho**, cảnh báo khi sắp hết
+- Xem **thống kê doanh thu**, số lượng đơn, sản phẩm bán chạy
+
+---
+
+### 5️⃣ Giao Tiếp Real-time
+- WebSocket endpoint: `/ws`
+- Topic ví dụ: 
+/topic/order-status/{orderId} → Cập nhật trạng thái đơn hàng
+/topic/admin/orders → Đơn mới cho Admin
+
+
+---
+
+## ⚙️ Cài Đặt & Chạy Dự Án
+
+### 1️⃣ Yêu Cầu Hệ Thống
+- **Java 17+**
+- **Maven**
+- **MySQL / SQLServer / PostgreSQL**
+- **Tài khoản Cloudinary**
+
+---
+
+### 2️⃣ Clone Dự Án
+```bash
+git clone https://github.com/JesonWS54/ALOTRA-ECOMMERCE-WEBSITE.git
+cd alotra
+---
+### 3️⃣ Tạo Database (ví dụ SQL)
+CREATE DATABASE AloTra
+
+
+---
+### 4️⃣ Cấu Hình Application
+spring.datasource.url=jdbc:mysql://localhost:3306/alotra
+spring.datasource.username=<username>
+spring.datasource.password=<password>
+
+security.jwt.secret=<jwt_secret>
+
+cloudinary.cloud-name=<cloud_name>
+cloudinary.api-key=<api_key>
+cloudinary.api-secret=<api_secret>
+---
+
+### 5️⃣ Chạy Ứng Dụng
+mvn clean install
+mvn spring-boot:run
+
+🎓 Kiến Thức Học Được
+
+Thiết kế & xây dựng RESTful API với Spring Boot
+
+Áp dụng Spring Security & JWT cho xác thực người dùng
+
+Giao tiếp real-time bằng WebSocket
+
+Triển khai upload ảnh lên Cloudinary
+
+Tổ chức kiến trúc 3 tầng: Controller – Service – Repository
+✍️ Tác Giả
+Họ Tên	            	MSSV
+Phạm Quốc Long	     22110366
+Nguyễn Thanh Khang   23110237
+Huỳnh Tấn Vinh	     23110365
 
