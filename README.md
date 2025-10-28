@@ -331,14 +331,14 @@ cloudinary.api-secret=<api_secret>
 mvn clean install
 mvn spring-boot:run
 ```
-##🎓 Kiến Thức Học Được
+## 🎓 Kiến Thức Học Được
 Thiết kế & xây dựng RESTful API với Spring Boot
 Áp dụng Spring Security & JWT cho xác thực người dùng
 Giao tiếp real-time bằng WebSocket
 Triển khai upload ảnh lên Cloudinary
 Tổ chức kiến trúc 3 tầng: Controller – Service – Repository
 
-##✍️ Tác Giả
+## ✍️ Tác Giả
 Họ Tên	            	MSSV
 Phạm Quốc Long	     22110366
 Nguyễn Thanh Khang   23110237
