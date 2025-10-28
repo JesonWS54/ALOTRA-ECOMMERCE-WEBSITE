@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<!--
+  Layout V7:
+  - Dùng link CDN cho Bootstrap JS.
+  - Cấu trúc file chuẩn, đảm bảo main.js (V7) được tải.
+-->
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+
+<!-- 1. Tải fragment header (V7) -->
+<head th:replace="~{web/fragments/header :: header}"></head>
+
+<body>
+
+    <!-- 2. Tải fragment nav (V7) -->
+    <div th:replace="~{web/fragments/nav :: nav}"></div>
+    
+    <!-- 3. Vùng nội dung chính -->
+    <main id="main">
+        <!-- 
+          Đây là nơi nội dung của index.html, login.html... được chèn vào.
+          Các file này (V7) đã dùng class của Bootstrap để tự căn chỉnh.
+        -->
+        <div layout:fragment="content">
+            <p>Đây là nội dung mặc định.</p>
+        </div>
+    </main>
+
+    <!-- 4. Tải fragment footer (V7) -->
+    <div th:replace="~{web/fragments/footer :: footer}"></div>
+    
+    <!-- Nút "Back to Top" -->
+    <a href="#" class="scroll-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+    
+    <!-- 5. TẢI BOOTSTRAP JS TỪ CDN (Rất quan trọng cho menu mobile) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" xintegrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+    <!-- 6. Tải các file Vendor JS local khác -->
+    <script th:src="@{/vendor/aos/aos.js}"></script>
+    <script th:src="@{/vendor/swiper/swiper-bundle.min.js}"></script>
+    <script th:src="@{/vendor/glightbox/js/glightbox.min.js}"></script>
+    <script th:src="@{/vendor/purecounter/purecounter_vanilla.js}"></script>
+    
+    <!-- 7. Tải file JS chính (V7) (Luôn tải cuối cùng) -->
+    <script th:src="@{/assets/js/main.js}"></script>
+
+</body>
+</html>

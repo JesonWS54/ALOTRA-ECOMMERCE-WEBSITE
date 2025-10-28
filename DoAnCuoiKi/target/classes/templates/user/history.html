@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{user/layout-user}">
+<head>
+    <title>Lịch sử hoạt động - AloTra</title>
+</head>
+<body>
+
+<div layout:fragment="content">
+
+    <section class="history-section py-5">
+        <div class="container">
+            <div class="section-header mb-4">
+                <h2>Lịch sử hoạt động</h2>
+            </div>
+
+            
+
+<ul class="nav nav-tabs mb-4" id="historyTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link" th:classappend="${activeTab == 'orders' ? 'active' : ''}" id="orders-tab" th:href="@{/user/history(tab='orders')}" role="tab" aria-controls="orders-pane" aria-selected="${activeTab == 'orders'}">Đơn hàng của tôi</a>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link" th:classappend="${activeTab == 'wishlist' ? 'active' : ''}" id="wishlist-tab" th:href="@{/user/history(tab='wishlist')}" role="tab" aria-controls="wishlist-pane" aria-selected="${activeTab == 'wishlist'}">Sản phẩm yêu thích</a>
+                </li>
+                <li class="nav-item" role="presentation">
+                     <a class="nav-link" th:classappend="${activeTab == 'viewed' ? 'active' : ''}" id="viewed-tab" th:href="@{/user/history(tab='viewed')}" role="tab" aria-controls="viewed-pane" aria-selected="${activeTab == 'viewed'}">Sản phẩm đã xem</a>
+                </li>
+                 <li class="nav-item" role="presentation">
+                    <a class="nav-link disabled" th:classappend="${activeTab == 'reviews' ? 'active' : ''}" id="reviews-tab" th:href="@{/user/history(tab='reviews')}" role="tab" aria-controls="reviews-pane" aria-selected="${activeTab == 'reviews'}">Đánh giá của tôi <small>(Sắp có)</small></a>
+                </li>
+                <li class="nav-item" role="presentation">
+                     <a class="nav-link disabled" th:classappend="${activeTab == 'stats' ? 'active' : ''}" id="stats-tab" th:href="@{/user/history(tab='stats')}" role="tab" aria-controls="stats-pane" aria-selected="${activeTab == 'stats'}">Thống kê <small>(Sắp có)</small></a>
+                </li>
+            </ul>
+
+            <div class="tab-content" id="historyTabContent">
+
+                
+
+<div class="tab-pane fade" th:classappend="${activeTab == 'orders' ? 'show active' : ''}" id="orders-pane" role="tabpanel" aria-labelledby="orders-tab" tabindex="0">
+                    <h4>Đơn hàng của tôi</h4>
+
+                    
+
+<div class="mb-3">
+                        <label for="statusFilter" class="form-label">Lọc theo trạng thái:</label>
+                        <select id="statusFilter" class="form-select form-select-sm w-auto d-inline-block" onchange="filterOrders(this.value)">
+                            <option value="" th:selected="${currentStatus == null}">Tất cả</option>
+                            <option th:each="st : ${orderStatuses}" th:value="${st}" th:text="${st}" th:selected="${st == currentStatus}"></option>
+                        </select>
+                    </div>
+
+                    
+
+<div th:if="${orderPage == null or orderPage.empty}">
+                        <p class="text-muted">Bạn chưa có đơn hàng nào.</p>
+                    </div>
+
+                    
+
+<div th:unless="${orderPage == null or orderPage.empty}" class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Mã ĐH</th>
+                                    <th>Ngày đặt</th>
+                                    <th>Cửa hàng</th>
+                                    <th>Tổng tiền</th>
+                                    <th>Trạng thái</th>
+                                    <th>Thanh toán</th>
+                                    <th>Chi tiết</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="order : ${orderPage.content}">
+                                    <td th:text="'#' + ${order.id}">#123</td>
+                                    <td th:text="${order.createdAt != null ? #temporals.format(order.createdAt, 'dd/MM/yyyy HH:mm') : 'N/A'}"></td>
+                                    <td th:text="${order.shopName}">Shop A</td>
+                                    <td th:text="${#numbers.formatDecimal(order.finalTotal, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">150.000 VNĐ</td>
+                                    <td><span class="badge" th:classappend="${#strings.toLowerCase(order.status) == 'completed' ? 'bg-success' : (#strings.toLowerCase(order.status) == 'cancelled' or #strings.toLowerCase(order.status) == 'returned' ? 'bg-danger' : (#strings.toLowerCase(order.status) == 'shipping' ? 'bg-info' : 'bg-warning'))}" th:text="${order.status}">PENDING</span></td>
+                                    <td><span class="badge" th:classappend="${#strings.toLowerCase(order.paymentStatus) == 'paid' ? 'bg-success' : 'bg-secondary'}" th:text="${order.paymentStatus}">UNPAID</span></td>
+                                    <td>
+                                        <a href="#" class="btn btn-sm btn-outline-primary"><i class="bi bi-eye"></i> Xem</a> 
+
+</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        
+
+<nav th:if="${orderPage.totalPages > 1}" aria-label="Order pagination">
+                            <ul class="pagination justify-content-center">
+                                <li class="page-item" th:classappend="${orderPage.first} ? 'disabled'">
+                                    <a class="page-link" th:href="@{/user/history(tab='orders', status=${currentStatus}, page=${orderPage.number - 1})}">Trước</a>
+                                </li>
+                                <li class="page-item" th:each="i : ${#numbers.sequence(0, orderPage.totalPages - 1)}" th:classappend="${i == orderPage.number} ? 'active'">
+                                    <a class="page-link" th:href="@{/user/history(tab='orders', status=${currentStatus}, page=${i})}" th:text="${i + 1}">1</a>
+                                </li>
+                                <li class="page-item" th:classappend="${orderPage.last} ? 'disabled'">
+                                    <a class="page-link" th:href="@{/user/history(tab='orders', status=${currentStatus}, page=${orderPage.number + 1})}">Sau</a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+
+                    <script th:inline="javascript">
+                        /*<![CDATA[*/
+                        function filterOrders(status) {
+                            // Sử dụng dấu nháy kép cho chuỗi JS và dấu nháy đơn cho tham số Thymeleaf
+                            let url = /*[[@{/user/history(tab='orders')}]]*/ '/user/history?tab=orders';
+                            if (status && status !== '') {
+                                url += '&status=' + encodeURIComponent(status); // Mã hóa status để tránh lỗi URL
+                            }
+                            window.location.href = url;
+                        }
+                        /*]]>*/
+                    </script>
+                </div>
+
+                
+
+<div class="tab-pane fade" th:classappend="${activeTab == 'wishlist' ? 'show active' : ''}" id="wishlist-pane" role="tabpanel" aria-labelledby="wishlist-tab" tabindex="0">
+                    <h4>Sản phẩm yêu thích</h4>
+                    <div th:if="${wishlistPage == null or wishlistPage.empty}">
+                        <p class="text-muted">Danh sách yêu thích của bạn đang trống.</p>
+                    </div>
+                    
+
+<div th:unless="${wishlistPage == null or wishlistPage.empty}">
+                        <div class="row g-4">
+                            <div th:each="prod : ${wishlistPage.content}" class="col-lg-3 col-md-4 col-sm-6">
+                                <div class="card h-100 product-card-simple">
+                                     <a href="#"> 
+
+<img th:src="${prod.thumbnailUrl != null ? prod.thumbnailUrl : 'https://placehold.co/300x200/F0F0F0/555?text=No+Image'}" class="card-img-top" th:alt="${prod.name}"
+                                          onerror="this.src='https://placehold.co/300x200/F0F0F0/555?text=No+Image'">
+                                     </a>
+                                    <div class="card-body">
+                                        <h5 class="card-title product-name"><a href="#" th:text="${prod.name}">Tên sản phẩm</a></h5>
+                                        <p class="card-text product-price" th:text="${#numbers.formatDecimal(prod.basePrice, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">Giá</p>
+                                        <small class="text-muted d-block mb-2" th:text="'Shop: ' + ${prod.shopName}">Shop Name</small>
+                                        
+
+<button class="btn btn-sm btn-outline-danger w-100"> <i class="bi bi-trash"></i> Bỏ thích</button> 
+
+</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        
+
+<nav th:if="${wishlistPage.totalPages > 1}" aria-label="Wishlist pagination" class="mt-4">
+                            <ul class="pagination justify-content-center">
+                                <li class="page-item" th:classappend="${wishlistPage.first} ? 'disabled'">
+                                    <a class="page-link" th:href="@{/user/history(tab='wishlist', page=${wishlistPage.number - 1})}">Trước</a>
+                                </li>
+                                <li class="page-item" th:each="i : ${#numbers.sequence(0, wishlistPage.totalPages - 1)}" th:classappend="${i == wishlistPage.number} ? 'active'">
+                                    <a class="page-link" th:href="@{/user/history(tab='wishlist', page=${i})}" th:text="${i + 1}">1</a>
+                                </li>
+                                <li class="page-item" th:classappend="${wishlistPage.last} ? 'disabled'">
+                                    <a class="page-link" th:href="@{/user/history(tab='wishlist', page=${wishlistPage.number + 1})}">Sau</a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+
+                
+
+<div class="tab-pane fade" th:classappend="${activeTab == 'viewed' ? 'show active' : ''}" id="viewed-pane" role="tabpanel" aria-labelledby="viewed-tab" tabindex="0">
+                    <h4>Sản phẩm đã xem</h4>
+                     <div th:if="${viewedPage == null or viewedPage.empty}">
+                        <p class="text-muted">Bạn chưa xem sản phẩm nào gần đây.</p>
+                    </div>
+                    
+
+<div th:unless="${viewedPage == null or viewedPage.empty}">
+                        <div class="row g-4">
+                             <div th:each="prod : ${viewedPage.content}" class="col-lg-3 col-md-4 col-sm-6">
+                                <div class="card h-100 product-card-simple">
+                                     <a href="#"> 
+
+<img th:src="${prod.thumbnailUrl != null ? prod.thumbnailUrl : 'https://placehold.co/300x200/F0F0F0/555?text=No+Image'}" class="card-img-top" th:alt="${prod.name}"
+                                          onerror="this.src='https://placehold.co/300x200/F0F0F0/555?text=No+Image'">
+                                     </a>
+                                    <div class="card-body">
+                                        <h5 class="card-title product-name"><a href="#" th:text="${prod.name}">Tên sản phẩm</a></h5>
+                                        <p class="card-text product-price" th:text="${#numbers.formatDecimal(prod.basePrice, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">Giá</p>
+                                        <small class="text-muted d-block mb-2" th:text="'Shop: ' + ${prod.shopName}">Shop Name</small>
+                                        
+
+</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+
+<nav th:if="${viewedPage.totalPages > 1}" aria-label="Viewed pagination" class="mt-4">
+                            <ul class="pagination justify-content-center">
+                                <li class="page-item" th:classappend="${viewedPage.first} ? 'disabled'">
+                                    <a class="page-link" th:href="@{/user/history(tab='viewed', page=${viewedPage.number - 1})}">Trước</a>
+                                </li>
+                                <li class="page-item" th:each="i : ${#numbers.sequence(0, viewedPage.totalPages - 1)}" th:classappend="${i == viewedPage.number} ? 'active'">
+                                    <a class="page-link" th:href="@{/user/history(tab='viewed', page=${i})}" th:text="${i + 1}">1</a>
+                                </li>
+                                <li class="page-item" th:classappend="${viewedPage.last} ? 'disabled'">
+                                    <a class="page-link" th:href="@{/user/history(tab='viewed', page=${viewedPage.number + 1})}">Sau</a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+
+                
+
+<div class="tab-pane fade" th:classappend="${activeTab == 'reviews' ? 'show active' : ''}" id="reviews-pane" role="tabpanel" aria-labelledby="reviews-tab" tabindex="0">
+                     <h4>Đánh giá của tôi</h4>
+                     <p class="text-muted">Chức năng này sắp ra mắt!</p> 
+
+</div>
+
+                
+
+<div class="tab-pane fade" th:classappend="${activeTab == 'stats' ? 'show active' : ''}" id="stats-pane" role="tabpanel" aria-labelledby="stats-tab" tabindex="0">
+                    <h4>Thống kê</h4>
+                    <p class="text-muted">Chức năng này sắp ra mắt!</p> 
+
+</div>
+
+            </div> 
+
+</div>
+    </section>
+
+</div> 
+
+</body>
+</html>

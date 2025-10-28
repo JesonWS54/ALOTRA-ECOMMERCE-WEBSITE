@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <!-- /* Thanh điều hướng cho Vendor - Tương tự User + Quản lý */ -->
+    <nav th:fragment="nav" class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
+        <div class="container">
+            <!-- Logo -->
+            <a class="navbar-brand d-flex align-items-center me-auto" th:href="@{/vendor/dashboard}"> <!-- Link về Dashboard Vendor -->
+                <img src="https://placehold.co/150x40/E8F7F4/333?text=AloTra+Logo" alt="AloTra Logo" style="height: 40px; width: auto;" th:src="@{/assets/img/logo.png}" onerror="this.src='https://placehold.co/150x40/E8F7F4/333?text=AloTra+Logo'">
+            </a>
+
+            <!-- Nút Toggler cho mobile -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbarVendor" aria-controls="mainNavbarVendor" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <!-- Menu chính -->
+            <div class="collapse navbar-collapse" id="mainNavbarVendor">
+                <!-- Links căn giữa -->
+                 <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
+                     <li class="nav-item">
+                          <a class="nav-link" th:href="@{/user/home}" >Xem Trang Khách Hàng</a>
+                     </li>
+                     <!-- *** THÊM LINK QUẢN LÝ SHOP *** -->
+                      <li class="nav-item">
+                          <a class="nav-link" th:href="@{/vendor/management}" th:classappend="${#strings.startsWith(#strings.defaultString(currentUri,''), '/vendor/management') ? 'active' : ''}">Quản Lý Shop</a>
+                      </li>
+                      <!-- Giữ lại các link user khác nếu Vendor cũng cần truy cập -->
+                      <li class="nav-item">
+                          <a class="nav-link" th:href="@{/user/profile}" th:classappend="${#strings.startsWith(#strings.defaultString(currentUri,''), '/user/profile') ? 'active' : ''}">Hồ sơ cá nhân</a>
+                      </li>
+                 </ul>
+
+
+                <!-- Khu vực Hành động -->
+                 <div class="header-actions d-flex align-items-center ms-auto">
+                    <!-- Icon Giỏ hàng (Vẫn giữ nếu Vendor có thể mua hàng) -->
+                    <a th:href="@{/user/cart}" class="action-icon me-3 position-relative" title="Giỏ hàng">
+                        <i class="bi bi-cart fs-5"></i>
+                        <span th:if="${cartItemCount != null and cartItemCount > 0}"
+                              class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary"
+                              style="font-size: 0.6rem;"
+                              th:text="${cartItemCount}">
+                            0 <span class="visually-hidden">sản phẩm trong giỏ</span>
+                        </span>
+                    </a>
+                     <!-- Nút Đăng xuất -->
+                     <form th:action="@{/logout}" method="post" class="d-inline"> <!-- Thay @{/logout} bằng endpoint thật sau này -->
+                         <button type="submit" class="btn btn-outline-secondary btn-sm">
+                             <i class="bi bi-box-arrow-right me-1"></i>Đăng xuất
+                         </button>
+                     </form>
+                 </div>
+
+            </div> <!-- /.collapse -->
+        </div> <!-- /.container -->
+    </nav>
+
+</body>
+</html>

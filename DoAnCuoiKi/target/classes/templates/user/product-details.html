@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{user/layout-user}">
+
+<head>
+    <!--/* Tiêu đề trang sẽ lấy tên sản phẩm */-->
+    <title th:text="${product != null ? product.name : 'Chi tiết sản phẩm'} + ' - AloTra'">Chi tiết sản phẩm</title>
+    <!--/* Thêm CSS cho Swiper nếu chưa có trong layout */-->
+    <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
+    <style>
+        /* CSS cho hiệu ứng hover và selected của sao */
+        .rating-stars .rating-star {
+            cursor: pointer;
+            color: #ccc; /* Màu sao mặc định */
+            transition: color 0.2s;
+        }
+        .rating-stars .rating-star:hover,
+        .rating-stars .rating-star.hover {
+            color: #ffc107; /* Màu vàng khi hover */
+        }
+        .rating-stars .rating-star.selected {
+            color: #ffc107; /* Màu vàng khi được chọn */
+        }
+        /* Style cho video thumbnail */
+        .video-thumbnail { cursor: pointer; }
+
+        /* Style cho ảnh sản phẩm và thumbnails */
+         .product-images-slider .swiper-slide img,
+         .product-thumbnails-slider .swiper-slide img {
+             display: block;
+             width: 100%;
+             height: auto; /* Giữ tỷ lệ */
+             object-fit: cover; /* Đảm bảo ảnh phủ kín */
+         }
+         .product-images-slider {
+             height: 400px; /* Chiều cao cố định cho slider chính */
+             border-radius: 0.5rem; /* Bo góc */
+         }
+          @media (min-width: 768px) {
+              .product-images-slider {
+                  height: 500px;
+              }
+          }
+
+         .product-thumbnails-slider {
+             height: 100px; /* Chiều cao cho thumbnails */
+             margin-top: 10px;
+         }
+         .product-thumbnails-slider .swiper-slide {
+             opacity: 0.6;
+             cursor: pointer;
+             transition: opacity 0.3s;
+             border: 2px solid transparent; /* Thêm border để highlight */
+             border-radius: 0.25rem;
+             overflow: hidden; /* Đảm bảo ảnh không tràn */
+         }
+         .product-thumbnails-slider .swiper-slide-thumb-active {
+             opacity: 1;
+             border-color: var(--primary-color); /* Highlight thumbnail đang active */
+         }
+         .product-thumbnails-slider .swiper-slide img {
+             height: 100%; /* Đảm bảo ảnh thumbnail đầy đủ chiều cao */
+         }
+
+         /* --- CSS MEDIA ĐÁNH GIÁ --- */
+         .review-media img,
+         .review-media .video-thumbnail {
+            width: 60px; /* Kích thước cố định */
+            height: 60px;
+            object-fit: cover; /* Ảnh sẽ crop để vừa */
+            border-radius: 0.25rem;
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out; /* Thêm hiệu ứng shadow */
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1); /* Thêm shadow nhẹ */
+         }
+         .review-media a:hover img,
+         .review-media a:hover .video-thumbnail {
+              transform: scale(1.05); /* Hiệu ứng zoom nhẹ khi hover */
+              box-shadow: 0 4px 8px rgba(0,0,0,0.15); /* Shadow rõ hơn khi hover */
+         }
+         .review-media .video-thumbnail {
+             background-color: #e9ecef; /* Giữ màu nền cho video icon */
+         }
+         /* --- KẾT THÚC CSS MEDIA --- */
+
+    </style>
+</head>
+
+<body>
+
+<div layout:fragment="content">
+    <section class="product-details-section py-5">
+        <div class="container">
+
+            <!--/* Thông báo lỗi chung nếu có */-->
+             <div th:if="${errorMessage}" class="alert alert-danger" role="alert">
+                 <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                 <span th:text="${errorMessage}"></span> <a th:href="@{/user/menu}" class="alert-link">Quay lại Menu</a>.
+             </div>
+
+            <!--/* Thông báo nếu không tìm thấy sản phẩm (đã xử lý bởi Controller) */-->
+            <div th:if="${product == null and errorMessage == null}" class="alert alert-warning" role="alert">
+                Không tìm thấy thông tin sản phẩm. <a th:href="@{/user/menu}" class="alert-link">Quay lại Menu</a>.
+            </div>
+
+            <!--/* Phần chính chỉ hiển thị khi có sản phẩm */-->
+            <div th:if="${product != null}" class="row g-lg-5">
+
+                <!--/* Cột trái: Hình ảnh sản phẩm */-->
+                <div class="col-lg-6 mb-4 mb-lg-0" data-aos="fade-right">
+                    <div class="product-gallery sticky-lg-top" style="top: 100px;"> <!-- Giữ slider khi cuộn -->
+                        <!--/* Swiper gallery */-->
+                        <div style="--swiper-navigation-color: #007bff; --swiper-pagination-color: #007bff" class="swiper product-images-slider mb-3">
+                            <div class="swiper-wrapper">
+                                <!--/* Ảnh đầu tiên (thumbnail hoặc ảnh đầu trong list) */-->
+                                <div class="swiper-slide">
+                                    <a th:href="${#lists.isEmpty(product.images) ? 'https://placehold.co/1200x800/E8F7F4/333' : product.images[0]}" class="glightbox">
+                                        <img th:src="${#lists.isEmpty(product.images) ? 'https://placehold.co/600x400/E8F7F4/333' : product.images[0]}"
+                                             onerror="this.src='https://placehold.co/600x400/E8F7F4/333'"
+                                             class="img-fluid" alt="Ảnh chính sản phẩm">
+                                    </a>
+                                </div>
+                                <!--/* Các ảnh phụ (nếu có) */-->
+                                <div class="swiper-slide" th:each="imgUrl, iterStat : ${product.images}" th:if="${iterStat.index > 0}">
+                                     <a th:href="${imgUrl}" class="glightbox">
+                                         <img th:src="${imgUrl}"
+                                              onerror="this.src='https://placehold.co/600x400/grey/white'"
+                                              class="img-fluid" th:alt="'Ảnh sản phẩm ' + ${iterStat.count}">
+                                     </a>
+                                 </div>
+                            </div>
+                            <div class="swiper-button-next"></div>
+                            <div class="swiper-button-prev"></div>
+                        </div>
+                        <!--/* Swiper thumbnails */-->
+                        <div thumbsSlider="" class="swiper product-thumbnails-slider">
+                            <div class="swiper-wrapper">
+                                 <div class="swiper-slide">
+                                    <img th:src="${#lists.isEmpty(product.images) ? 'https://placehold.co/100x100/E8F7F4/333' : product.images[0]}"
+                                         onerror="this.src='https://placehold.co/100x100/E8F7F4/333'"
+                                         class="img-fluid" alt="Thumbnail 1">
+                                </div>
+                                <div class="swiper-slide" th:each="imgUrl, iterStat : ${product.images}" th:if="${iterStat.index > 0}">
+                                     <img th:src="${imgUrl}"
+                                          onerror="this.src='https://placehold.co/100x100/grey/white'"
+                                          class="img-fluid" th:alt="'Thumbnail ' + ${iterStat.count}">
+                                 </div>
+                            </div>
+                        </div>
+                    </div> <!-- End product gallery -->
+                </div> <!-- End Cột trái -->
+
+                <!--/* Cột phải: Thông tin chi tiết và hành động */-->
+                <div class="col-lg-6" data-aos="fade-left">
+                    <!--/* Tên sản phẩm */-->
+                    <h1 class="product-title display-5 fw-bold mb-3" th:text="${product.name}">Tên Sản Phẩm Dài Hơn Một Chút</h1>
+                    <!--/* Thông tin meta: Shop, Rating, Đã bán */-->
+                    <div class="product-meta d-flex flex-wrap align-items-center mb-3 text-muted small">
+                        <span class="shop-name me-3 mb-1"><i class="bi bi-shop me-1"></i> Bởi <strong class="text-dark" th:text="${product.shopName}">Tên Shop</strong></span>
+                        <span class="rating me-3 mb-1">
+                            <i class="bi bi-star-fill text-warning"></i>
+                            <strong class="text-dark" th:text="${#numbers.formatDecimal(product.rating, 1, 1)}">4.5</strong>
+                            (<span th:text="${product.reviewCount}" id="review-count-display">15</span> đánh giá) <!-- Thêm ID -->
+                        </span>
+                        <span class="sold-count mb-1"><i class="bi bi-bag-check-fill me-1"></i> Đã bán: <strong class="text-dark" th:text="${product.soldCount}">50+</strong></span>
+                         <span class="stock-count ms-3 mb-1" th:if="${product.stockQuantity != null}">
+                            <i class="bi bi-box-seam me-1"></i> Kho: <strong class="text-dark" th:text="${product.stockQuantity}">100</strong>
+                         </span>
+                    </div>
+
+                    <!--/* Giá sản phẩm */-->
+                    <div class="product-price display-6 fw-semibold text-danger mb-4" th:text="${#numbers.formatDecimal(product.basePrice, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">
+                        45.000 VNĐ
+                    </div>
+
+                    <!--/* Mô tả ngắn (nếu có) hoặc mô tả đầy đủ */-->
+                    <div class="product-description mb-4">
+                        <h4 class="h5 mb-2">Mô tả sản phẩm</h4>
+                        <p th:text="${product.description}" class="text-secondary">Mô tả chi tiết về sản phẩm, hương vị, thành phần, cách thưởng thức...</p>
+                    </div>
+
+                    <!--/* Hành động: Số lượng, Thêm vào giỏ, Yêu thích */-->
+                    <div class="product-actions mt-4 pt-4 border-top">
+                         <!-- *** ĐẢM BẢO FORM NÀY ĐÚNG *** -->
+                         <form th:action="@{/user/cart/add}" method="post" class="d-flex align-items-center">
+                             <input type="hidden" name="productId" th:value="${product.id}" />
+                             <!--/* Input số lượng */-->
+                             <div class="input-group me-3" style="max-width: 130px;">
+                                 <button class="btn btn-outline-secondary btn-sm" type="button" onclick="adjustQuantity(this, -1)">-</button>
+                                 <input type="number" name="quantity" class="form-control form-control-sm text-center quantity-input" value="1" min="1" th:max="${product.stockQuantity != null and product.stockQuantity > 0 ? product.stockQuantity : 1}" aria-label="Số lượng">
+                                 <button class="btn btn-outline-secondary btn-sm" type="button" onclick="adjustQuantity(this, 1)">+</button>
+                             </div>
+                             <!--/* Nút Thêm vào giỏ */-->
+                             <button type="submit" class="btn btn-primary btn-lg flex-grow-1" th:disabled="${product.stockQuantity != null and product.stockQuantity <= 0}">
+                                 <i class="bi bi-cart-plus-fill me-2"></i>
+                                 <span th:if="${product.stockQuantity != null and product.stockQuantity > 0}">Thêm vào giỏ</span>
+                                 <span th:unless="${product.stockQuantity != null and product.stockQuantity > 0}">Hết hàng</span>
+                             </button>
+                             <!--/* Nút Yêu thích (AJAX sau này) */-->
+                             <button type="button" class="btn btn-outline-danger btn-lg ms-2 favorite-btn" th:attr="data-product-id=${product.id}" title="Thêm vào yêu thích">
+                                  <i class="bi bi-heart"></i> <!-- Đổi thành bi-heart-fill nếu đã thích -->
+                              </button>
+                         </form>
+                    </div> <!-- End product actions -->
+
+                    <!--/* Thông tin thêm: Danh mục, Tags (nếu có) */-->
+                    <div class="product-extra-info mt-4 text-muted small">
+                        <p class="mb-1"><strong>Danh mục:</strong> <a th:href="@{/user/menu(category=${product.categoryId})}" th:text="${product.categoryName}">Trà sữa</a></p>
+                        <!--/* Có thể thêm tags nếu có */-->
+                        <!-- <p><strong>Tags:</strong> <span class="badge bg-light text-dark me-1">Trà</span> <span class="badge bg-light text-dark">Olong</span></p> -->
+                    </div>
+
+                </div> <!-- End Cột phải -->
+            </div> <!-- End row chi tiết sản phẩm -->
+
+            <!--/* Phần Đánh giá */-->
+            <hr class="my-5" th:if="${product != null}">
+
+            <div class="row" th:if="${product != null}">
+                <div class="col-lg-12">
+                     <!-- Thêm ID để JS có thể cập nhật -->
+                    <h3 class="mb-4">Đánh giá sản phẩm (<span th:text="${reviewsPage != null ? reviewsPage.totalElements : 0}" id="reviews-total-count">0</span>)</h3>
+
+                    <!--/* Hiển thị thông báo thành công/lỗi */-->
+                    <div th:if="${reviewSuccessMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="bi bi-check-circle-fill me-2"></i>
+                        <span th:text="${reviewSuccessMessage}"></span>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                     <div th:if="${reviewErrorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                         <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                         <span th:text="${reviewErrorMessage}"></span>
+                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                     </div>
+
+                    <!--/* Form Viết đánh giá (Luôn hiển thị) */-->
+                    <div class="card mb-4 shadow-sm" data-aos="fade-up">
+                        <div class="card-header bg-white"><strong>Viết đánh giá của bạn</strong></div>
+                        <div class="card-body">
+                            <form th:action="@{/user/product/{id}/review(id=${product.id})}" method="post" enctype="multipart/form-data" id="reviewForm">
+                                <!--/* Chọn sao đánh giá */-->
+                                <div class="mb-3">
+                                    <label class="form-label d-block">Đánh giá của bạn:<span class="text-danger">*</span></label>
+                                    <div class="rating-stars">
+                                        <i class="bi bi-star rating-star fs-4 me-1" data-value="1" title="Rất tệ"></i>
+                                        <i class="bi bi-star rating-star fs-4 me-1" data-value="2" title="Tệ"></i>
+                                        <i class="bi bi-star rating-star fs-4 me-1" data-value="3" title="Bình thường"></i>
+                                        <i class="bi bi-star rating-star fs-4 me-1" data-value="4" title="Tốt"></i>
+                                        <i class="bi bi-star rating-star fs-4" data-value="5" title="Tuyệt vời!"></i>
+                                        <!--/* Đảm bảo input này có required */-->
+                                        <input type="hidden" name="rating" id="ratingValue" required>
+                                        <span id="rating-feedback" class="ms-2 text-muted"></span>
+                                    </div>
+                                    <!--/* Thông báo lỗi nếu rating chưa được chọn (JavaScript) */-->
+                                    <div class="invalid-feedback" id="ratingError" style="display: none;">Vui lòng chọn số sao đánh giá.</div>
+                                </div>
+                                <!--/* Nhập bình luận */-->
+                                <div class="mb-3">
+                                    <label for="comment" class="form-label">Bình luận chi tiết <span class="text-danger">*</span></label>
+                                    <!-- *** ĐÃ SỬA: minlength="50" *** -->
+                                    <textarea class="form-control" id="comment" name="comment" rows="4" required minlength="50" placeholder="Chia sẻ cảm nhận của bạn về sản phẩm (tối thiểu 50 ký tự)..."></textarea>
+                                </div>
+                                <!--/* Upload ảnh/video */-->
+                                <div class="mb-3">
+                                    <label for="mediaFiles" class="form-label">Thêm ảnh/video (tối đa 10MB/file)</label>
+                                    <input class="form-control" type="file" id="mediaFiles" name="mediaFiles" multiple accept="image/*,video/*">
+                                    <small class="form-text text-muted">Giữ Ctrl/Cmd để chọn nhiều file. Kích thước tối đa: 10MB mỗi file.</small>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Gửi đánh giá</button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!--/* Danh sách đánh giá đã có (Thêm ID) */-->
+                    <div class="reviews-list mt-4" id="reviews-list-container">
+                        <h4 class="mb-3">Các đánh giá trước đó</h4>
+                        <!--/* Container để JS thêm đánh giá mới */-->
+                        <div id="new-reviews-placeholder"></div>
+                        <!--/* Thông báo nếu chưa có đánh giá */-->
+                        <div id="no-reviews-message" th:if="${reviewsPage == null or reviewsPage.empty}">
+                            <p>Chưa có đánh giá nào cho sản phẩm này.</p>
+                        </div>
+                        <div th:unless="${reviewsPage == null or reviewsPage.empty}">
+                            <!--/* Lặp qua từng đánh giá */-->
+                            <div th:each="review : ${reviewsPage.content}" class="review-item d-flex border-bottom pb-3 mb-3" data-aos="fade-up">
+                                <!--/* Avatar người đánh giá */-->
+                                <img src="https://placehold.co/50x50/ced4da/6c757d?text=A"
+                                     th:src="${review.accountAvatarUrl ?: 'https://placehold.co/50x50/ced4da/6c757d?text=' + #strings.substring(review.accountUsername,0,1)}"
+                                     class="rounded-circle me-3 mt-1" alt="Avatar" style="width: 50px; height: 50px; object-fit: cover;">
+                                <div class="flex-grow-1">
+                                    <!--/* Tên và ngày đánh giá */-->
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <strong th:text="${review.accountUsername}">Tên User</strong>
+                                        <small class="text-muted" th:text="${#temporals.format(review.createdAt, 'dd/MM/yyyy HH:mm')}">Ngày đăng</small>
+                                    </div>
+                                    <!--/* Sao đánh giá */-->
+                                    <div class="review-rating mb-2">
+                                        <i th:each="star : ${#numbers.sequence(1, 5)}"
+                                           class="bi"
+                                           th:classappend="${star <= review.rating ? 'bi-star-fill text-warning' : 'bi-star'}"></i>
+                                    </div>
+                                    <!--/* Nội dung bình luận */-->
+                                    <p th:text="${review.comment}" class="mb-2">Nội dung bình luận...</p>
+
+                                    <!-- *** PHẦN HIỂN THỊ MEDIA *** -->
+                                    <div class="review-media d-flex flex-wrap gap-2" th:if="${review.mediaUrls != null and !#lists.isEmpty(review.mediaUrls)}">
+                                         <a th:each="mediaUrl : ${review.mediaUrls}" th:href="${mediaUrl}" class="glightbox" data-gallery="'review-gallery-' + ${review.id}">
+                                             <!--/* Hiển thị ảnh */-->
+                                             <img th:if="${#strings.containsIgnoreCase(mediaUrl, '.jpg') or #strings.containsIgnoreCase(mediaUrl, '.png') or #strings.containsIgnoreCase(mediaUrl, '.jpeg') or #strings.containsIgnoreCase(mediaUrl, '.gif') or #strings.containsIgnoreCase(mediaUrl, '.webp')}"
+                                                  th:src="${mediaUrl}" alt="Ảnh đánh giá">
+                                             <!--/* Video thumbnail (icon) */-->
+                                             <div th:if="${#strings.containsIgnoreCase(mediaUrl, '.mp4') or #strings.containsIgnoreCase(mediaUrl, '.mov') or #strings.containsIgnoreCase(mediaUrl, '.avi') or #strings.containsIgnoreCase(mediaUrl, '.webm')}"
+                                                  class="video-thumbnail rounded d-flex align-items-center justify-content-center">
+                                                 <i class="bi bi-play-circle-fill fs-3 text-secondary"></i>
+                                             </div>
+                                         </a>
+                                     </div>
+                                     <!-- *** KẾT THÚC PHẦN MEDIA *** -->
+
+                                </div>
+                            </div> <!-- End review-item -->
+
+                            <!--/* Phân trang cho đánh giá */-->
+                            <nav th:if="${reviewsPage.totalPages > 1}" aria-label="Review pagination" class="mt-4 d-flex justify-content-center">
+                                <ul class="pagination">
+                                    <li class="page-item" th:classappend="${reviewsPage.first ? 'disabled' : ''}">
+                                        <a class="page-link" th:href="@{/user/product/{id}(id=${product.id}, reviewPage=${reviewsPage.number - 1})}" aria-label="Previous">
+                                            <span aria-hidden="true">&laquo;</span>
+                                        </a>
+                                    </li>
+                                    <!--/* Hiển thị tối đa 5 trang gần trang hiện tại */-->
+                                    <th:block th:with="
+                                        startPage=${T(java.lang.Math).max(0, reviewsPage.number - 2)},
+                                        endPage=${T(java.lang.Math).min(reviewsPage.totalPages - 1, reviewsPage.number + 2)}
+                                    ">
+                                        <li class="page-item" th:if="${startPage > 0}">
+                                            <a class="page-link" th:href="@{/user/product/{id}(id=${product.id}, reviewPage=0)}">1</a>
+                                        </li>
+                                        <li class="page-item disabled" th:if="${startPage > 1}"><span class="page-link">...</span></li>
+
+                                        <li class="page-item" th:each="i : ${#numbers.sequence(startPage, endPage)}" th:classappend="${i == reviewsPage.number ? 'active' : ''}">
+                                            <a class="page-link" th:href="@{/user/product/{id}(id=${product.id}, reviewPage=${i})}" th:text="${i + 1}">1</a>
+                                        </li>
+
+                                        <li class="page-item disabled" th:if="${endPage < reviewsPage.totalPages - 2}"><span class="page-link">...</span></li>
+                                        <li class="page-item" th:if="${endPage < reviewsPage.totalPages - 1}">
+                                            <a class="page-link" th:href="@{/user/product/{id}(id=${product.id}, reviewPage=${reviewsPage.totalPages - 1})}" th:text="${reviewsPage.totalPages}"></a>
+                                        </li>
+                                    </th:block>
+
+                                    <li class="page-item" th:classappend="${reviewsPage.last ? 'disabled' : ''}">
+                                        <a class="page-link" th:href="@{/user/product/{id}(id=${product.id}, reviewPage=${reviewsPage.number + 1})}" aria-label="Next">
+                                            <span aria-hidden="true">&raquo;</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </nav>
+                        </div> <!-- End unless empty -->
+                    </div> <!-- End reviews-list -->
+                </div> <!-- End col-12 -->
+            </div> <!-- End row đánh giá -->
+
+        </div> <!-- End container -->
+    </section> <!-- End product-details-section -->
+</div> <!-- End layout fragment -->
+
+<th:block layout:fragment="scripts">
+    <!--/* Thêm JS cho Swiper và Glightbox nếu chưa có trong layout */-->
+    <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
+    <script th:src="@{/vendor/glightbox/js/glightbox.min.js}"></script>
+    <!--/* Thêm JS cho WebSocket (STOMP & SockJS) */-->
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.5.1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+
+
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        const productId = /*[[${product != null ? product.id : null}]]*/ null; // Lấy productId từ Thymeleaf
+        const contextPath = /*[[@{/}]]*/ '/'; // Lấy context path
+        let stompClient = null; // Biến lưu client WebSocket
+        let lightbox = null; // Biến lưu Glightbox instance
+        /*]]>*/
+
+        // --- Hàm tăng giảm số lượng ---
+        function adjustQuantity(button, change) {
+            const input = button.closest('.input-group').querySelector('.quantity-input');
+            let currentValue = parseInt(input.value);
+            let newValue = currentValue + change;
+            const min = parseInt(input.min);
+            const max = parseInt(input.max || 999); // Lấy max từ input, mặc định là 999 nếu không có
+
+            if (newValue >= min && newValue <= max) {
+                input.value = newValue;
+            }
+        }
+
+        // --- Hàm định dạng ngày giờ ---
+        function formatDateTime(isoString) {
+             if (!isoString) return "";
+             try {
+                const date = new Date(isoString);
+                const day = String(date.getDate()).padStart(2, '0');
+                const month = String(date.getMonth() + 1).padStart(2, '0'); // Month is 0-indexed
+                const year = date.getFullYear();
+                const hours = String(date.getHours()).padStart(2, '0');
+                const minutes = String(date.getMinutes()).padStart(2, '0');
+                return `${day}/${month}/${year} ${hours}:${minutes}`;
+             } catch (e) {
+                 console.error("Error formatting date:", isoString, e);
+                 return isoString; // Trả về chuỗi gốc nếu lỗi
+             }
+        }
+
+
+        // --- Hàm tạo HTML cho một đánh giá mới (dùng cho WebSocket) ---
+        function createReviewElement(review) {
+            const reviewItem = document.createElement('div');
+            reviewItem.className = 'review-item d-flex border-bottom pb-3 mb-3';
+            reviewItem.setAttribute('data-aos', 'fade-up'); // Thêm hiệu ứng
+
+            // Avatar
+            const avatarUrl = review.accountAvatarUrl || `https://placehold.co/50x50/ced4da/6c757d?text=${review.accountUsername ? review.accountUsername.substring(0, 1) : '?'}`;
+            const avatarImg = `<img src="${avatarUrl}" class="rounded-circle me-3 mt-1" alt="Avatar" style="width: 50px; height: 50px; object-fit: cover;">`;
+
+            // Content
+            const reviewContent = document.createElement('div');
+            reviewContent.className = 'flex-grow-1';
+
+            // Header (Tên, Ngày)
+            const headerDiv = document.createElement('div');
+            headerDiv.className = 'd-flex justify-content-between align-items-center mb-1';
+            headerDiv.innerHTML = `
+                <strong>${review.accountUsername || 'Ẩn danh'}</strong>
+                <small class="text-muted">${formatDateTime(review.createdAt)}</small>
+            `;
+
+            // Rating Stars
+            const ratingDiv = document.createElement('div');
+            ratingDiv.className = 'review-rating mb-2';
+            for (let i = 1; i <= 5; i++) {
+                const starIcon = document.createElement('i');
+                starIcon.className = `bi ${i <= review.rating ? 'bi-star-fill text-warning' : 'bi-star'}`;
+                ratingDiv.appendChild(starIcon);
+            }
+
+            // Comment
+            const commentP = document.createElement('p');
+            commentP.className = 'mb-2';
+            commentP.textContent = review.comment;
+
+            // Media
+            const mediaDiv = document.createElement('div');
+            mediaDiv.className = 'review-media d-flex flex-wrap gap-2';
+            if (review.mediaUrls && review.mediaUrls.length > 0) {
+                 const galleryId = `review-gallery-${review.id || Math.random().toString(36).substring(7)}`; // Tạo gallery ID duy nhất
+                review.mediaUrls.forEach(mediaUrl => {
+                    const mediaLink = document.createElement('a');
+                    mediaLink.href = mediaUrl;
+                    mediaLink.className = 'glightbox';
+                    mediaLink.setAttribute('data-gallery', galleryId); // Nhóm media của cùng review
+
+                    if (mediaUrl.match(/\.(jpg|png|jpeg|gif|webp)$/i)) {
+                        mediaLink.innerHTML = `<img src="${mediaUrl}" alt="Ảnh đánh giá">`;
+                    } else if (mediaUrl.match(/\.(mp4|mov|avi|webm)$/i)) {
+                        mediaLink.innerHTML = `<div class="video-thumbnail rounded d-flex align-items-center justify-content-center"><i class="bi bi-play-circle-fill fs-3 text-secondary"></i></div>`;
+                    }
+                    mediaDiv.appendChild(mediaLink);
+                });
+            }
+
+            reviewContent.appendChild(headerDiv);
+            reviewContent.appendChild(ratingDiv);
+            reviewContent.appendChild(commentP);
+            reviewContent.appendChild(mediaDiv);
+
+            reviewItem.innerHTML = avatarImg; // Thêm avatar trước
+            reviewItem.appendChild(reviewContent); // Thêm content sau
+
+            return reviewItem;
+        }
+
+        // --- Hàm cập nhật số lượng đánh giá ---
+        function updateReviewCounts(newTotal) {
+             const totalCountSpan = document.getElementById('reviews-total-count');
+             const productReviewCountSpan = document.querySelector('.product-meta .rating span'); // Cập nhật cả ở meta sản phẩm
+             if(totalCountSpan) totalCountSpan.textContent = newTotal;
+             if(productReviewCountSpan) {
+                // Chỉ cập nhật số lượng, giữ nguyên rating
+                const strongElement = productReviewCountSpan.previousElementSibling; // Lấy thẻ strong chứa rating
+                productReviewCountSpan.textContent = `(${newTotal} đánh giá)`;
+             }
+        }
+
+
+        // --- Hàm kết nối WebSocket ---
+        function connectWebSocket() {
+            if (!productId) {
+                console.log("Product ID not found, WebSocket not connecting.");
+                return;
+            }
+
+            // Đảm bảo URL endpoint đúng với cấu hình WebSocketConfig
+            // Sử dụng URL tuyệt đối để tránh lỗi context path
+            const socketUrl = `${window.location.protocol}//${window.location.host}${contextPath}ws`;
+            console.log("Connecting to WebSocket at:", socketUrl);
+            const socket = new SockJS(socketUrl);
+            stompClient = Stomp.over(socket);
+
+            stompClient.connect({}, function (frame) {
+                console.log('Connected to WebSocket: ' + frame);
+                // Đăng ký lắng nghe topic cho sản phẩm này
+                const topic = '/topic/reviews/' + productId;
+                console.log("Subscribing to topic:", topic);
+                stompClient.subscribe(topic, function (message) {
+                    try {
+                        const newReview = JSON.parse(message.body);
+                        console.log("Received review via WebSocket:", newReview);
+
+                        // --- Cập nhật Giao diện ---
+                         const reviewsListContainer = document.getElementById('reviews-list-container');
+                         const newReviewElement = createReviewElement(newReview);
+                         const placeholder = document.getElementById('new-reviews-placeholder');
+                         const noReviewsMessage = document.getElementById('no-reviews-message');
+
+                         if (reviewsListContainer && placeholder) {
+                              reviewsListContainer.insertBefore(newReviewElement, placeholder.nextSibling); // Chèn sau placeholder
+                              if(noReviewsMessage) noReviewsMessage.style.display = 'none'; // Ẩn thông báo "chưa có"
+                              if (typeof AOS !== 'undefined') AOS.refreshHard(); // Refresh AOS
+                              if (lightbox) lightbox.reload(); // Refresh Glightbox
+                         }
+
+                         // Cập nhật số lượng đánh giá
+                         const totalCountSpan = document.getElementById('reviews-total-count');
+                         if(totalCountSpan) {
+                              const currentCount = parseInt(totalCountSpan.textContent) || 0;
+                              updateReviewCounts(currentCount + 1);
+                         }
+
+                    } catch (e) {
+                        console.error("Error processing WebSocket message:", e, message.body);
+                    }
+                });
+            }, function(error) {
+                 console.error('STOMP connection error: ' + error);
+                 // setTimeout(connectWebSocket, 5000); // Thử kết nối lại
+            });
+             // Log lỗi khi mất kết nối
+             if (stompClient && stompClient.ws) {
+                 stompClient.ws.onclose = function() {
+                     console.log('WebSocket connection closed.');
+                 };
+                 stompClient.ws.onerror = function(error) {
+                      console.error('WebSocket error:', error);
+                 };
+             }
+        }
+
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Khởi tạo GLightbox ---
+             if (typeof GLightbox === 'function') {
+                 lightbox = GLightbox({ // Gán vào biến global
+                     selector: '.glightbox'
+                 });
+             } else {
+                 console.error("GLightbox is not defined.");
+             }
+
+            // --- Khởi tạo Swiper ---
+             if (typeof Swiper === 'function') {
+                  const productThumbnailsSwiper = new Swiper('.product-thumbnails-slider', {
+                     spaceBetween: 10,
+                     slidesPerView: 4,
+                     freeMode: true,
+                     watchSlidesProgress: true,
+                     breakpoints: {
+                        768: { slidesPerView: 5 },
+                        992: { slidesPerView: 6 }
+                     }
+                 });
+                 const productImagesSwiper = new Swiper('.product-images-slider', {
+                     spaceBetween: 10,
+                     navigation: {
+                         nextEl: '.swiper-button-next',
+                         prevEl: '.swiper-button-prev',
+                     },
+                     thumbs: {
+                         swiper: productThumbnailsSwiper,
+                     },
+                 });
+             } else {
+                  console.error("Swiper is not defined.");
+             }
+
+            // --- Xử lý chọn sao đánh giá ---
+            const starsContainer = document.querySelector('.rating-stars');
+            if (starsContainer) {
+                 const stars = Array.from(starsContainer.querySelectorAll('.rating-star'));
+                 const ratingInput = document.getElementById('ratingValue');
+                 const ratingFeedback = document.getElementById('rating-feedback');
+                 const ratingError = document.getElementById('ratingError');
+                 const ratingTitles = ["Rất tệ", "Tệ", "Bình thường", "Tốt", "Tuyệt vời!"];
+                 let currentRating = 0;
+
+                 stars.forEach(star => {
+                     star.addEventListener('click', (event) => {
+                         const value = parseInt(event.currentTarget.getAttribute('data-value'));
+                         currentRating = value;
+                         ratingInput.value = value;
+                         updateStarsUI(value);
+                         ratingFeedback.textContent = ratingTitles[value - 1];
+                         ratingError.style.display = 'none';
+                     });
+                     star.addEventListener('mouseover', (event) => {
+                          const hoverValue = parseInt(event.currentTarget.getAttribute('data-value'));
+                          highlightStarsUI(hoverValue);
+                          ratingFeedback.textContent = ratingTitles[hoverValue - 1];
+                     });
+                     star.addEventListener('mouseout', () => {
+                           updateStarsUI(currentRating);
+                           ratingFeedback.textContent = currentRating > 0 ? ratingTitles[currentRating - 1] : "";
+                     });
+                 });
+                 function updateStarsUI(selectedValue) {
+                      stars.forEach((s, index) => {
+                          if (index < selectedValue) {
+                              s.classList.remove('bi-star');
+                              s.classList.add('bi-star-fill', 'selected');
+                          } else {
+                              s.classList.remove('bi-star-fill', 'selected');
+                              s.classList.add('bi-star');
+                          }
+                          s.classList.remove('hover');
+                     });
+                 }
+                 function highlightStarsUI(hoverValue) {
+                      stars.forEach((s, index) => {
+                           s.classList.remove('hover');
+                           if (index < hoverValue) {
+                               s.classList.add('hover');
+                           }
+                      });
+                 }
+                 const reviewForm = document.getElementById('reviewForm');
+                 if(reviewForm) {
+                     reviewForm.addEventListener('submit', (event) => {
+                         if (!ratingInput.value || parseInt(ratingInput.value) === 0) {
+                             event.preventDefault();
+                             ratingError.style.display = 'block';
+                             starsContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                             return;
+                         } else {
+                             ratingError.style.display = 'none';
+                         }
+                         const mediaInput = document.getElementById('mediaFiles');
+                         if (mediaInput && mediaInput.files.length > 0) {
+                             const maxSizeInBytes = 10 * 1024 * 1024;
+                             for (let i = 0; i < mediaInput.files.length; i++) {
+                                 if (mediaInput.files[i].size > maxSizeInBytes) {
+                                     event.preventDefault();
+                                     alert(`File "${mediaInput.files[i].name}" vượt quá dung lượng tối đa 10MB.`);
+                                     mediaInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                     return;
+                                 }
+                             }
+                         }
+                         // Reset form sau khi submit thành công (nếu cần)
+                         // setTimeout(() => { reviewForm.reset(); updateStarsUI(0); }, 500);
+                     });
+                 }
+            } // end if starsContainer
+
+            // --- Kết nối WebSocket ---
+            connectWebSocket();
+
+        }); // end DOMContentLoaded
+    </script>
+</th:block>
+
+</body>
+</html>

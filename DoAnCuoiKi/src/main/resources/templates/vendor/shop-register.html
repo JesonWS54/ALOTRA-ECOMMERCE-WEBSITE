@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<!-- /* Trang đăng ký Shop */ -->
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{vendor/layout-vendor}">
+
+<head>
+    <title>Đăng Ký Cửa Hàng - AloTra</title>
+</head>
+
+<body>
+
+<div layout:fragment="content">
+    <section class="shop-register-section py-5 bg-light">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="card shadow-sm border-0 rounded-3">
+                        <div class="card-body p-4 p-md-5">
+                            <h2 class="card-title text-center mb-4">Đăng Ký Cửa Hàng Của Bạn</h2>
+
+                            <!-- Hiển thị thông báo lỗi/thành công -->
+                            <div th:if="${errorMessage}" class="alert alert-danger" role="alert">
+                                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                <span th:text="${errorMessage}"></span>
+                            </div>
+                            <div th:if="${successMessage}" class="alert alert-success" role="alert">
+                                <i class="bi bi-check-circle-fill me-2"></i>
+                                <span th:text="${successMessage}"></span>
+                            </div>
+
+                            <!-- action URL chữ thường -->
+                            <form th:action="@{/vendor/shop/register}" th:object="${shopDTO}" method="post" enctype="multipart/form-data">
+                                <!-- Tên Cửa Hàng -->
+                                <div class="mb-3">
+                                    <label for="shopName" class="form-label">Tên cửa hàng <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="shopName" th:field="*{shopName}" required placeholder="Ví dụ: AloTra - Chi nhánh Thủ Đức">
+                                    <!-- Hiển thị lỗi validation nếu có -->
+                                    <div th:if="${#fields.hasErrors('shopName')}" th:errors="*{shopName}" class="invalid-feedback d-block"></div>
+                                </div>
+
+                                <!-- Mô tả -->
+                                <div class="mb-3">
+                                    <label for="description" class="form-label">Mô tả cửa hàng</label>
+                                    <textarea class="form-control" id="description" th:field="*{description}" rows="4" placeholder="Giới thiệu về cửa hàng của bạn..."></textarea>
+                                </div>
+
+                                <!-- Địa chỉ -->
+                                <div class="mb-3">
+                                    <label for="address" class="form-label">Địa chỉ lấy hàng/Kho hàng <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="address" th:field="*{address}" required placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành phố">
+                                </div>
+
+                                <!-- Upload Logo -->
+                                <div class="mb-3">
+                                    <label for="logoFile" class="form-label">Logo cửa hàng</label>
+                                    <input class="form-control" type="file" id="logoFile" name="logoFile" accept="image/*">
+                                    <small class="form-text text-muted">Ảnh vuông, tối đa 5MB.</small>
+                                </div>
+
+                                <!-- Upload Banner -->
+                                <div class="mb-4">
+                                    <label for="bannerFile" class="form-label">Ảnh bìa (Banner)</label>
+                                    <input class="form-control" type="file" id="bannerFile" name="bannerFile" accept="image/*">
+                                    <small class="form-text text-muted">Ảnh ngang (tỷ lệ 16:9), tối đa 10MB.</small>
+                                </div>
+
+                                <!-- Nút Submit -->
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-primary btn-lg">Đăng Ký</button>
+                                </div>
+                            </form>
+                        </div> <!-- card-body -->
+                    </div> <!-- card -->
+                </div> <!-- col -->
+            </div> <!-- row -->
+        </div> <!-- container -->
+    </section>
+</div>
+
+</body>
+</html>

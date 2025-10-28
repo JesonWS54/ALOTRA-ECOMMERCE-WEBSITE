@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{user/layout-user}">
+<head>
+    <title>Trang chủ User - AloTra</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <!-- Introduction Section -->
+        <section class="intro-section py-5 text-center text-white"
+                 style="background: linear-gradient(rgba(0, 123, 255, 0.7), rgba(0, 86, 179, 0.7)), url('https://placehold.co/1920x400/cccccc/ffffff?text=Background+Trà+Sữa') center center/cover no-repeat;"
+                 th:style="'background: linear-gradient(rgba(0, 123, 255, 0.7), rgba(0, 86, 179, 0.7)), url(' + @{/assets/img/user-home-bg.jpg} + ') center center/cover no-repeat;'"
+                 data-aos="fade-in">
+            <div class="container">
+                <h1 class="display-4 fw-bold mb-3">Khám phá thế giới Trà Sữa!</h1>
+                <p class="lead mb-4">Tìm kiếm hương vị yêu thích của bạn từ hàng trăm lựa chọn.</p>
+                <a th:href="@{/user/menu}" class="btn btn-lg btn-light">Xem Menu Ngay</a>
+            </div>
+        </section>
+
+        <!-- Phần Sản phẩm bán chạy -->
+        <section id="best-selling" class="best-selling py-5">
+            <div class="container">
+                <div class="section-header text-center mb-4" data-aos="fade-up">
+                    <h2>Sản Phẩm Bán Chạy Nổi Bật</h2>
+                    <p>Những lựa chọn hàng đầu được yêu thích nhất (>10 lượt mua)</p>
+                </div>
+
+                <!-- Kiểm tra nếu danh sách rỗng -->
+                <div th:if="${topSellingProducts == null || topSellingProducts.isEmpty()}" class="alert alert-info text-center" role="alert" data-aos="fade-up">
+                    Chưa có sản phẩm bán chạy nào nổi bật (>10 lượt mua).
+                </div>
+
+                <!-- Hiển thị sản phẩm nếu danh sách không rỗng -->
+                <div th:if="${topSellingProducts != null && !topSellingProducts.isEmpty()}" class="row g-4 row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4">
+                    <!-- Lặp qua danh sách sản phẩm bán chạy -->
+                    <div th:each="product, iterStat : ${topSellingProducts}" class="col" data-aos="fade-up" th:attr="data-aos-delay=${(iterStat.index + 1) * 100}">
+                        <div class="card h-100 product-card shadow-sm border-0">
+                             <a href="#"> <!-- TODO: Link to product detail page -->
+                                <img src="https://placehold.co/400x300/F0F0F0/555?text=AloTra"
+                                     class="card-img-top"
+                                     th:alt="${product.name}"
+                                     onerror="this.src='https://placehold.co/400x300/F0F0F0/555?text=AloTra'">
+                                     <!-- Lưu ý: Query hiện tại không lấy ảnh -->
+                             </a>
+                            <div class="card-body text-center d-flex flex-column">
+                                <h5 class="card-title product-name">
+                                    <a href="#" th:text="${product.name}">Tên sản phẩm</a> <!-- TODO: Link to product detail page -->
+                                </h5>
+                                <p class="card-text product-shop mb-2">
+                                    <small class="text-muted" th:text="${'Cửa hàng: ' + product.shopName}">Tên Cửa hàng</small>
+                                </p>
+                                <p class="card-text product-price mt-auto" th:text="${#numbers.formatDecimal(product.basePrice, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">Giá tiền</p>
+                                <div class="mt-2 product-actions">
+                                     <a href="#" class="btn btn-sm btn-outline-primary me-1" title="Thêm vào giỏ"><i class="bi bi-cart-plus"></i></a>
+                                     <a href="#" class="btn btn-sm btn-outline-danger" title="Yêu thích"><i class="bi bi-heart"></i></a>
+                                </div>
+                            </div>
+                            <div class="card-footer bg-transparent border-0 text-center pb-3">
+                                <small class="text-muted" th:text="${'Đã bán: ' + product.soldCount}">Đã bán: 100+</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</body>
+</html>
+

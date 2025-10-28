@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    
+<!-- 
+    Đây là file Footer Fragment (Dùng chung)
+    Giống hệt file footer.html của web/
+-->
+<footer th:fragment="footer" class="footer">
+    <div class="container">
+        
+        <!-- Bố cục các cột nằm ngang (dùng Bootstrap 'row') -->
+        <div class="row gy-4">
+
+            <!-- Cột 1: Thông tin chung -->
+            <div class="col-lg-4 col-md-12 footer-info">
+                <a th:href="@{/user/home}" class="footer-logo d-inline-block">
+                    <!-- (Bạn nên tạo 1 logo màu tối cho nền sáng) -->
+                    <img src="https://placehold.co/150x40/333333/FFFFFF?text=AloTra+Logo" alt="AloTra Logo" th:src="@{/assets/img/logo-footer.png}" onerror="this.src='https://placehold.co/150x40/333333/FFFFFF?text=AloTra+Logo'">
+                </a>
+                <p class="mt-3">Thương hiệu trà sữa hàng đầu, mang đến hương vị tươi mới và trải nghiệm tuyệt vời cho giới trẻ.</p>
+                <div class="social-links mt-3">
+                    <a href="#"><i class="bi bi-twitter-x"></i></a>
+                    <a href="#"><i class="bi bi-facebook"></i></a>
+                    <a href="#"><i class="bi bi-instagram"></i></a>
+                    <a href="#"><i class="bi bi-tiktok"></i></a>
+                </div>
+            </div>
+
+            <!-- Cột 2: Link Về AloTra -->
+            <div class="col-lg-2 col-6">
+                <h4 class="footer-heading">Về AloTra</h4>
+                <ul class="footer-links">
+                    <li><a href="#">Về chúng tôi</a></li>
+                    <li><a href="#">Cơ hội nghề nghiệp</a></li>
+                    <li><a href="#">Cửa hàng</a></li>
+                    <li><a href="#">Chính sách</a></li>
+                </ul>
+            </div>
+
+            <!-- Cột 3: Link Sản phẩm -->
+            <div class="col-lg-2 col-6">
+                <h4 class="footer-heading">Sản phẩm</h4>
+                <ul class="footer-links">
+                    <li><a th:href="@{/user/menu}">Trà Sữa</a></li>
+                    <li><a th:href="@{/user/menu}">Trà Trái Cây</a></li>
+                    <li><a th:href="@{/user/menu}">Đá Xay</a></li>
+                    <li><a th:href="@{/user/menu}">Topping</a></li>
+                </ul>
+            </div>
+
+            <!-- Cột 4: Liên hệ -->
+            <div class="col-lg-4 col-md-12 footer-contact">
+                <h4 class="footer-heading">Liên hệ</h4>
+                <p>
+                    <strong>Địa chỉ:</strong> 123 Đường ABC, Q.1, TP.HCM<br>
+                    <strong>Điện thoại:</strong> 0123 456 789<br>
+                    <strong>Email:</strong> support@alotra.com<br>
+                </p>
+            </div>
+        </div> 
+    </div>
+
+    <!-- Hàng Copyright (Nằm ngang) -->
+    <div class="footer-bottom">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12 text-center">
+                    <p class="mb-0">© Copyright <strong>AloTra 2025</strong>. All Rights Reserved.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+</body>
+</html>

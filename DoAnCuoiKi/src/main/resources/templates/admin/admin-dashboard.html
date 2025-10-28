@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{admin/layout-admin}">
+
+<head>
+    <title>Admin Dashboard - AloTra</title>
+    <style>
+        /* CSS chung */
+        .avatar-thumbnail { width: 40px; height: 40px; object-fit: cover; border-radius: 50%; }
+        .product-thumbnail-admin { width: 50px; height: 50px; object-fit: cover; border-radius: 0.25rem; }
+        .category-thumbnail-admin { width: 50px; height: 50px; object-fit: contain; border-radius: 0.25rem; background-color: #f8f9fa; }
+        .table th { font-weight: 600; }
+        .modal-body label { font-weight: 500; }
+        .nav-tabs .nav-link.active { font-weight: 600; color: var(--primary-color); border-color: #dee2e6 #dee2e6 var(--primary-color); }
+        /* Màu trạng thái */
+        .badge.bg-success { background-color: #198754 !important; }
+        .badge.bg-warning { background-color: #ffc107 !important; color: #343a40 !important; }
+        .badge.bg-danger { background-color: #dc3545 !important; }
+        .badge.bg-secondary { background-color: #6c757d !important; }
+        .badge.bg-info { background-color: #0dcaf0 !important; }
+        /* Căn chỉnh nút trong bảng */
+        td .btn, td form { margin-bottom: 0.1rem; }
+    </style>
+</head>
+
+<body>
+
+<div layout:fragment="content">
+    <section class="admin-dashboard py-5">
+        <div class="container-fluid px-lg-4"> <!-- Use fluid container for wider view -->
+
+            <div class="section-header mb-4">
+                <h2>Admin Dashboard</h2>
+            </div>
+
+            <!--/* Thông báo thành công/lỗi chung */-->
+            <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+                 <i class="bi bi-check-circle-fill me-2"></i><span th:text="${successMessage}"></span>
+                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                 <i class="bi bi-exclamation-triangle-fill me-2"></i><span th:text="${errorMessage}"></span>
+                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+
+            <!-- Nav tabs -->
+            <ul class="nav nav-tabs nav-fill mb-0" id="adminTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" th:classappend="${activeTab == 'accounts' ? 'active' : ''}" id="accounts-tab" data-bs-toggle="tab" data-bs-target="#accounts-tab-pane" type="button" role="tab">Tài Khoản</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" th:classappend="${activeTab == 'products' ? 'active' : ''}" id="products-tab" data-bs-toggle="tab" data-bs-target="#products-tab-pane" type="button" role="tab">Sản Phẩm</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" th:classappend="${activeTab == 'categories' ? 'active' : ''}" id="categories-tab" data-bs-toggle="tab" data-bs-target="#categories-tab-pane" type="button" role="tab">Danh Mục</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link disabled" th:classappend="${activeTab == 'carriers' ? 'active' : ''}" id="carriers-tab" data-bs-toggle="tab" data-bs-target="#carriers-tab-pane" type="button" role="tab">Nhà Vận Chuyển</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link disabled" th:classappend="${activeTab == 'commissions' ? 'active' : ''}" id="commissions-tab" data-bs-toggle="tab" data-bs-target="#commissions-tab-pane" type="button" role="tab">Chiết Khấu</button>
+                </li>
+                 <li class="nav-item" role="presentation">
+                    <button class="nav-link disabled" th:classappend="${activeTab == 'vouchers' ? 'active' : ''}" id="vouchers-tab" data-bs-toggle="tab" data-bs-target="#vouchers-tab-pane" type="button" role="tab">Khuyến Mãi</button>
+                </li>
+            </ul>
+
+            <!-- Tab panes -->
+            <div class="tab-content border border-top-0 rounded-bottom p-4 bg-white shadow-sm" id="adminTabsContent">
+
+                <!-- Tab Quản Lý Tài Khoản -->
+                <div class="tab-pane fade" th:classappend="${activeTab == 'accounts' ? 'show active' : ''}" id="accounts-tab-pane" role="tabpanel" aria-labelledby="accounts-tab" tabindex="0">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4>Quản Lý Tài Khoản</h4>
+                        <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addAccountModal"> <i class="bi bi-person-plus-fill me-1"></i>Thêm Tài Khoản </button>
+                    </div>
+                    <!-- Thông báo lỗi validation -->
+                    <div th:if="${param.error == 'addAccount' and #fields.hasErrors('newAccount.*')}" class="alert alert-danger">Kiểm tra lại form Thêm.</div>
+                    <div th:if="${param.error == 'editAccount' and #fields.hasErrors('editAccount.*')}" class="alert alert-danger">Kiểm tra lại form Sửa.</div>
+
+                    <div th:if="${accountsPage == null or accountsPage.empty}"> <p class="text-muted">Không có tài khoản nào.</p> </div>
+
+                    <div th:unless="${accountsPage == null or accountsPage.empty}" class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead> <tr> <th>ID</th> <th>Avatar</th> <th>Username</th> <th>Email</th> <th>Họ Tên</th> <th>SĐT</th> <th>Vai Trò</th> <th>Trạng Thái</th> <th>Hành Động</th> </tr> </thead>
+                            <tbody>
+                                <tr th:each="acc : ${accountsPage.content}">
+                                    <td th:text="${acc.id}"></td>
+                                    <td> <img th:src="${acc.avatarUrl ?: 'https://placehold.co/40x40/eee/ccc?text=AV'}" class="avatar-thumbnail" alt="Avatar"> </td>
+                                    <td th:text="${acc.username}"></td>
+                                    <td th:text="${acc.email}"></td>
+                                    <td th:text="${acc.fullName ?: '-'}"></td>
+                                    <td th:text="${acc.phone ?: '-'}"></td>
+                                    <td> <span class="badge" th:classappend="${#strings.equalsIgnoreCase(acc.role,'ADMIN')} ? 'bg-danger' : (${#strings.equalsIgnoreCase(acc.role,'VENDOR')} ? 'bg-info' : (${#strings.equalsIgnoreCase(acc.role,'SHIPPER')} ? 'bg-warning text-dark' : 'bg-success'))" th:text="${acc.role}"></span> </td>
+                                    <td> <span class="badge" th:classappend="${acc.isLocked} ? 'bg-secondary' : (${acc.isActive} ? 'bg-success' : 'bg-warning text-dark')" th:text="${acc.isLocked} ? 'Đã khóa' : (${acc.isActive} ? 'Hoạt động' : 'Chưa kích hoạt')"></span> </td>
+                                    <td class="text-nowrap">
+                                        <button class="btn btn-sm btn-outline-secondary me-1 edit-account-btn" th:attr="data-account-id=${acc.id}" data-bs-toggle="modal" data-bs-target="#editAccountModal" title="Sửa"><i class="bi bi-pencil"></i></button>
+                                        <!-- Chỉ hiển thị Khóa/Mở/Xóa cho NON-ADMIN -->
+                                        <th:block th:unless="${#strings.equalsIgnoreCase(acc.role,'ADMIN')}">
+                                            <form th:if="${!acc.isLocked}" th:action="@{/admin/accounts/lock/{id}(id=${acc.id})}" method="post" class="d-inline" onsubmit="return confirm('Khóa tài khoản này?')">
+                                                <button type="submit" class="btn btn-sm btn-outline-warning me-1" title="Khóa"><i class="bi bi-lock"></i></button>
+                                            </form>
+                                            <form th:if="${acc.isLocked}" th:action="@{/admin/accounts/unlock/{id}(id=${acc.id})}" method="post" class="d-inline" onsubmit="return confirm('Mở khóa tài khoản này?')">
+                                                <button type="submit" class="btn btn-sm btn-outline-success me-1" title="Mở khóa"><i class="bi bi-unlock"></i></button>
+                                            </form>
+                                            <form th:action="@{/admin/accounts/delete/{id}(id=${acc.id})}" method="post" class="d-inline" onsubmit="return confirm('XÓA tài khoản này? KHÔNG thể hoàn tác!')">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Xóa"><i class="bi bi-trash"></i></button>
+                                            </form>
+                                        </th:block>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- Phân trang Accounts -->
+                    <nav th:if="${accountsPage != null and accountsPage.totalPages > 1}" aria-label="Account pagination" class="mt-4 d-flex justify-content-center"> <ul class="pagination pagination-sm"> <li class="page-item" th:classappend="${accountsPage.first ? 'disabled' : ''}"> <a class="page-link" th:href="@{/admin/dashboard(tab='accounts', accountPage=${accountsPage.number - 1}, accountSize=${accountsPage.size}, accountSort=${currentAccountSort})}">&laquo;</a> </li> <th:block th:with="sP=${T(java.lang.Math).max(0, accountsPage.number - 2)}, eP=${T(java.lang.Math).min(accountsPage.totalPages - 1, accountsPage.number + 2)}"> <li class="page-item" th:if="${sP > 0}"><a class="page-link" th:href="@{/admin/dashboard(tab='accounts', accountPage=0, accountSize=${accountsPage.size}, accountSort=${currentAccountSort})}">1</a></li> <li class="page-item disabled" th:if="${sP > 1}"><span class="page-link">...</span></li> <li class="page-item" th:each="i : ${#numbers.sequence(sP, eP)}" th:classappend="${i == accountsPage.number ? 'active' : ''}"> <a class="page-link" th:href="@{/admin/dashboard(tab='accounts', accountPage=${i}, accountSize=${accountsPage.size}, accountSort=${currentAccountSort})}" th:text="${i + 1}"></a> </li> <li class="page-item disabled" th:if="${eP < accountsPage.totalPages - 2}"><span class="page-link">...</span></li> <li class="page-item" th:if="${eP < accountsPage.totalPages - 1}"><a class="page-link" th:href="@{/admin/dashboard(tab='accounts', accountPage=${accountsPage.totalPages - 1}, accountSize=${accountsPage.size}, accountSort=${currentAccountSort})}" th:text="${accountsPage.totalPages}"></a></li> </th:block> <li class="page-item" th:classappend="${accountsPage.last ? 'disabled' : ''}"> <a class="page-link" th:href="@{/admin/dashboard(tab='accounts', accountPage=${accountsPage.number + 1}, accountSize=${accountsPage.size}, accountSort=${currentAccountSort})}">&raquo;</a> </li> </ul> </nav>
+                </div>
+
+                <!-- Tab Quản Lý Sản Phẩm (Admin) -->
+                <div class="tab-pane fade" th:classappend="${activeTab == 'products' ? 'show active' : ''}" id="products-tab-pane" role="tabpanel" aria-labelledby="products-tab" tabindex="0">
+                    <h4>Quản Lý Sản Phẩm (Tất cả Shop)</h4>
+                    <!-- Thông báo lỗi validation -->
+                     <div th:if="${param.error == 'editProductAdmin' and #fields.hasErrors('editProductAdmin.*')}" class="alert alert-danger">Kiểm tra lại form Sửa.</div>
+
+                    <div th:if="${allProductsPage == null or allProductsPage.empty}"> <p class="text-muted">Không có sản phẩm nào.</p> </div>
+
+                    <div th:unless="${allProductsPage == null or allProductsPage.empty}" class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead> <tr> <th>ID</th> <th>Ảnh</th> <th>Tên</th> <th>Danh Mục</th> <th>Cửa Hàng</th> <th>Giá</th> <th>Kho</th> <th>Trạng Thái</th> <th>Hành Động</th> </tr> </thead>
+                            <tbody>
+                                <tr th:each="prod : ${allProductsPage.content}">
+                                    <td th:text="${prod.id}"></td>
+                                    <td> <img th:src="${prod.thumbnailUrl ?: 'https://placehold.co/50x50/eee/ccc?text=SP'}" class="product-thumbnail-admin" alt="Ảnh"> </td>
+                                    <td th:text="${prod.name}"></td>
+                                    <td th:text="${prod.categoryName}"></td>
+                                    <td th:text="${prod.shopName}"></td>
+                                    <td th:text="${#numbers.formatDecimal(prod.basePrice, 0, 'POINT', 0, 'COMMA')} + ' VNĐ'"></td>
+                                    <td th:text="${prod.stockQuantity}"></td>
+                                    <td> <span class="badge" th:classappend="${#strings.equalsIgnoreCase(prod.status,'ACTIVE') ? 'bg-success' : 'bg-secondary'}" th:text="${prod.status}"></span> </td>
+                                    <td class="text-nowrap">
+                                        <button class="btn btn-sm btn-outline-secondary me-1 edit-product-admin-btn" th:attr="data-product-id=${prod.id}" data-bs-toggle="modal" data-bs-target="#editProductAdminModal" title="Sửa"><i class="bi bi-pencil"></i></button>
+                                        <form th:action="@{/admin/products/delete-admin/{id}(id=${prod.id})}" method="post" class="d-inline delete-product-admin-form" onsubmit="return confirm('XÓA sản phẩm này? KHÔNG thể hoàn tác!')">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Xóa"><i class="bi bi-trash"></i></button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- Phân trang Products (Admin) -->
+                    <nav th:if="${allProductsPage != null and allProductsPage.totalPages > 1}" aria-label="Admin Product pagination" class="mt-4 d-flex justify-content-center"> <ul class="pagination pagination-sm"> <li class="page-item" th:classappend="${allProductsPage.first ? 'disabled' : ''}"> <a class="page-link" th:href="@{/admin/dashboard(tab='products', productPage=${allProductsPage.number - 1}, productSize=${allProductsPage.size}, productSort=${currentProductSort})}">&laquo;</a> </li> <th:block th:with="sP=${T(java.lang.Math).max(0, allProductsPage.number - 2)}, eP=${T(java.lang.Math).min(allProductsPage.totalPages - 1, allProductsPage.number + 2)}"> <li class="page-item" th:if="${sP > 0}"><a class="page-link" th:href="@{/admin/dashboard(tab='products', productPage=0, productSize=${allProductsPage.size}, productSort=${currentProductSort})}">1</a></li> <li class="page-item disabled" th:if="${sP > 1}"><span class="page-link">...</span></li> <li class="page-item" th:each="i : ${#numbers.sequence(sP, eP)}" th:classappend="${i == allProductsPage.number ? 'active' : ''}"> <a class="page-link" th:href="@{/admin/dashboard(tab='products', productPage=${i}, productSize=${allProductsPage.size}, productSort=${currentProductSort})}" th:text="${i + 1}"></a> </li> <li class="page-item disabled" th:if="${eP < allProductsPage.totalPages - 2}"><span class="page-link">...</span></li> <li class="page-item" th:if="${eP < allProductsPage.totalPages - 1}"><a class="page-link" th:href="@{/admin/dashboard(tab='products', productPage=${allProductsPage.totalPages - 1}, productSize=${allProductsPage.size}, productSort=${currentProductSort})}" th:text="${allProductsPage.totalPages}"></a></li> </th:block> <li class="page-item" th:classappend="${allProductsPage.last ? 'disabled' : ''}"> <a class="page-link" th:href="@{/admin/dashboard(tab='products', productPage=${allProductsPage.number + 1}, productSize=${allProductsPage.size}, productSort=${currentProductSort})}">&raquo;</a> </li> </ul> </nav>
+                </div>
+
+                <!-- Tab Quản Lý Danh Mục -->
+                <div class="tab-pane fade" th:classappend="${activeTab == 'categories' ? 'show active' : ''}" id="categories-tab-pane" role="tabpanel" aria-labelledby="categories-tab" tabindex="0">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4>Quản Lý Danh Mục</h4>
+                        <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addCategoryModal"> <i class="bi bi-tags-fill me-1"></i>Thêm Danh Mục </button>
+                    </div>
+                    <!-- Thông báo lỗi validation -->
+                    <div th:if="${param.error == 'addCategory' and #fields.hasErrors('newCategory.*')}" class="alert alert-danger">Kiểm tra lại form Thêm.</div>
+                    <div th:if="${param.error == 'editCategory' and #fields.hasErrors('editCategory.*')}" class="alert alert-danger">Kiểm tra lại form Sửa.</div>
+
+                    <div th:if="${allCategoriesPage == null or allCategoriesPage.empty}"> <p class="text-muted">Không có danh mục nào.</p> </div>
+
+                    <div th:unless="${allCategoriesPage == null or allCategoriesPage.empty}" class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead> <tr> <th>ID</th> <th>Ảnh</th> <th>Tên Danh Mục</th> <th>Danh Mục Cha</th> <th>Trạng Thái</th> <th>Hành Động</th> </tr> </thead>
+                            <tbody>
+                                <tr th:each="cat : ${allCategoriesPage.content}">
+                                    <td th:text="${cat.id}"></td>
+                                    <td> <img th:src="${cat.imageUrl ?: 'https://placehold.co/50x50/eee/ccc?text=Cat'}" class="category-thumbnail-admin" alt="Ảnh"> </td>
+                                    <td th:text="${cat.name}"></td>
+                                    <td th:text="${cat.parentName ?: '-'}"></td>
+                                    <td> <span class="badge" th:classappend="${cat.isActive} ? 'bg-success' : 'bg-secondary'" th:text="${cat.isActive} ? 'Hoạt động' : 'Ẩn'"></span> </td>
+                                    <td class="text-nowrap">
+                                        <button class="btn btn-sm btn-outline-secondary me-1 edit-category-btn" th:attr="data-category-id=${cat.id}" data-bs-toggle="modal" data-bs-target="#editCategoryModal" title="Sửa"><i class="bi bi-pencil"></i></button>
+                                        <form th:action="@{/admin/categories/delete/{id}(id=${cat.id})}" method="post" class="d-inline delete-category-form" onsubmit="return confirm('XÓA danh mục này? Sản phẩm thuộc danh mục này sẽ bị ảnh hưởng!')">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Xóa"><i class="bi bi-trash"></i></button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- Phân trang Categories -->
+                    <nav th:if="${allCategoriesPage != null and allCategoriesPage.totalPages > 1}" aria-label="Category pagination" class="mt-4 d-flex justify-content-center"> <ul class="pagination pagination-sm"> <li class="page-item" th:classappend="${allCategoriesPage.first ? 'disabled' : ''}"> <a class="page-link" th:href="@{/admin/dashboard(tab='categories', categoryPage=${allCategoriesPage.number - 1}, categorySize=${allCategoriesPage.size}, categorySort=${currentCategorySort})}">&laquo;</a> </li> <th:block th:with="sP=${T(java.lang.Math).max(0, allCategoriesPage.number - 2)}, eP=${T(java.lang.Math).min(allCategoriesPage.totalPages - 1, allCategoriesPage.number + 2)}"> <li class="page-item" th:if="${sP > 0}"><a class="page-link" th:href="@{/admin/dashboard(tab='categories', categoryPage=0, categorySize=${allCategoriesPage.size}, categorySort=${currentCategorySort})}">1</a></li> <li class="page-item disabled" th:if="${sP > 1}"><span class="page-link">...</span></li> <li class="page-item" th:each="i : ${#numbers.sequence(sP, eP)}" th:classappend="${i == allCategoriesPage.number ? 'active' : ''}"> <a class="page-link" th:href="@{/admin/dashboard(tab='categories', categoryPage=${i}, categorySize=${allCategoriesPage.size}, categorySort=${currentCategorySort})}" th:text="${i + 1}"></a> </li> <li class="page-item disabled" th:if="${eP < allCategoriesPage.totalPages - 2}"><span class="page-link">...</span></li> <li class="page-item" th:if="${eP < allCategoriesPage.totalPages - 1}"><a class="page-link" th:href="@{/admin/dashboard(tab='categories', categoryPage=${allCategoriesPage.totalPages - 1}, categorySize=${allCategoriesPage.size}, categorySort=${currentCategorySort})}" th:text="${allCategoriesPage.totalPages}"></a></li> </th:block> <li class="page-item" th:classappend="${allCategoriesPage.last ? 'disabled' : ''}"> <a class="page-link" th:href="@{/admin/dashboard(tab='categories', categoryPage=${allCategoriesPage.number + 1}, categorySize=${allCategoriesPage.size}, categorySort=${currentCategorySort})}">&raquo;</a> </li> </ul> </nav>
+                </div>
+
+                <!-- Tab Nhà Vận Chuyển (Placeholder) -->
+                <div class="tab-pane fade" th:classappend="${activeTab == 'carriers' ? 'show active' : ''}" id="carriers-tab-pane" role="tabpanel" aria-labelledby="carriers-tab" tabindex="0">
+                    <h4>Quản Lý Nhà Vận Chuyển</h4>
+                    <div class="alert alert-info">Chức năng đang được xây dựng.</div>
+                    <!-- TODO: Bảng Nhà Vận Chuyển, Modal Add/Edit -->
+                </div>
+
+                <!-- Tab Chiết Khấu (Placeholder) -->
+                <div class="tab-pane fade" th:classappend="${activeTab == 'commissions' ? 'show active' : ''}" id="commissions-tab-pane" role="tabpanel" aria-labelledby="commissions-tab" tabindex="0">
+                    <h4>Quản Lý Chiết Khấu Ứng Dụng</h4>
+                    <div class="alert alert-info">Chức năng đang được xây dựng.</div>
+                    <!-- TODO: Bảng Chiết Khấu, Modal Add/Edit -->
+                </div>
+
+                 <!-- Tab Khuyến Mãi Admin (Placeholder) -->
+                <div class="tab-pane fade" th:classappend="${activeTab == 'vouchers' ? 'show active' : ''}" id="vouchers-tab-pane" role="tabpanel" aria-labelledby="vouchers-tab" tabindex="0">
+                    <h4>Quản Lý Khuyến Mãi (Admin)</h4>
+                    <div class="alert alert-info">Chức năng đang được xây dựng.</div>
+                    <!-- TODO: Bảng Khuyến Mãi Admin, Modal Add/Edit -->
+                </div>
+
+            </div> <!-- /.tab-content -->
+
+        </div> <!-- /.container-fluid -->
+    </section>
+
+    <!-- ======================================================= -->
+    <!--                       MODALS                          -->
+    <!-- ======================================================= -->
+
+    <!-- Modal Thêm Tài Khoản -->
+    <div class="modal fade" id="addAccountModal" tabindex="-1"> <div class="modal-dialog modal-lg"> <div class="modal-content"> <form th:action="@{/admin/accounts/add}" th:object="${newAccount}" method="post"> <div class="modal-header"> <h5 class="modal-title">Thêm Tài Khoản Mới</h5> <button type="button" class="btn-close" data-bs-dismiss="modal"></button> </div> <div class="modal-body"> <div th:if="${param.error == 'addAccount' and #fields.hasErrors('newAccount.*')}" class="alert alert-danger">Kiểm tra lại.</div> <div class="row g-3"> <div class="col-md-6 mb-3"> <label>Username <span class="text-danger">*</span></label> <input type="text" class="form-control" th:field="*{username}" required> <div th:if="${#fields.hasErrors('username')}" th:errors="*{username}" class="invalid-feedback d-block"></div> </div> <div class="col-md-6 mb-3"> <label>Email <span class="text-danger">*</span></label> <input type="email" class="form-control" th:field="*{email}" required> <div th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="invalid-feedback d-block"></div> </div> <div class="col-md-6 mb-3"> <label>Mật khẩu <span class="text-danger">*</span></label> <input type="password" class="form-control" th:field="*{password}" required> <div th:if="${#fields.hasErrors('password')}" th:errors="*{password}" class="invalid-feedback d-block"></div> </div> <div class="col-md-6 mb-3"> <label>Họ Tên</label> <input type="text" class="form-control" th:field="*{fullName}"> </div> <div class="col-md-6 mb-3"> <label>SĐT</label> <input type="text" class="form-control" th:field="*{phone}"> <div th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}" class="invalid-feedback d-block"></div> </div> <div class="col-md-6 mb-3"> <label>Vai trò <span class="text-danger">*</span></label> <select class="form-select" th:field="*{role}" required> <option value="" disabled selected>Chọn...</option> <option value="USER">USER</option> <option value="VENDOR">VENDOR</option> <option value="SHIPPER">SHIPPER</option> <option value="ADMIN">ADMIN</option> </select> <div th:if="${#fields.hasErrors('role')}" th:errors="*{role}" class="invalid-feedback d-block"></div> </div> <div class="col-12 mb-3"> <div class="form-check"> <input class="form-check-input" type="checkbox" id="addIsActive" th:field="*{isActive}"> <label class="form-check-label" for="addIsActive"> Kích hoạt tài khoản </label> </div> </div> </div> </div> <div class="modal-footer"> <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button> <button type="submit" class="btn btn-primary">Lưu</button> </div> </form> </div> </div> </div>
+
+    <!-- Modal Sửa Tài Khoản -->
+    <div class="modal fade" id="editAccountModal" tabindex="-1"> <div class="modal-dialog modal-lg"> <div class="modal-content"> <form th:action="@{/admin/accounts/update/0}" th:object="${editAccount}" method="post" id="editAccountForm"> <input type="hidden" th:field="*{id}" id="editAccountId" /> <div class="modal-header"> <h5 class="modal-title">Chỉnh Sửa Tài Khoản</h5> <button type="button" class="btn-close" data-bs-dismiss="modal"></button> </div> <div class="modal-body"> <div th:if="${param.error == 'editAccount' and #fields.hasErrors('editAccount.*')}" class="alert alert-danger">Kiểm tra lại.</div> <div class="row g-3"> <div class="col-md-6 mb-3"> <label>Username</label> <input type="text" class="form-control" id="editUsername" th:field="*{username}" readonly disabled> </div> <div class="col-md-6 mb-3"> <label>Email</label> <input type="email" class="form-control" id="editEmail" th:field="*{email}" readonly disabled> </div> <div class="col-md-6 mb-3"> <label>Họ Tên</label> <input type="text" class="form-control" id="editFullName" th:field="*{fullName}"> <div th:if="${#fields.hasErrors('fullName')}" th:errors="*{fullName}" class="invalid-feedback d-block"></div> </div> <div class="col-md-6 mb-3"> <label>SĐT</label> <input type="text" class="form-control" id="editPhone" th:field="*{phone}"> <div th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}" class="invalid-feedback d-block"></div> </div> <div class="col-md-6 mb-3"> <label>Vai trò <span class="text-danger">*</span></label> <select class="form-select" id="editRole" th:field="*{role}" required> <option value="USER">USER</option> <option value="VENDOR">VENDOR</option> <option value="SHIPPER">SHIPPER</option> <option value="ADMIN">ADMIN</option> </select> <div th:if="${#fields.hasErrors('role')}" th:errors="*{role}" class="invalid-feedback d-block"></div> </div> <div class="col-md-6 mb-3"> <label>Trạng thái</label> <div class="form-check form-switch mt-2"> <input class="form-check-input" type="checkbox" role="switch" id="editIsActive" th:field="*{isActive}"> <label class="form-check-label" for="editIsActive">Kích hoạt</label> </div> <div class="form-check form-switch"> <input class="form-check-input" type="checkbox" role="switch" id="editIsLocked" th:field="*{isLocked}"> <label class="form-check-label" for="editIsLocked">Khóa</label> </div> </div> </div> </div> <div class="modal-footer"> <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button> <button type="submit" class="btn btn-primary">Lưu Thay Đổi</button> </div> </form> </div> </div> </div>
+
+    <!-- Modal Sửa Sản Phẩm (Admin) -->
+    <div class="modal fade" id="editProductAdminModal" tabindex="-1"> <div class="modal-dialog modal-lg"> <div class="modal-content"> <form th:action="@{/admin/products/update-admin/0}" th:object="${editProductAdmin}" method="post" id="editProductAdminForm"> <input type="hidden" th:field="*{id}" id="editProductAdminId" /> <div class="modal-header"> <h5 class="modal-title">Sửa Sản Phẩm (Admin)</h5> <button type="button" class="btn-close" data-bs-dismiss="modal"></button> </div> <div class="modal-body"> <div th:if="${param.error == 'editProductAdmin' and #fields.hasErrors('editProductAdmin.*')}" class="alert alert-danger">Kiểm tra lại.</div> <div class="mb-3"> <label>Tên <span class="text-danger">*</span></label> <input type="text" class="form-control" id="editProductAdminName" th:field="*{name}" required> <div th:if="${#fields.hasErrors('name')}" th:errors="*{name}" class="invalid-feedback d-block"></div> </div> <div class="row"> <div class="col-md-6 mb-3"> <label>Danh Mục <span class="text-danger">*</span></label> <select class="form-select" id="editProductAdminCategory" th:field="*{categoryId}" required> <option disabled value="">Chọn...</option> <option th:each="cat : ${categories}" th:value="${cat.id}" th:text="${cat.name}"></option> </select> <div th:if="${#fields.hasErrors('categoryId')}" th:errors="*{categoryId}" class="invalid-feedback d-block"></div> </div> <div class="col-md-6 mb-3"> <label>Giá <span class="text-danger">*</span></label> <input type="number" class="form-control" id="editProductAdminPrice" th:field="*{basePrice}" step="1000" min="0" required> <div th:if="${#fields.hasErrors('basePrice')}" th:errors="*{basePrice}" class="invalid-feedback d-block"></div> </div> </div> <div class="mb-3"> <label>Mô tả</label> <textarea class="form-control" id="editProductAdminDescription" th:field="*{description}" rows="3"></textarea> </div> <div class="mb-3"> <label>Kho <span class="text-danger">*</span></label> <input type="number" class="form-control" id="editProductAdminStock" th:field="*{stockQuantity}" min="0" required> <div th:if="${#fields.hasErrors('stockQuantity')}" th:errors="*{stockQuantity}" class="invalid-feedback d-block"></div> </div> <div class="mb-3"> <label>Trạng thái <span class="text-danger">*</span></label> <select class="form-select" id="editProductAdminStatus" th:field="*{status}" required> <option value="ACTIVE">ACTIVE</option> <option value="INACTIVE">INACTIVE</option> <option value="OUT_OF_STOCK">OUT_OF_STOCK</option> </select> </div> </div> <div class="modal-footer"> <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button> <button type="submit" class="btn btn-primary">Lưu Thay Đổi</button> </div> </form> </div> </div> </div>
+
+    <!-- Modal Thêm Danh Mục -->
+    <div class="modal fade" id="addCategoryModal" tabindex="-1"> <div class="modal-dialog modal-lg"> <div class="modal-content"> <form th:action="@{/admin/categories/add}" th:object="${newCategory}" method="post" enctype="multipart/form-data"> <div class="modal-header"> <h5 class="modal-title">Thêm Danh Mục Mới</h5> <button type="button" class="btn-close" data-bs-dismiss="modal"></button> </div> <div class="modal-body"> <div th:if="${param.error == 'addCategory' and #fields.hasErrors('newCategory.*')}" class="alert alert-danger">Kiểm tra lại.</div> <div class="mb-3"> <label>Tên Danh Mục <span class="text-danger">*</span></label> <input type="text" class="form-control" th:field="*{name}" required> <div th:if="${#fields.hasErrors('name')}" th:errors="*{name}" class="invalid-feedback d-block"></div> </div> <div class="mb-3"> <label>Danh Mục Cha</label> <select class="form-select" th:field="*{parentId}"> <option value="" selected>-- Là danh mục gốc --</option> <option th:each="rootCat : ${rootCategories}" th:value="${rootCat.id}" th:text="${rootCat.name}"></option> <!-- TODO: Load cả sub categories nếu cần --> </select> </div> <div class="mb-3"> <label>Ảnh đại diện</label> <input class="form-control" type="file" name="imageFile" accept="image/*"> </div> <div class="form-check form-switch mb-3"> <input class="form-check-input" type="checkbox" role="switch" id="addIsActiveCat" th:field="*{isActive}" th:checked="${newCategory.isActive == null or newCategory.isActive}"> <label class="form-check-label" for="addIsActiveCat">Kích hoạt</label> </div> </div> <div class="modal-footer"> <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button> <button type="submit" class="btn btn-primary">Lưu</button> </div> </form> </div> </div> </div>
+
+    <!-- Modal Sửa Danh Mục -->
+    <div class="modal fade" id="editCategoryModal" tabindex="-1"> <div class="modal-dialog modal-lg"> <div class="modal-content"> <form th:action="@{/admin/categories/update/0}" th:object="${editCategory}" method="post" enctype="multipart/form-data" id="editCategoryForm"> <input type="hidden" th:field="*{id}" id="editCategoryId" /> <div class="modal-header"> <h5 class="modal-title">Chỉnh Sửa Danh Mục</h5> <button type="button" class="btn-close" data-bs-dismiss="modal"></button> </div> <div class="modal-body"> <div th:if="${param.error == 'editCategory' and #fields.hasErrors('editCategory.*')}" class="alert alert-danger">Kiểm tra lại.</div> <div class="mb-3"> <label>Tên Danh Mục <span class="text-danger">*</span></label> <input type="text" class="form-control" id="editCategoryName" th:field="*{name}" required> <div th:if="${#fields.hasErrors('name')}" th:errors="*{name}" class="invalid-feedback d-block"></div> </div> <div class="mb-3"> <label>Danh Mục Cha</label> <select class="form-select" id="editCategoryParent" th:field="*{parentId}"> <option value="" selected>-- Là danh mục gốc --</option> <option th:each="rootCat : ${rootCategories}" th:value="${rootCat.id}" th:text="${rootCat.name}"></option> <!-- TODO: Load cả sub, loại trừ chính nó và con cháu --> </select> </div> <div class="mb-3"> <label>Ảnh hiện tại</label> <div> <img id="editCategoryImagePreview" src="https://placehold.co/100x100/eee/ccc?text=Img" style="max-height: 80px;" class="img-thumbnail mb-2"> </div> <label>Thay đổi ảnh</label> <input class="form-control" type="file" name="editImageFile" accept="image/*"> </div> <div class="form-check form-switch mb-3"> <input class="form-check-input" type="checkbox" role="switch" id="editIsActiveCat" th:field="*{isActive}"> <label class="form-check-label" for="editIsActiveCat">Kích hoạt</label> </div> </div> <div class="modal-footer"> <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button> <button type="submit" class="btn btn-primary">Lưu Thay Đổi</button> </div> </form> </div> </div> </div>
+
+    <!-- TODO: Add Modals for Shipping Carriers -->
+    <!-- TODO: Add Modals for App Commissions -->
+    <!-- TODO: Add Modals for Admin Vouchers -->
+
+</div> <!-- /.layout-fragment -->
+
+<th:block layout:fragment="scripts">
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        // --- Khai báo biến global ---
+        let editAccountModalInstance = null;
+        let editProductAdminModalInstance = null;
+        let editCategoryModalInstance = null;
+
+        // --- Logic lấy params và flags ---
+        const urlParams = new URLSearchParams(window.location.search);
+        const addAccountError = urlParams.get('error') === 'addAccount';
+        const editAccountError = urlParams.get('error') === 'editAccount';
+        const editProductAdminError = urlParams.get('error') === 'editProductAdmin';
+        const addCategoryError = urlParams.get('error') === 'addCategory';
+        const editCategoryError = urlParams.get('error') === 'editCategory';
+
+        const accountIdWithError = /*[[${accountIdWithError}]]*/ false;
+        const productIdWithError = /*[[${productIdWithError}]]*/ false;
+        const categoryIdWithError = /*[[${categoryIdWithError}]]*/ false;
+
+        const hasAddAccountErrors = /*[[${#fields.hasErrors('newAccount.*')}]]*/ false;
+        const hasEditAccountErrors = /*[[${#fields.hasErrors('editAccount.*')}]]*/ false;
+        const hasEditProductAdminErrors = /*[[${#fields.hasErrors('editProductAdmin.*')}]]*/ false;
+        const hasAddCategoryErrors = /*[[${#fields.hasErrors('newCategory.*')}]]*/ false;
+        const hasEditCategoryErrors = /*[[${#fields.hasErrors('editCategory.*')}]]*/ false;
+
+
+        document.addEventListener('DOMContentLoaded', () => {
+              // --- Khởi tạo modal instances ---
+              const addAccountModalEl = document.getElementById('addAccountModal');
+              const editAccountModalEl = document.getElementById('editAccountModal');
+              const editProductAdminModalEl = document.getElementById('editProductAdminModal');
+              const addCategoryModalEl = document.getElementById('addCategoryModal');
+              const editCategoryModalEl = document.getElementById('editCategoryModal');
+
+              if (editAccountModalEl) { editAccountModalInstance = new bootstrap.Modal(editAccountModalEl); }
+              if (editProductAdminModalEl) { editProductAdminModalInstance = new bootstrap.Modal(editProductAdminModalEl); }
+              if (editCategoryModalEl) { editCategoryModalInstance = new bootstrap.Modal(editCategoryModalEl); }
+
+              // --- Logic mở modal khi lỗi ---
+              if (addAccountError || hasAddAccountErrors) { if(addAccountModalEl) new bootstrap.Modal(addAccountModalEl).show(); }
+              if (accountIdWithError && (editAccountError || hasEditAccountErrors)) { loadAccountForEdit(accountIdWithError, true); }
+              if (productIdWithError && (editProductAdminError || hasEditProductAdminErrors)) { loadProductForEditAdmin(productIdWithError, true); }
+              if (addCategoryError || hasAddCategoryErrors) { if(addCategoryModalEl) new bootstrap.Modal(addCategoryModalEl).show(); }
+              if (categoryIdWithError && (editCategoryError || hasEditCategoryErrors)) { loadCategoryForEdit(categoryIdWithError, true); }
+
+             // --- Gắn event listener cho nút sửa ---
+             const editAccountButtons = document.querySelectorAll('.edit-account-btn');
+             editAccountButtons.forEach(button => { button.addEventListener('click', () => { loadAccountForEdit(button.getAttribute('data-account-id')); }); });
+
+             const editProductAdminButtons = document.querySelectorAll('.edit-product-admin-btn');
+             editProductAdminButtons.forEach(button => { button.addEventListener('click', () => { loadProductForEditAdmin(button.getAttribute('data-product-id')); }); });
+
+             const editCategoryButtons = document.querySelectorAll('.edit-category-btn');
+             editCategoryButtons.forEach(button => { button.addEventListener('click', () => { loadCategoryForEdit(button.getAttribute('data-category-id')); }); });
+
+        }); // End DOMContentLoaded
+
+        // --- HÀM LOAD ACCOUNT ---
+         async function loadAccountForEdit(accountId, forceShowOnError = false) {
+             if (!editAccountModalInstance) { console.error("Edit account modal instance not found!"); return; }
+             const form = document.getElementById('editAccountForm');
+             const errorDiv = editAccountModalInstance._element.querySelector('.alert-danger');
+             if(form) form.reset(); if(errorDiv) errorDiv.style.display = 'none';
+             if(form) { const baseUrl = /*[[@{/admin/accounts/update/}]]*/ ''; form.action = baseUrl + accountId; }
+             try {
+                 const apiUrl = /*[[@{/admin/accounts/}]]*/ '' + accountId + '/edit';
+                 const response = await fetch(apiUrl); if (!response.ok) { throw new Error(`Status: ${response.status}`); } const acc = await response.json();
+                 document.getElementById('editAccountId').value = acc.id ?? ''; document.getElementById('editUsername').value = acc.username ?? ''; document.getElementById('editEmail').value = acc.email ?? '';
+                 document.getElementById('editFullName').value = acc.fullName ?? ''; document.getElementById('editPhone').value = acc.phone ?? ''; document.getElementById('editRole').value = acc.role ?? '';
+                 document.getElementById('editIsActive').checked = acc.isActive ?? false; document.getElementById('editIsLocked').checked = acc.isLocked ?? false;
+                 if (forceShowOnError || !hasEditAccountErrors) { editAccountModalInstance.show(); }
+             } catch (error) { console.error('[loadAccountForEdit] Error:', error); alert('Lỗi tải dữ liệu tài khoản.'); if (forceShowOnError) { editAccountModalInstance.show(); } }
+         }
+
+        // --- HÀM LOAD PRODUCT (ADMIN) ---
+         async function loadProductForEditAdmin(productId, forceShowOnError = false) {
+             if (!editProductAdminModalInstance) { console.error("Edit product admin modal instance not found!"); return; }
+             const form = document.getElementById('editProductAdminForm');
+             const errorDiv = editProductAdminModalInstance._element.querySelector('.alert-danger');
+             if(form) form.reset(); if(errorDiv) errorDiv.style.display = 'none';
+             if(form) { const baseUrl = /*[[@{/admin/products/update-admin/}]]*/ ''; form.action = baseUrl + productId; }
+             try {
+                 const apiUrl = /*[[@{/admin/products/}]]*/ '' + productId + '/edit-admin';
+                 const response = await fetch(apiUrl); if (!response.ok) { throw new Error(`Status: ${response.status}`); } const prod = await response.json();
+                 document.getElementById('editProductAdminId').value = prod.id ?? ''; document.getElementById('editProductAdminName').value = prod.name ?? ''; document.getElementById('editProductAdminCategory').value = prod.categoryId ?? '';
+                 document.getElementById('editProductAdminPrice').value = prod.basePrice ?? ''; document.getElementById('editProductAdminDescription').value = prod.description ?? '';
+                 document.getElementById('editProductAdminStock').value = prod.stockQuantity ?? 0; document.getElementById('editProductAdminStatus').value = prod.status ?? 'ACTIVE';
+                 if (forceShowOnError || !hasEditProductAdminErrors) { editProductAdminModalInstance.show(); }
+             } catch (error) { console.error('[loadProductForEditAdmin] Error:', error); alert('Lỗi tải dữ liệu sản phẩm.'); if (forceShowOnError) { editProductAdminModalInstance.show(); } }
+         }
+
+        // --- HÀM LOAD CATEGORY ---
+         async function loadCategoryForEdit(categoryId, forceShowOnError = false) {
+             if (!editCategoryModalInstance) { console.error("Edit category modal instance not found!"); return; }
+             const form = document.getElementById('editCategoryForm');
+             const errorDiv = editCategoryModalInstance._element.querySelector('.alert-danger');
+             const imgPreview = document.getElementById('editCategoryImagePreview');
+             if(form) form.reset(); if(errorDiv) errorDiv.style.display = 'none';
+             if(imgPreview) imgPreview.src = 'https://placehold.co/100x100/eee/ccc?text=Load'; // Reset preview
+             if(form) { const baseUrl = /*[[@{/admin/categories/update/}]]*/ ''; form.action = baseUrl + categoryId; }
+             try {
+                 const apiUrl = /*[[@{/admin/categories/}]]*/ '' + categoryId + '/edit';
+                 const response = await fetch(apiUrl); if (!response.ok) { throw new Error(`Status: ${response.status}`); } const cat = await response.json();
+                 document.getElementById('editCategoryId').value = cat.id ?? ''; document.getElementById('editCategoryName').value = cat.name ?? ''; document.getElementById('editCategoryParent').value = cat.parentId ?? '';
+                 document.getElementById('editIsActiveCat').checked = cat.isActive ?? false;
+                 if(imgPreview) { imgPreview.src = cat.imageUrl || 'https://placehold.co/100x100/eee/ccc?text=N/A'; }
+                 if (forceShowOnError || !hasEditCategoryErrors) { editCategoryModalInstance.show(); }
+             } catch (error) { console.error('[loadCategoryForEdit] Error:', error); alert('Lỗi tải dữ liệu danh mục.'); if (forceShowOnError) { editCategoryModalInstance.show(); } }
+         }
+
+        /*]]>*/
+    </script>
+</th:block>
+
+</body>
+</html>
+

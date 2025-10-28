@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{vendor/layout-vendor}">
+
+<head>
+    <title>Tổng Quan - Kênh Bán Hàng</title>
+</head>
+
+<body>
+
+<div layout:fragment="content">
+    <section class="dashboard-section py-5">
+        <div class="container">
+            <div class="section-header text-center mb-5" data-aos="fade-up">
+                <h2>Tổng Quan Nhà Bán Hàng</h2>
+            </div>
+
+            <!-- Hiển thị thông báo thành công (nếu có từ redirect) -->
+            <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert" data-aos="fade-up">
+                 <i class="bi bi-check-circle-fill me-2"></i>
+                 <span th:text="${successMessage}"></span>
+                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+
+             <!-- Nội dung Dashboard sẽ được thêm sau -->
+            <div class="row justify-content-center">
+                <div class="col-md-8 text-center" data-aos="fade-up">
+                    <p class="lead">Chào mừng bạn đến với Kênh Bán Hàng AloTra!</p>
+                    <p th:if="${shopInfo == null or shopInfo.status == 'PENDING'}">Hồ sơ cửa hàng của bạn đang chờ duyệt. Chúng tôi sẽ thông báo cho bạn sớm nhất.</p>
+                     <p th:if="${shopInfo != null and shopInfo.status == 'APPROVED'}">Cửa hàng của bạn đã được duyệt. Bắt đầu quản lý sản phẩm và đơn hàng ngay!</p>
+                     <!-- Thêm các trạng thái khác nếu cần -->
+
+                    <div class="mt-4">
+                        <a th:href="@{/vendor/products}" class="btn btn-primary me-2"><i class="bi bi-box-seam me-1"></i>Quản lý Sản phẩm</a>
+                        <a th:href="@{/vendor/orders}" class="btn btn-secondary"><i class="bi bi-receipt me-1"></i>Quản lý Đơn hàng</a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+</div>
+
+</body>
+</html>
