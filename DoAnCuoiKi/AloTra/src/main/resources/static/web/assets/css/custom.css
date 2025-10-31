@@ -1,0 +1,232 @@
+/* --- CSS ĐỒNG BỘ KÍCH THƯỚC ẢNH SẢN PHẨM --- */
+
+/* 1. Thiết lập khung chứa ảnh có tỷ lệ cố định */
+.axil-product .thumbnail {
+    /* Thiết lập tỷ lệ khung ảnh là 1:1 (vuông).
+       Bạn có thể đổi thành "4 / 3" cho ảnh chữ nhật đứng.
+    */
+    aspect-ratio: 1 / 1;
+    overflow: hidden; /* Ẩn các phần ảnh bị thừa ra khỏi khung */
+    background-color: #f7f7f7; /* Thêm màu nền nhạt cho các ảnh đang tải */
+}
+
+/* 2. Ra lệnh cho ảnh tự lấp đầy khung chứa */
+.axil-product .thumbnail img.main-img {
+    width: 100%;       /* Ảnh rộng bằng 100% chiều rộng của khung */
+    height: 100%;      /* Ảnh cao bằng 100% chiều cao của khung */
+    object-fit: cover; /* Tự co dãn và cắt ảnh */
+}
+
+/* --- STYLE CHO NÚT "THÊM VÀO GIỎ" Ở TRANG CHỦ --- */
+.product-hover-action .cart-action .select-option button {
+    color: #ff497c; /* Màu hồng nhạt */
+    font-weight: 500;
+}
+
+.product-hover-action .cart-action .select-option button:hover {
+    color: #3577f0; /* Màu xanh khi hover */
+}
+
+/* --- STYLE CHO NÚT "YÊU THÍCH" KHI ĐƯỢC BẤM --- */
+.toggle-wishlist-btn.wishlist-added i.far.fa-heart {
+    font-weight: 900; /* Biến icon thành dạng solid (đầy) */
+    color: #ff497c;   /* Tô màu hồng nhạt */
+}
+
+
+/* Khung chứa toàn bộ option địa chỉ */
+.custom-address-option {
+    display: flex; /* Bật Flexbox để căn radio và wrapper */
+    align-items: flex-start; /* Căn các mục theo lề trên */
+    padding: 15px;
+    border: 1px solid #e3e6e9;
+    border-radius: 6px;
+    margin-bottom: 15px;
+    background-color: #f9f9f9;
+    transition: all .3s ease-in-out;
+}
+
+/* Thêm hiệu ứng khi hover */
+.custom-address-option:hover {
+    border-color: #3577f0;
+    background-color: #fff;
+}
+
+/* Style cho nút radio */
+.custom-address-option .address-radio {
+    width: 20px;
+    height: 20px;
+    margin-top: 5px;
+    margin-right: 15px;
+    flex-shrink: 0;
+}
+
+/* Khung chứa toàn bộ một lựa chọn địa chỉ */
+.custom-address-option {
+    display: flex; /* Bật Flexbox để căn chỉnh radio và nội dung */
+    align-items: flex-start; /* Căn các mục theo lề trên */
+    padding: 15px;
+    border: 1px solid #e3e6e9;
+    border-radius: 6px;
+    margin-bottom: 15px;
+    background-color: #f9f9f9;
+    transition: all .3s ease-in-out;
+}
+
+.custom-address-option:hover {
+    border-color: #3577f0;
+    background-color: #fff;
+}
+
+/* Nút radio */
+.custom-address-option .address-radio {
+    width: 20px;
+    height: 20px;
+    margin-top: 5px; /* Căn chỉnh với dòng text đầu tiên */
+    margin-right: 15px; /* Tạo khoảng cách với nội dung */
+    flex-shrink: 0; /* Quan trọng: Ngăn radio bị co lại */
+}
+
+/* KHUNG BAO BỌC NỘI DUNG VÀ NÚT SỬA: ĐÂY LÀ PHẦN QUAN TRỌNG NHẤT */
+.custom-address-option .address-wrapper {
+    display: flex;
+    flex-grow: 1; /* Rất quan trọng: Chiếm hết không gian còn lại */
+    align-items: flex-start; /* Căn nội dung và nút Sửa theo lề trên */
+    min-width: 0; /* BẮT BUỘC: Cho phép flexbox co nhỏ hơn nội dung của nó */
+    gap: 10px; /* Tạo khoảng cách giữa nội dung và nút Sửa, thay cho margin */
+}
+
+/* Khung chứa nội dung text (thẻ label) */
+.custom-address-option .address-content {
+    flex-grow: 1; /* Cho phép label chiếm hết không gian còn lại */
+    min-width: 0; /* BẮT BUỘC: Cho phép nội dung bên trong (địa chỉ) xuống dòng */
+    cursor: pointer;
+}
+
+/* Nút Sửa: Đảm bảo nó không bị co lại và luôn ở bên phải */
+.custom-address-option .address-edit-btn {
+    flex-shrink: 0; /* QUAN TRỌNG: Ngăn nút "Sửa" bị co lại */
+    white-space: nowrap; /* Đảm bảo chữ "Sửa" không bị xuống dòng */
+    font-weight: bold;
+    text-decoration: none;
+    color: #3577f0;
+    padding: 2px 5px;
+}
+
+.custom-address-option .address-edit-btn:hover {
+    color: #ff497c;
+}
+
+/* Dòng chứa Tên - SĐT */
+.custom-address-option .address-header {
+    margin-bottom: 5px;
+}
+
+/* Style cho dòng địa chỉ chi tiết */
+.custom-address-option .address-details {
+    display: block;
+    color: #777;
+    font-size: 14px;
+    /* Rất quan trọng: Các thuộc tính để ngắt dòng cho nội dung quá dài */
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    word-break: break-word;
+}
+#quick-view-modal .product-details-rating .rating-list span i {
+    color: #FFB300 !important;
+}
+#quick-view-modal .price.old-price {
+    text-decoration: line-through;
+    color: #888;
+    font-size: 0.9em;
+    margin-left: 10px;
+}
+
+/* 1. Container chính cho các ngôi sao */
+.rating-stars {
+  display: inline-flex;        /* Sắp xếp các label (sao) trên một hàng */
+  flex-direction: row-reverse; /* Đảo ngược thứ tự để có hiệu ứng hover đúng */
+  justify-content: flex-end;
+  border: 1px solid transparent; /* Thêm viền trong suốt để tránh giật layout khi hover */
+}
+
+/* 2. Ẩn hoàn toàn nút radio mặc định (rất quan trọng) */
+.rating-stars input[type="radio"] {
+  display: none !important;
+}
+
+/* 3. Style cho các ngôi sao (chính là các thẻ <label>) */
+.rating-stars label {
+  font-size: 28px;        /* Kích thước sao */
+  color: #e0e0e0;         /* Màu sao mặc định (xám nhạt) */
+  cursor: pointer;
+  padding: 0 3px;
+  transition: color 0.2s ease, transform 0.2s ease; /* Hiệu ứng chuyển động mượt */
+}
+
+/* 4. Hiệu ứng phóng to đẹp mắt khi di chuột qua một ngôi sao */
+.rating-stars label:hover {
+  transform: scale(1.25); /* Phóng to nhẹ ngôi sao */
+}
+
+/* 5. Tô màu vàng cho sao được hover và các sao "phía trước" nó */
+.rating-stars label:hover,
+.rating-stars label:hover ~ label {
+  color: #ffc107; /* Màu vàng đậm */
+}
+
+/* 6. Giữ màu vàng cho các sao đã được chọn (khi không hover) */
+.rating-stars input[type="radio"]:checked ~ label {
+  color: #ffc107;
+}
+
+/* 1. Tạo nút tròn, có viền cho icon trái tim */
+.qv-wishlist-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 45px;       /* Kích thước chiều rộng */
+    height: 45px;      /* Kích thước chiều cao */
+    border: 1px solid #dcdcdc; /* Viền màu xám nhạt */
+    border-radius: 50%; /* Bo tròn thành hình tròn */
+    font-size: 20px;   /* Làm icon to hơn một chút */
+    color: #6c757d;    /* Màu icon mặc định */
+    transition: all 0.3s ease; /* Hiệu ứng chuyển động mượt mà */
+    text-decoration: none !important;
+}
+
+/* 2. Trạng thái "đã thích" (khi có class 'active') */
+.qv-wishlist-btn.active {
+    border-color: #ff5a7a; /* Viền màu hồng */
+    background-color: #ff5a7a; /* Nền màu hồng */
+    color: #fff;           /* Icon màu trắng */
+}
+.qv-wishlist-btn:hover {
+    color: #ff5a7a;
+    border-color: #ff5a7a;
+}
+.qv-wishlist-btn.active:hover {
+    color: #fff;
+    opacity: 0.9;
+}
+
+/* 3. Tắt hiệu ứng phóng to của các nút trong Quick View */
+#quick-view-modal .axil-btn {
+    transform: none !important;
+    transition: background-color 0.3s ease, color 0.3s ease !important;
+}
+#quick-view-modal .axil-btn:hover,
+#quick-view-modal .axil-btn:focus,
+#quick-view-modal .axil-btn:active {
+    transform: none !important;
+}
+.review-media img,
+.review-media video {
+    max-width: 120px;       /* Chiều rộng tối đa là 120px */
+    max-height: 120px;      /* Chiều cao tối đa là 120px */
+    width: 100%;            /* Đảm bảo nó co dãn nếu container nhỏ hơn */
+    height: 100%;           /* Đảm bảo nó co dãn */
+    object-fit: cover;      /* Cắt và phóng to để lấp đầy khung, giữ nguyên tỷ lệ */
+    border-radius: 8px;     /* Bo góc cho đẹp */
+    background-color: #eee; /* Thêm màu nền nhạt khi video đang tải */
+}

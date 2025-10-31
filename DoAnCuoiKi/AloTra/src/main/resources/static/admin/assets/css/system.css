@@ -1,0 +1,22 @@
+.info-section {
+        flex: 1; min-width: 300px;
+    }
+
+    .info-section h5 {
+        font-size: 1.2rem; margin-top: 0; margin-bottom: 1.5rem;
+        background-color: #e6f3ff;
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
+        border-left: 4px solid #6a5af9;
+    }
+
+    .info-grid {
+        display: grid; grid-template-columns: max-content 1fr; gap: 1.25rem 1rem; align-items: center;
+    }
+
+    .user-avatar-detail {
+        width: 90px;
+        height: 90px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
