@@ -84,7 +84,7 @@ AloTra
  ┃ ┣ repository       
  ┃ ┣ request          
  ┃ ┣ service          
- ┃ ┗ OneShopApplication.java  
+ ┃ ┗ AloTraApplication.java  
  ┣ src/main/resources
  ┃ ┣ static           
  ┃ ┃ ┣ admin          
