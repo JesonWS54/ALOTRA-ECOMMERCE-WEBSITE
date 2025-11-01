@@ -1,0 +1,137 @@
+/* Dashboard Card Styles */
+.dashboard-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: none;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+}
+
+.dashboard-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+/* Card styles with hover effect */
+.card {
+    margin-bottom: 1.5rem;
+    border: none;
+    border-radius: 0.5rem;
+    box-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.05);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 1rem 2.5rem 0.5rem rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Welcome Card */
+.welcome-card {
+    background: linear-gradient(135deg, #7367F0 0%, #9E95F5 100%);
+    color: white;
+    border-radius: 15px;
+    box-shadow: 0 0.5rem 1.5rem rgba(115, 103, 240, 0.3) !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.welcome-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 1rem 2.5rem 0.75rem rgba(115, 103, 240, 0.35) !important;
+}
+
+/* Stat Cards */
+.stat-card {
+    border: none;
+    border-radius: 0.5rem;
+    background-color: #fff;
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 1rem 2.125rem 0.5rem rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Stat Cards */
+.stat-card .card-title {
+    color: #6c757d;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.5rem;
+}
+
+.stat-card .card-value {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+}
+
+/* Transaction Items */
+.transaction-item {
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.transaction-item:hover {
+    background-color: rgba(115, 103, 240, 0.05);
+}
+
+/* Avatar Styles */
+.avatar {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    margin-right: 12px;
+    font-weight: 600;
+    color: white;
+}
+
+.avatar-sm {
+    width: 32px;
+    height: 32px;
+    font-size: 0.875rem;
+}
+
+/* Status Badges */
+.badge {
+    padding: 0.4em 0.8em;
+    font-weight: 500;
+}
+
+/* Chart Container */
+.chart-container {
+    position: relative;
+    height: 300px;
+    width: 100%;
+}
+
+/* Product Item */
+.product-item {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #f1f1f1;
+}
+
+.product-item:last-child {
+    border-bottom: none;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .stat-card .card-value {
+        font-size: 1.5rem;
+    }
+    
+    .welcome-card .display-4 {
+        font-size: 2rem;
+    }
+}

@@ -1,0 +1,261 @@
+<!--<!DOCTYPE html>-->
+<!--<html lang="vi"-->
+<!--      xmlns:th="http://www.thymeleaf.org"-->
+<!--      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"-->
+<!--      layout:decorate="~{layouts/user}">-->
+<!--<head>-->
+<!--    <title>Sửa địa chỉ</title>-->
+<!--</head>-->
+<!--<body>-->
+<!--<main layout:fragment="content">-->
+<!--    <div class="axil-checkout-area axil-section-gap">-->
+<!--        <div class="container">-->
+<!--            <h4 class="title mb-4">Chỉnh sửa địa chỉ giao hàng</h4>-->
+
+<!--            <form th:action="@{/checkout/save-address}" th:object="${address}" method="post" class="axil-checkout-billing">-->
+<!--                <input type="hidden" th:field="*{maDiaChi}">-->
+<!--                <input type="hidden" th:field="*{nguoiDung}">-->
+
+<!--                <div class="row">-->
+<!--                    <div class="col-lg-6">-->
+<!--                        <div class="form-group">-->
+<!--                            <label>Tên người nhận <span>*</span></label>-->
+<!--                            <input type="text" class="form-control" th:field="*{tenNguoiNhan}" required>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                    <div class="col-lg-6">-->
+<!--                        <div class="form-group">-->
+<!--                            <label>Số điện thoại <span>*</span></label>-->
+<!--                            <input type="tel" class="form-control" th:field="*{soDienThoai}" required>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                </div>-->
+
+<!--                &lt;!&ndash; Tỉnh/Thành &ndash;&gt;-->
+<!--                <div class="form-group">-->
+<!--                    <label>Tỉnh/Thành phố <span>*</span></label>-->
+<!--                    <select class="form-select" id="provinceSelect" required></select>-->
+<!--                    <input type="hidden" th:field="*{tinhThanh}">-->
+<!--                </div>-->
+
+<!--                &lt;!&ndash; Quận/Huyện &ndash;&gt;-->
+<!--                <div class="form-group">-->
+<!--                    <label>Quận/Huyện <span>*</span></label>-->
+<!--                    <select class="form-select" id="districtSelect" required disabled></select>-->
+<!--                    <input type="hidden" th:field="*{quanHuyen}">-->
+<!--                </div>-->
+
+<!--                &lt;!&ndash; Phường/Xã &ndash;&gt;-->
+<!--                <div class="form-group">-->
+<!--                    <label>Phường/Xã <span>*</span></label>-->
+<!--                    <select class="form-select" id="wardSelect" required disabled></select>-->
+<!--                    <input type="hidden" th:field="*{phuongXa}">-->
+<!--                </div>-->
+
+<!--                &lt;!&ndash; Số nhà, tên đường &ndash;&gt;-->
+<!--                <div class="form-group">-->
+<!--                    <label>Số nhà, tên đường <span>*</span></label>-->
+<!--                    <input type="text" class="form-control" th:field="*{soNhaDuong}" required>-->
+<!--                </div>-->
+
+<!--                &lt;!&ndash; Nút Lưu/Hủy giống trang Thêm địa chỉ &ndash;&gt;-->
+<!--                <div class="d-flex gap-2">-->
+<!--                    <button type="submit" class="axil-btn btn-bg-primary w-50">Lưu thay đổi</button>-->
+<!--                    <a th:href="@{/my-account(tab=${'addresses'})}" class="axil-btn btn-outline w-50 text-center">Hủy</a>-->
+<!--                </div>-->
+<!--            </form>-->
+
+<!--            &lt;!&ndash; Holder truyền URL JSON & giá trị hiện có để prefill (dùng 1 th:attr duy nhất) &ndash;&gt;-->
+<!--            <div th:attr="-->
+<!--                    data-vnjson-url=@{/web/assets/data/vn-divisions.json},-->
+<!--                    data-prefill-province=${address != null ? address.tinhThanh : ''},-->
+<!--                    data-prefill-district=${address != null ? address.quanHuyen : ''},-->
+<!--                    data-prefill-ward=${address != null ? address.phuongXa : ''}"></div>-->
+
+<!--            &lt;!&ndash; Script dropdown dùng chung với trang Thêm địa chỉ &ndash;&gt;-->
+<!--            <script th:src="@{/web/assets/js/address-form.js}" defer></script>-->
+
+<!--            &lt;!&ndash; Script prefill theo TÊN sau khi dropdown load xong &ndash;&gt;-->
+<!--            <script>-->
+<!--                document.addEventListener('DOMContentLoaded', function () {-->
+<!--                    const holder = document.querySelector('[data-vnjson-url]');-->
+<!--                    const preP = holder?.getAttribute('data-prefill-province')?.trim();-->
+<!--                    const preD = holder?.getAttribute('data-prefill-district')?.trim();-->
+<!--                    const preW = holder?.getAttribute('data-prefill-ward')?.trim();-->
+
+<!--                    const $p = document.getElementById('provinceSelect');-->
+<!--                    const $d = document.getElementById('districtSelect');-->
+<!--                    const $w = document.getElementById('wardSelect');-->
+
+<!--                    function selectByText(sel, text) {-->
+<!--                        if (!sel || !text) return false;-->
+<!--                        const opt = Array.from(sel.options).find(o => (o.text || '').trim() === text);-->
+<!--                        if (opt) {-->
+<!--                            sel.value = opt.value;-->
+<!--                            sel.dispatchEvent(new Event('change', { bubbles: true }));-->
+<!--                            return true;-->
+<!--                        }-->
+<!--                        return false;-->
+<!--                    }-->
+
+<!--                    let tries = 0;-->
+<!--                    const maxTries = 20;-->
+<!--                    const poll = setInterval(() => {-->
+<!--                        tries++;-->
+<!--                        if ($p && $p.options.length > 1) {-->
+<!--                            if (selectByText($p, preP)) {-->
+<!--                                const waitD = setInterval(() => {-->
+<!--                                    if ($d && $d.options.length > 1) {-->
+<!--                                        clearInterval(waitD);-->
+<!--                                        if (selectByText($d, preD)) {-->
+<!--                                            const waitW = setInterval(() => {-->
+<!--                                                if ($w && $w.options.length > 1) {-->
+<!--                                                    clearInterval(waitW);-->
+<!--                                                    selectByText($w, preW);-->
+<!--                                                }-->
+<!--                                            }, 150);-->
+<!--                                            setTimeout(() => clearInterval(waitW), 3000);-->
+<!--                                        }-->
+<!--                                    }-->
+<!--                                }, 150);-->
+<!--                                setTimeout(() => clearInterval(waitD), 3000);-->
+<!--                            }-->
+<!--                            clearInterval(poll);-->
+<!--                        }-->
+<!--                        if (tries >= maxTries) clearInterval(poll);-->
+<!--                    }, 150);-->
+<!--                });-->
+<!--            </script>-->
+<!--        </div>-->
+<!--    </div>-->
+<!--</main>-->
+<!--</body>-->
+<!--</html>-->
+
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/user}">
+<head>
+    <title>Sửa địa chỉ</title>
+</head>
+<body>
+<main layout:fragment="content">
+    <div class="axil-checkout-area axil-section-gap">
+        <div class="container">
+            <h4 class="title mb-4">Chỉnh sửa địa chỉ giao hàng</h4>
+
+            <form th:action="@{/checkout/save-address}" th:object="${address}" method="post" class="axil-checkout-billing">
+                <input type="hidden" th:field="*{maDiaChi}">
+                <input type="hidden" th:field="*{nguoiDung}">
+
+                <div class="row">
+                    <div class="col-lg-6">
+                        <div class="form-group">
+                            <label>Tên người nhận <span>*</span></label>
+                            <input type="text" class="form-control" th:field="*{tenNguoiNhan}" required>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="form-group">
+                            <label>Số điện thoại <span>*</span></label>
+                            <input type="tel" class="form-control" th:field="*{soDienThoai}" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Tỉnh/Thành phố <span>*</span></label>
+                    <select class="form-select" id="provinceSelect" required></select>
+                    <input type="hidden" th:field="*{tinhThanh}">
+                </div>
+
+                <div class="form-group">
+                    <label>Quận/Huyện <span>*</span></label>
+                    <select class="form-select" id="districtSelect" required disabled></select>
+                    <input type="hidden" th:field="*{quanHuyen}">
+                </div>
+
+                <div class="form-group">
+                    <label>Phường/Xã <span>*</span></label>
+                    <select class="form-select" id="wardSelect" required disabled></select>
+                    <input type="hidden" th:field="*{phuongXa}">
+                </div>
+
+                <div class="form-group">
+                    <label>Số nhà, tên đường <span>*</span></label>
+                    <input type="text" class="form-control" th:field="*{soNhaDuong}" required>
+                </div>
+
+                <!-- Quan trọng: nơi muốn quay về sau khi lưu -->
+                <input type="hidden" name="return" th:value="@{/my-account(tab=${'addresses'})}"/>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="axil-btn btn-bg-primary w-50">Lưu thay đổi</button>
+                    <a th:href="@{/my-account(tab=${'addresses'})}" class="axil-btn btn-outline w-50 text-center">Hủy</a>
+                </div>
+            </form>
+
+            <div th:attr="
+                    data-vnjson-url=@{/web/assets/data/vn-divisions.json},
+                    data-prefill-province=${address != null ? address.tinhThanh : ''},
+                    data-prefill-district=${address != null ? address.quanHuyen : ''},
+                    data-prefill-ward=${address != null ? address.phuongXa : ''}"></div>
+
+            <script th:src="@{/web/assets/js/address-form.js}" defer></script>
+
+            <script>
+                document.addEventListener('DOMContentLoaded', function () {
+                    const holder = document.querySelector('[data-vnjson-url]');
+                    const preP = holder?.getAttribute('data-prefill-province')?.trim();
+                    const preD = holder?.getAttribute('data-prefill-district')?.trim();
+                    const preW = holder?.getAttribute('data-prefill-ward')?.trim();
+
+                    const $p = document.getElementById('provinceSelect');
+                    const $d = document.getElementById('districtSelect');
+                    const $w = document.getElementById('wardSelect');
+
+                    function selectByText(sel, text) {
+                        if (!sel || !text) return false;
+                        const opt = Array.from(sel.options).find(o => (o.text || '').trim() === text);
+                        if (opt) {
+                            sel.value = opt.value;
+                            sel.dispatchEvent(new Event('change', { bubbles: true }));
+                            return true;
+                        }
+                        return false;
+                    }
+
+                    let tries = 0, maxTries = 20;
+                    const poll = setInterval(() => {
+                        tries++;
+                        if ($p && $p.options.length > 1) {
+                            if (selectByText($p, preP)) {
+                                const waitD = setInterval(() => {
+                                    if ($d && $d.options.length > 1) {
+                                        clearInterval(waitD);
+                                        if (selectByText($d, preD)) {
+                                            const waitW = setInterval(() => {
+                                                if ($w && $w.options.length > 1) {
+                                                    clearInterval(waitW);
+                                                    selectByText($w, preW);
+                                                }
+                                            }, 150);
+                                            setTimeout(() => clearInterval(waitW), 3000);
+                                        }
+                                    }
+                                }, 150);
+                                setTimeout(() => clearInterval(waitD), 3000);
+                            }
+                            clearInterval(poll);
+                        }
+                        if (tries >= maxTries) clearInterval(poll);
+                    }, 150);
+                });
+            </script>
+        </div>
+    </div>
+</main>
+</body>
+</html>

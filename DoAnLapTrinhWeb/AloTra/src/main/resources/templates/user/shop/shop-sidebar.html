@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/user}">
+
+<head>
+    <title>Cửa hàng</title>
+    <meta charset="utf-8"/>
+
+    <style>
+        /* ====== UI nhỏ cho select sort ====== */
+        .category-select select.single-select {
+            padding-right: 2.5rem;
+            background-position: right 12px center!important;
+            background-repeat: no-repeat;
+            line-height: 1.4;
+        }
+
+        /* ====== Bỏ gạch chân link trong sidebar (kể cả trạng thái active/hover) ====== */
+        .axil-shop-sidebar a { text-decoration: none !important; }
+        .axil-shop-sidebar a:hover,
+        .axil-shop-sidebar a:focus,
+        .axil-shop-sidebar a:active { text-decoration: none !important; }
+
+        /* Danh mục đang chọn: in đậm, KHÔNG gạch chân */
+        .current-cat > a { font-weight: 700; text-decoration: none !important; }
+
+        .flex-center { display:flex; align-items:center; gap:.5rem; }
+        .amount-range { border:0; font-weight:600; width: 220px; background: transparent; }
+        .axil-shop-sidebar .form-check { margin-bottom: .35rem; }
+        .axil-shop-sidebar .form-check-input { margin-top: .35rem; }
+        .price-fallback { display: none; gap:.5rem; }
+        .price-fallback input[type="number"] { width: 120px; }
+    </style>
+</head>
+
+<body>
+<main layout:fragment="content">
+    <div class="axil-breadcrumb-area">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6 col-md-8">
+                    <div class="inner">
+                        <ul class="axil-breadcrumb">
+                            <li class="axil-breadcrumb-item"><a th:href="@{/}">Trang chủ</a></li>
+                            <li class="separator"></li>
+                            <li class="axil-breadcrumb-item active" aria-current="page">Cửa hàng</li>
+                        </ul>
+                        <h1 class="title">Chất lượng luôn đi đầu. Tất cả sản phẩm của chúng tôi</h1>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="axil-shop-area axil-section-gap bg-color-white">
+        <div class="container">
+            <div class="row">
+                <!-- SIDEBAR -->
+                <div class="col-lg-3">
+                    <div class="axil-shop-sidebar">
+                        <!-- Form lọc -->
+                        <form id="filter-form" th:action="@{/shop}" method="get">
+                            <!-- Giữ tham số khi bấm Áp dụng -->
+                            <input type="hidden" name="sort" id="hidden-sort" th:value="${sort}">
+                            <input type="hidden" name="categoryId" id="hidden-category" th:value="${selectedCategoryId}"/>
+
+                            <!-- DANH MỤC -->
+                            <div class="toggle-list product-categories active">
+                                <h6 class="title">DANH MỤC</h6>
+                                <div class="shop-submenu">
+                                    <ul>
+                                        <li th:classappend="${selectedCategoryId == null ? 'current-cat' : ''}">
+                                            <a th:href="@{/shop(sort=${sort}, brandIds=${selectedBrandIds}, minPrice=${minPrice}, maxPrice=${maxPrice})}">Tất cả danh mục</a>
+                                        </li>
+                                        <li th:each="category : ${categories}"
+                                            th:classappend="${category.maDanhMuc == selectedCategoryId ? 'current-cat' : ''}">
+                                            <a th:href="@{/shop(categoryId=${category.maDanhMuc}, sort=${sort}, brandIds=${selectedBrandIds}, minPrice=${minPrice}, maxPrice=${maxPrice})}"
+                                               th:text="${category.tenDanhMuc}"></a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- THÀNH PHẦN -->
+                            <div class="toggle-list product-categories active">
+                                <h6 class="title">Cửa Hàng</h6>
+                                <div class="shop-submenu">
+                                    <ul>
+                                        <li th:each="brand : ${brands}">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="brandIds"
+                                                       th:value="${brand.maThuongHieu}"
+                                                       th:id="'brand-' + ${brand.maThuongHieu}"
+                                                       th:checked="${selectedBrandIds != null and selectedBrandIds.contains(brand.maThuongHieu)}">
+                                                <label class="form-check-label"
+                                                       th:for="'brand-' + ${brand.maThuongHieu}"
+                                                       th:text="${brand.tenThuongHieu}"></label>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- LỌC THEO GIÁ -->
+                            <div class="toggle-list product-price-range active">
+                                <h6 class="title">Lọc theo giá sản phẩm</h6>
+                                <div class="shop-submenu">
+                                    <!-- Hidden sync -->
+                                    <input type="hidden" name="minPrice" id="min-price" th:value="${minPrice != null ? minPrice : 0}">
+                                    <input type="hidden" name="maxPrice" id="max-price" th:value="${maxPrice != null ? maxPrice : 15000000}">
+                                    <div class="price-filter-area">
+                                        <div id="slider-range" class="mb-3"
+                                             th:data-default-min="0"
+                                             th:data-default-max="15000000"
+                                             th:data-min-value="${minPrice != null ? minPrice : 0}"
+                                             th:data-max-value="${maxPrice != null ? maxPrice : 15000000}">
+                                        </div>
+
+                                        <div class="price-fallback" id="price-fallback">
+                                            <input type="number" id="fallback-min" min="0" step="1000"
+                                                   th:value="${minPrice != null ? minPrice : 0}">
+                                            <span>–</span>
+                                            <input type="number" id="fallback-max" min="0" step="1000"
+                                                   th:value="${maxPrice != null ? maxPrice : 15000000}">
+                                        </div>
+
+                                        <div class="flex-center">
+                                            <span class="input-range">Giá: </span>
+                                            <input type="text" id="amount" class="amount-range" readonly>
+                                        </div>
+                                    </div>
+
+                                    <button type="submit" class="axil-btn btn-bg-primary mt-4 w-100">Áp dụng</button>
+                                </div>
+                            </div>
+
+                            <a th:href="@{/shop}" class="axil-btn btn-bg-secondary mt-2 w-100 text-center">Xóa bộ lọc</a>
+                        </form>
+                    </div>
+                </div>
+                <!-- /SIDEBAR -->
+
+                <!-- LIST -->
+                <div class="col-lg-9">
+                    <div class="axil-shop-top mb--40">
+                        <div class="category-select align-items-center justify-content-lg-end justify-content-between">
+                            <span class="filter-results"
+                                  th:text="'Hiển thị ' + ${products.size()} + ' trên ' + ${totalElements} + ' kết quả'"></span>
+
+                            <!-- Sắp xếp -->
+                            <select id="sort-select" class="single-select">
+                                <option value="newest" th:selected="${sort == 'newest' or sort == null}">Xếp theo sản phẩm mới nhất</option>
+                                <option value="price_asc" th:selected="${sort == 'price_asc'}">Giá: thấp đến cao</option>
+                                <option value="price_desc" th:selected="${sort == 'price_desc'}">Giá: cao đến thấp</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row row--15">
+                        <div th:if="${products.isEmpty()}" class="col-12 text-center">
+                            <h4>Không tìm thấy sản phẩm phù hợp.</h4>
+                        </div>
+
+                        <div th:each="product : ${products}" class="col-xl-4 col-sm-6">
+                            <div class="axil-product product-style-one mb--30">
+                                <div class="thumbnail">
+                                    <a th:href="@{/product/{id}(id=${product.maSanPham})}">
+                                        <img th:src="@{'/uploads/' + ${product.hinhAnh}}" alt="Product Images">
+                                    </a>
+                                    <div class="product-hover-action">
+                                        <ul class="cart-action">
+                                            <li class="quickview">
+                                                <a href="#" class="quick-view-btn" data-bs-toggle="modal"
+                                                   data-bs-target="#quick-view-modal"
+                                                   th:data-product-id="${product.maSanPham}">
+                                                    <i class="far fa-eye"></i>
+                                                </a>
+                                            </li>
+                                            <li class="select-option">
+                                                <th:block th:if="${product.inventory != null && product.inventory.soLuongTon > 0}">
+                                                    <a href="#" class="add-to-cart-btn-ajax" th:data-product-id="${product.maSanPham}">
+                                                        Thêm vào giỏ
+                                                    </a>
+                                                </th:block>
+
+                                                <th:block th:unless="${product.inventory != null && product.inventory.soLuongTon > 0}">
+                                                    <a href="javascript:void(0)"
+                                                       style="cursor: not-allowed; background-color: #6c757d !important; border-color: #6c757d !important;">
+                                                       Sản Phẩm Này Hết hàng
+                                                    </a>
+                                                </th:block>
+                                            </li>
+                                            <li class="wishlist">
+                                                <a href="#" class="toggle-wishlist-btn"
+                                                   th:data-product-id="${product.maSanPham}">
+                                                    <i class="far fa-heart"></i>
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="product-content">
+                                    <div class="inner">
+                                        <h5 class="title">
+                                            <a th:href="@{/product/{id}(id=${product.maSanPham})}"
+                                               th:text="${product.tenSanPham}"></a>
+                                        </h5>
+                                        <div class="product-price-variant">
+                                            <span class="price current-price"
+                                                  th:text="${#numbers.formatDecimal(product.giaBan, 0, 'COMMA', 0, 'POINT')} + ' ₫'"></span>
+                                            <span class="price old-price"
+                                                  th:text="${#numbers.formatDecimal(product.giaNiemYet, 0, 'COMMA', 0, 'POINT')} + ' ₫'"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div><!-- /each product -->
+                    </div>
+
+                    <!-- PAGINATION -->
+                    <div th:if="${totalPages > 1}" class="text-center pt--20">
+                        <nav aria-label="Page navigation">
+                            <ul class="pagination pagination-lg justify-content-center">
+                                <li class="page-item" th:classappend="${pageNumber == 1 ? 'disabled' : ''}">
+                                    <a class="page-link"
+                                       th:href="@{/shop(page=${pageNumber - 1}, size=${pageSize}, sort=${sort}, categoryId=${selectedCategoryId}, brandIds=${selectedBrandIds}, minPrice=${minPrice}, maxPrice=${maxPrice})}">Trước</a>
+                                </li>
+                                <li th:each="i : ${#numbers.sequence(1, totalPages)}"
+                                    class="page-item"
+                                    th:classappend="${i == pageNumber ? 'active' : ''}">
+                                    <a class="page-link"
+                                       th:href="@{/shop(page=${i}, size=${pageSize}, sort=${sort}, categoryId=${selectedCategoryId}, brandIds=${selectedBrandIds}, minPrice=${minPrice}, maxPrice=${maxPrice})}"
+                                       th:text="${i}"></a>
+                                </li>
+                                <li class="page-item" th:classappend="${pageNumber == totalPages ? 'disabled' : ''}">
+                                    <a class="page-link"
+                                       th:href="@{/shop(page=${pageNumber + 1}, size=${pageSize}, sort=${sort}, categoryId=${selectedCategoryId}, brandIds=${selectedBrandIds}, minPrice=${minPrice}, maxPrice=${maxPrice})}">Sau</a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                    <!-- /PAGINATION -->
+                </div>
+                <!-- /LIST -->
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- JS giữ trạng thái & slider -->
+<script>
+    (function(){
+        const sortSelect = document.getElementById('sort-select');
+        const hiddenSort = document.getElementById('hidden-sort');
+        const filterForm = document.getElementById('filter-form');
+
+        if (sortSelect) {
+            sortSelect.addEventListener('change', function () {
+                hiddenSort.value = this.value;
+                filterForm.submit();
+            });
+        }
+
+        function formatVND(n) {
+            if (n == null || isNaN(n)) return '';
+            return new Intl.NumberFormat('vi-VN').format(Number(n)) + ' ₫';
+        }
+
+        const minHidden = document.getElementById('min-price');
+        const maxHidden = document.getElementById('max-price');
+        const amount = document.getElementById('amount');
+        function updateAmountText() {
+            amount.value = formatVND(minHidden.value) + ' – ' + formatVND(maxHidden.value);
+        }
+
+        const slider = document.getElementById('slider-range');
+        const fallbackWrap = document.getElementById('price-fallback');
+
+        const defaultMin = Number(slider?.getAttribute('data-default-min') || 0);
+        const defaultMax = Number(slider?.getAttribute('data-default-max') || 5000000);
+        const initialMin = Number(slider?.getAttribute('data-min-value') || defaultMin);
+        const initialMax = Number(slider?.getAttribute('data-max-value') || defaultMax);
+
+        function initFallback() {
+            if (!fallbackWrap) return;
+            fallbackWrap.style.display = 'flex';
+            const fMin = document.getElementById('fallback-min');
+            const fMax = document.getElementById('fallback-max');
+            const sync = () => {
+                let mn = Number(fMin.value || defaultMin);
+                let mx = Number(fMax.value || defaultMax);
+                if (mn > mx) { const t = mn; mn = mx; mx = t; }
+                minHidden.value = mn;
+                maxHidden.value = mx;
+                updateAmountText();
+            };
+            fMin.addEventListener('input', sync);
+            fMax.addEventListener('input', sync);
+            fMin.value = initialMin;
+            fMax.value = initialMax;
+            sync();
+        }
+
+        function initNoUi() {
+            if (!(window.noUiSlider && slider)) { initFallback(); return; }
+
+            noUiSlider.create(slider, {
+                start: [initialMin, initialMax],
+                connect: true,
+                range: { 'min': defaultMin, 'max': defaultMax },
+                step: 1000,
+                behaviour: 'tap-drag'
+            });
+
+            slider.noUiSlider.on('update', function (values) {
+                const mn = Math.round(values[0]);
+                const mx = Math.round(values[1]);
+                minHidden.value = mn;
+                maxHidden.value = mx;
+                updateAmountText();
+            });
+
+            updateAmountText();
+        }
+
+        initNoUi();
+        updateAmountText();
+    })();
+</script>
+</body>
+</html>

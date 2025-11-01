@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/user}">
+<head>
+    <title>Thanh toán</title>
+
+    <style>
+        /* Canh phải và cố định cách hiển thị ô tiền của toàn bộ cột 2 */
+        .summery-table th:nth-child(2),
+        .summery-table td:nth-child(2) {
+          text-align: right;
+          white-space: nowrap;
+          font-variant-numeric: tabular-nums;
+        }
+
+        /* Theme gán flex/left riêng cho hàng phí vận chuyển -> reset về ô bảng thường */
+        .summery-table .order-shipping td:nth-child(2) {
+          display: table-cell !important;
+          text-align: right !important;
+          padding-left: 0 !important;
+        }
+
+        /* Một số theme đẩy ký hiệu đ/₫ lên trên (superscript) -> đưa về baseline */
+        .summery-table td:nth-child(2) sup,
+        .summery-table td:nth-child(2) .currency,
+        .summery-table td:nth-child(2) .woocommerce-Price-currencySymbol {
+          position: static !important;
+          top: 0 !important;
+          vertical-align: baseline !important;
+          font-size: 1em !important;
+          line-height: 1 !important;
+        }
+    </style>
+</head>
+
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/user}">
+<head>
+    <title>Thanh toán</title>
+    <style>
+        /* ============ CSS (Giữ nguyên các style cũ) ============ */
+        .axil-order-summery .summery-table th:nth-child(2),
+        .axil-order-summery .summery-table td:nth-child(2) {
+            text-align: right;
+            white-space: nowrap;
+            font-variant-numeric: tabular-nums;
+        }
+        .axil-order-summery .summery-table .order-shipping td:nth-child(2) {
+            display: table-cell !important;
+            text-align: right !important;
+            padding-left: 0 !important;
+        }
+        .axil-order-summery .summery-table td:nth-child(2) sup,
+        .axil-order-summery .summery-table td:nth-child(2) .currency,
+        .axil-order-summery .summery-table td:nth-child(2) .woocommerce-Price-currencySymbol {
+            position: static !important;
+            top: 0 !important;
+            vertical-align: baseline !important;
+            font-size: 1em !important;
+            line-height: 1 !important;
+        }
+        .axil-order-summery .summery-table col.money-col { width: 170px; } /* Giữ lại nếu cần */
+        .axil-order-summery { width: 100%; }
+        /* Style cho địa chỉ được chọn */
+        .custom-address-option input[type="radio"]:checked + label {
+            border-color: var(--color-primary); /* Hoặc màu bạn muốn */
+            box-shadow: 0 0 0 1px var(--color-primary);
+        }
+        /* Style cho loading và lỗi */
+        #shipping-options-loading { display: none; } /* Ẩn spinner ban đầu */
+        #shipping-info-display { margin-top: 5px; font-size: 0.9em; color: #555; }
+        #shipping-error { margin-top: 10px; }
+    </style>
+</head>
+
+<body>
+<main layout:fragment="content">
+    <div class="axil-checkout-area axil-section-gap">
+        <div class="container">
+            <form id="checkout-form" th:action="@{/place-order}" method="post">
+                <input type="hidden" name="calculated_shipping_fee" id="calculated_shipping_fee" value="0">
+                <input type="hidden" name="shipping_method_name" id="shipping_method_name" value=""> <div class="row">
+                <div class="col-lg-6">
+                    <div class="axil-checkout-billing">
+                        <h4 class="title mb--40">Chi tiết giao hàng</h4>
+                        <div class="mb-4">
+                            <a th:href="@{/cart}" class="axil-btn btn-outline btn-sm">
+                                <i class="fal fa-long-arrow-left"></i> Quay lại giỏ hàng
+                            </a>
+                        </div>
+                        <div th:if="${error}" th:text="${error}" class="alert alert-danger"></div>
+
+                        <div th:if="${addresses == null or addresses.isEmpty()}" class="mb-4">
+                            <div class="alert alert-warning mb-3">
+                                Bạn cần thêm địa chỉ để tiến hành thanh toán.
+                            </div>
+                            <a th:href="@{/my-account(tab=${'addresses'})}" class="axil-btn btn-outline">
+                                Thêm địa chỉ mới
+                            </a>
+                        </div>
+
+                        <div th:if="${addresses != null and !addresses.isEmpty()}">
+                            <div th:each="address, iter : ${addresses}" class="custom-address-option">
+                                <div class="address-main-content">
+                                    <input type="radio"
+                                           name="shipping_address"
+                                           th:id="'address' + ${iter.index}"
+                                           th:value="${address.maDiaChi}"
+                                           th:checked="${iter.index == 0}"
+                                           class="address-radio">
+                                    <label th:for="'address' + ${iter.index}" class="address-content" th:data-province="${address.tinhThanh}">
+                                        <div class="address-header">
+                                            <strong th:text="${address.tenNguoiNhan} + ' | ' + ${address.soDienThoai}"></strong>
+                                        </div>
+                                        <span class="address-details"
+                                              th:text="${address.soNhaDuong} + ', ' + ${address.phuongXa} + ', ' + ${address.quanHuyen} + ', ' + ${address.tinhThanh}"></span>
+                                    </label>
+                                </div>
+                                <a th:href="@{/checkout/edit-address/{id}(id=${address.maDiaChi})}"
+                                   class="btn-sm address-edit-btn">Sửa</a>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Ghi chú đơn hàng (tùy chọn)</label>
+                            <textarea name="notes" rows="2" placeholder="Ghi chú về đơn hàng của bạn..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-6">
+                    <div class="axil-order-summery order-checkout-summery">
+                        <h5 class="title mb--20">Đơn hàng của bạn</h5>
+                        <div class="summery-table-wrap">
+                            <table class="table summery-table">
+                                <colgroup><col><col style="width: 170px;"></colgroup>
+                                <thead><tr><th>Sản phẩm</th><th>Tạm tính</th></tr></thead>
+                                <tbody>
+                                <tr th:each="item : ${cartItems}" class="order-product">
+                                    <td th:text="${item.sanPham.tenSanPham} + ' x ' + ${item.soLuong}"></td>
+                                    <td th:text="${#numbers.formatDecimal(item.thanhTien, 0, 'COMMA', 0, 'POINT')} + ' ₫'"></td>
+                                </tr>
+                                <tr class="order-subtotal">
+                                    <td>Tạm tính</td>
+                                    <td th:text="${#numbers.formatDecimal(subtotal, 0, 'COMMA', 0, 'POINT')} + ' ₫'"></td>
+                                </tr>
+                                <tr class="order-shipping text-success" th:if="${membershipDiscount != null and membershipDiscount > 0}">
+                                    <td>Giảm giá hạng <strong th:text="${membershipTier != null ? membershipTier.tenHang : ''}"></strong></td>
+                                    <td th:text="'-' + ${#numbers.formatDecimal(membershipDiscount, 0, 'COMMA', 0, 'POINT')} + ' ₫'"></td>
+                                </tr>
+                                <tr class="order-shipping text-success" th:if="${couponDiscount != null and couponDiscount > 0}">
+                                    <td>Mã giảm giá</td>
+                                    <td th:text="'-' + ${#numbers.formatDecimal(couponDiscount, 0, 'COMMA', 0, 'POINT')} + ' ₫'"></td>
+                                </tr>
+                                <tr class="order-shipping">
+                                    <td>
+                                        Phí vận chuyển
+                                        <span id="shipping-options-loading" class="spinner-border spinner-border-sm ms-2" role="status" aria-hidden="true"></span>
+                                        <div id="shipping-info-display"></div> </td>
+                                    <td id="shipping-fee-amount" th:text="${#numbers.formatDecimal(shippingFee, 0, 'COMMA', 0, 'POINT')} + ' ₫'"></td>
+                                </tr>
+                                <tr class="order-total">
+                                    <td>Tổng cộng</td>
+                                    <td id="total-amount" class="order-total-amount"
+                                        th:text="${#numbers.formatDecimal(total, 0, 'COMMA', 0, 'POINT')} + ' ₫'"></td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div id="shipping-error" class="alert alert-warning mt-3" style="display: none;"></div>
+
+                        <div class="order-payment-method">
+                            <div class="single-payment">
+                                <div class="input-group">
+                                    <input type="radio" id="pmCOD" name="payment_method" value="COD" checked>
+                                    <label for="pmCOD">Thanh toán khi nhận hàng (COD)</label>
+                                </div>
+                                <p>Thanh toán bằng tiền mặt khi nhận hàng.</p>
+                            </div>
+                            <div class="single-payment">
+                                <div class="input-group">
+                                    <input type="radio" id="pmMOMO" name="payment_method" value="MOMO">
+                                    <label for="pmMOMO">Ví MoMo</label>
+                                </div>
+                                <p th:if="${info == 'momo'}">Chức năng đang được phát triển.</p>
+                            </div>
+                            <div class="single-payment">
+                                <div class="input-group">
+                                    <input type="radio" id="pmVNPAY" name="payment_method" value="VNPAY">
+                                    <label for="pmVNPAY">VNPAY</label>
+                                </div>
+                                <p th:if="${info == 'vnpay'}">Chức năng đang được phát triển.</p>
+                            </div>
+                        </div>
+
+                        <div th:if="${addresses == null or addresses.isEmpty()}">
+                            <button type="button" class="axil-btn btn-bg-primary checkout-btn" disabled th:attr="aria-disabled=true" title="Hãy thêm địa chỉ trước">
+                                Tiếp tục thanh toán
+                            </button>
+                        </div>
+                        <button th:unless="${addresses == null or addresses.isEmpty()}"
+                                type="submit"
+                                id="place-order-button"
+                                class="axil-btn btn-bg-primary checkout-btn">
+                            Tiếp tục thanh toán
+                        </button>
+                    </div>
+                </div>
+            </div>
+            </form>
+        </div>
+    </div>
+</main>
+
+<th:block layout:fragment="script">
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Lấy các element cần thiết
+            const addressRadios = document.querySelectorAll('input[name="shipping_address"]');
+            const shippingFeeElement = document.getElementById('shipping-fee-amount');
+            const totalAmountElement = document.getElementById('total-amount');
+            const loadingSpinner = document.getElementById('shipping-options-loading');
+            const shippingInfoDisplay = document.getElementById('shipping-info-display');
+            const shippingErrorDiv = document.getElementById('shipping-error');
+            const checkoutButton = document.getElementById('place-order-button'); // Nút submit form
+            const calculatedShippingFeeInput = document.getElementById('calculated_shipping_fee');
+            const shippingMethodNameInput = document.getElementById('shipping_method_name');
+
+            // Lấy giá trị tiền từ Thymeleaf (chuyển thành số)
+            const subtotal = parseFloat('[[${subtotal}]]') || 0;
+            const couponDiscount = parseFloat('[[${couponDiscount ?: 0}]]') || 0;
+            const membershipDiscount = parseFloat('[[${membershipDiscount ?: 0}]]') || 0;
+
+            // Hàm định dạng tiền tệ
+            function formatCurrency(amount) {
+                if (amount == null || isNaN(amount)) return '0 ₫';
+                const roundedAmount = Math.round(amount);
+                return roundedAmount.toLocaleString('vi-VN') + ' ₫';
+            }
+
+            // Hàm gọi API tính phí ship
+            async function fetchShippingOptions(province) {
+                // Reset trạng thái
+                loadingSpinner.style.display = 'inline-block';
+                shippingErrorDiv.style.display = 'none';
+                shippingFeeElement.textContent = 'Đang tính...';
+                shippingInfoDisplay.textContent = '';
+                if (checkoutButton) checkoutButton.disabled = true; // Khóa nút đặt hàng
+                calculatedShippingFeeInput.value = '0'; // Reset giá trị ẩn
+                shippingMethodNameInput.value = ''; // Reset giá trị ẩn quan trọng
+
+                try {
+                    const response = await fetch(`/api/shipping-options?province=${encodeURIComponent(province)}`);
+                    const data = await response.json(); // Lấy dữ liệu JSON
+
+                    if (!response.ok) {
+                        throw new Error(data.error || `Lỗi HTTP: ${response.status}`);
+                    }
+
+                    // Thành công: data là đối tượng ShippingFee đã tính phí cuối cùng
+                    const shippingCost = parseFloat(data.chiPhi) || 0;
+                    // **Cập nhật input ẩn NGAY LẬP TỨC**
+                    calculatedShippingFeeInput.value = shippingCost.toFixed(0); // Lưu số nguyên
+                    shippingMethodNameInput.value = data.tenGoiCuoc || 'Vận chuyển tiêu chuẩn'; // Đảm bảo có giá trị
+
+                    // Tính lại tổng tiền
+                    const total = subtotal - couponDiscount - membershipDiscount + shippingCost;
+                    const finalTotal = Math.max(0, total); // Đảm bảo không âm
+
+                    // Cập nhật giao diện
+                    shippingFeeElement.textContent = formatCurrency(shippingCost);
+                    totalAmountElement.textContent = formatCurrency(finalTotal);
+
+                    let shippingInfo = data.tenGoiCuoc || 'Giao hàng tiêu chuẩn';
+                    if (data.ngayGiaoSomNhat && data.ngayGiaoMuonNhat) {
+                         shippingInfo += ` (Dự kiến ${data.ngayGiaoSomNhat}-${data.ngayGiaoMuonNhat} ${data.donViThoiGian || 'ngày'})`;
+                    }
+                     shippingInfoDisplay.textContent = shippingInfo;
+
+                     if (checkoutButton) checkoutButton.disabled = false; // Mở lại nút đặt hàng
+
+                } catch (error) {
+                    console.error('Lỗi khi lấy phí vận chuyển:', error);
+                    shippingErrorDiv.textContent = error.message || 'Không thể tính phí vận chuyển cho địa chỉ này.';
+                    shippingErrorDiv.style.display = 'block';
+                    shippingFeeElement.textContent = formatCurrency(0); // Reset phí về 0
+                    // Tính lại tổng tiền không có ship
+                    const totalWithoutShipping = subtotal - couponDiscount - membershipDiscount;
+                    totalAmountElement.textContent = formatCurrency(Math.max(0, totalWithoutShipping));
+                     if (checkoutButton) checkoutButton.disabled = true; // Vẫn khóa nút nếu có lỗi ship
+                     // Reset input ẩn khi lỗi
+                     calculatedShippingFeeInput.value = '0';
+                     shippingMethodNameInput.value = '';
+                } finally {
+                    loadingSpinner.style.display = 'none'; // Luôn ẩn spinner
+                }
+            }
+
+            // Gắn sự kiện 'change' cho các radio button địa chỉ
+            addressRadios.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    if (this.checked) {
+                        const selectedLabel = document.querySelector(`label[for="${this.id}"]`);
+                        const province = selectedLabel ? selectedLabel.getAttribute('data-province') : null;
+                        if (province) {
+                            fetchShippingOptions(province);
+                        } else {
+                            // Xử lý nếu label không có data-province
+                            shippingErrorDiv.textContent = 'Địa chỉ đã chọn thiếu thông tin Tỉnh/Thành phố.';
+                            shippingErrorDiv.style.display = 'block';
+                            if (checkoutButton) checkoutButton.disabled = true;
+                            calculatedShippingFeeInput.value = '0';
+                            shippingMethodNameInput.value = '';
+                            shippingFeeElement.textContent = formatCurrency(0); // Reset hiển thị phí
+                            shippingInfoDisplay.textContent = ''; // Xóa thông tin gói cước
+                            const totalWithoutShipping = subtotal - couponDiscount - membershipDiscount; // Tính lại tổng
+                            totalAmountElement.textContent = formatCurrency(Math.max(0, totalWithoutShipping));
+                        }
+                    }
+                });
+            });
+
+            // Tự động tính phí cho địa chỉ được chọn mặc định khi tải trang
+            const initiallyChecked = document.querySelector('input[name="shipping_address"]:checked');
+            if (initiallyChecked) {
+                 const initialLabel = document.querySelector(`label[for="${initiallyChecked.id}"]`);
+                 const initialProvince = initialLabel ? initialLabel.getAttribute('data-province') : null;
+                 if (initialProvince) {
+                     fetchShippingOptions(initialProvince); // Gọi hàm tính phí
+                 } else {
+                     shippingErrorDiv.textContent = 'Địa chỉ mặc định thiếu thông tin Tỉnh/Thành phố.';
+                     shippingErrorDiv.style.display = 'block';
+                     if (checkoutButton) checkoutButton.disabled = true;
+                 }
+            } else if (addressRadios.length > 0) {
+                 // Có địa chỉ nhưng không có cái nào check sẵn
+                 shippingErrorDiv.textContent = 'Vui lòng chọn một địa chỉ giao hàng.';
+                 shippingErrorDiv.style.display = 'block';
+                 if (checkoutButton) checkoutButton.disabled = true;
+            }
+            // Nếu không có địa chỉ nào, nút submit đã bị khóa bởi Thymeleaf
+
+        });
+    </script>
+</th:block>
+
+</body>
+</html>

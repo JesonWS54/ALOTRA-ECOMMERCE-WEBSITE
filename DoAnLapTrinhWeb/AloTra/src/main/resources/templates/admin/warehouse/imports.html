@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{/layouts/admin}">
+<head>
+    <title>Quản lý Phiếu nhập</title>
+</head>
+<body>
+<h4 class="fw-bold py-3 mb-4" layout:fragment="page_title">
+    <span class="text-muted fw-light">Quản lý Kho /</span> Phiếu nhập
+</h4>
+
+<main layout:fragment="content">
+    <div class="card mb-4">
+        <div class="card-body">
+            <form th:action="@{/admin/import}" method="get" class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label">Tìm theo Mã phiếu</label>
+                    <input type="text" class="form-control" name="keyword" th:value="${keyword}" placeholder="Nhập mã phiếu nhập...">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Lọc theo nhà cung cấp</label>
+                    <select class="form-select" name="supplierId" onchange="this.form.submit()">
+                        <option value="">Tất cả nhà cung cấp</option>
+                        <option th:each="sup : ${suppliers}"
+                                th:value="${sup.maNCC}"
+                                th:text="${sup.tenNCC}"
+                                th:selected="${supplierId != null && supplierId == sup.maNCC}"></option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <button class="btn btn-primary me-2" type="submit"><i class="bx bx-search"></i> Tìm kiếm</button>
+                    <a th:href="@{/admin/import}" class="btn btn-outline-secondary"><i class="bx bx-reset"></i> Đặt lại</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Danh sách phiếu nhập</h5>
+            <a th:href="@{/admin/import/add}" class="btn btn-primary">
+                <i class='bx bx-plus me-1'></i> Thêm phiếu nhập
+            </a>
+        </div>
+        <div class="card-body">
+            <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+                <span th:text="${successMessage}"></span><button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+
+            <div class="table-responsive text-nowrap">
+                <table class="table table-hover">
+                    <thead>
+                    <tr>
+                        <th>Mã phiếu</th>
+                        <th>Nhà cung cấp</th>
+                        <th>Ngày tạo</th>
+                        <th>Tổng tiền</th>
+                        <th class="text-center">Thao tác</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:if="${!importPage.empty}" th:each="imp : ${importPage.content}">
+                        <td th:text="'PN' + ${imp.maPhieuNhap}"></td>
+                        <td th:text="${imp.nhaCungCap != null ? imp.nhaCungCap.tenNCC : 'N/A'}"></td>
+                        <td th:text="${#temporals.format(imp.ngayTao, 'dd/MM/yyyy HH:mm')}"></td>
+                        <td th:text="${imp.tongTien != null ? #numbers.formatDecimal(imp.tongTien, 0, 'COMMA', 0, 'POINT') + ' ₫' : '0 ₫'}"></td>
+                        <td class="text-center">
+                            <a class="btn btn-sm btn-outline-info" th:href="@{/admin/import/{id}(id=${imp.maPhieuNhap})}"><i class="bx bx-show"></i></a>
+                            <a class="btn btn-sm btn-outline-warning" th:href="@{/admin/import/edit/{id}(id=${imp.maPhieuNhap})}"><i class="bx bx-edit"></i></a>
+                            <a class="btn btn-sm btn-outline-danger" th:href="@{/admin/import/delete/{id}(id=${imp.maPhieuNhap})}" onclick="return confirm('Bạn có chắc muốn xóa?')"><i class="bx bx-trash"></i></a>
+                        </td>
+                    </tr>
+                    <tr th:if="${importPage.empty}">
+                        <td colspan="5" class="text-center py-3">Không có phiếu nhập nào.</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <nav th:if="${importPage.totalPages > 0}" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item" th:classappend="${importPage.first} ? 'disabled'"><a class="page-link" th:href="@{/admin/import(page=${importPage.number}, size=${importPage.size}, keyword=${keyword}, supplierId=${supplierId})}">&laquo;</a></li>
+                    <li class="page-item" th:each="i : ${#numbers.sequence(1, importPage.totalPages)}" th:classappend="${i == importPage.number + 1} ? 'active'"><a class="page-link" th:text="${i}" th:href="@{/admin/import(page=${i}, size=${importPage.size}, keyword=${keyword}, supplierId=${supplierId})}"></a></li>
+                    <li class="page-item" th:classappend="${importPage.last} ? 'disabled'"><a class="page-link" th:href="@{/admin/import(page=${importPage.number + 2}, size=${importPage.size}, keyword=${keyword}, supplierId=${supplierId})}">&raquo;</a></li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</main>
+</body>
+</html>

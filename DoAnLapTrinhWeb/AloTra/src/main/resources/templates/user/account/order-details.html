@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" layout:decorate="~{layouts/user}"
+      xmlns:layout="http://www.w3.org/1999/xhtml">
+<head><title>Chi tiết đơn hàng</title></head>
+<body>
+<main layout:fragment="content">
+    <div class="axil-dashboard-area axil-section-gap">
+        <div class="container">
+            <a th:href="@{/my-orders}" class="axil-btn btn-outline btn-sm mb-4"><i class="fal fa-long-arrow-left"></i> Quay lại danh sách</a>
+            <div class="axil-dashboard-warp">
+                <div class="axil-dashboard-account">
+                    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-3">
+                        <h4 class="title mb-0" th:text="'Chi tiết đơn hàng #' + ${order.maDonHang}"></h4>
+
+                        <form th:if="${order.trangThai == 'Đang xử lý'}"
+                              th:action="@{/my-orders/cancel/{id}(id=${order.maDonHang})}"
+                              method="post"
+                              class="cancel-form">
+                            <button type="button" class="axil-btn btn-danger cancel-order-btn" data-bs-toggle="modal" data-bs-target="#cancelOrderModal">Hủy đơn hàng</button>
+                        </form>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong>Ngày đặt:</strong> <span th:text="${#temporals.format(order.ngayDat, 'dd-MM-yyyy HH:mm')}"></span><br>
+                            <strong>Trạng thái:</strong> <span class="badge" th:classappend="${order.trangThai == 'Đã hủy' ? 'bg-danger' : (order.trangThai == 'Đã giao' ? 'bg-success' : 'bg-secondary')}" th:text="${order.trangThai}"></span><br>
+                            <strong>Tổng tiền:</strong> <span class="text-danger fw-bold" th:text="${#numbers.formatDecimal(order.tongTien, 0, 'COMMA', 0, 'POINT')} + ' ₫'"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Người nhận:</strong> <span th:text="${order.tenNguoiNhan}"></span><br>
+                            <strong>Số điện thoại:</strong> <span th:text="${order.soDienThoaiNhan}"></span><br>
+                            <strong>Địa chỉ:</strong> <span th:text="${order.diaChiNhan}"></span>
+                        </div>
+                    </div>
+                    <hr>
+                    <h5 class="mt-4">Các sản phẩm đã mua</h5>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                            <tr>
+                                <th>Sản phẩm</th>
+                                <th>Đơn giá</th>
+                                <th>Số lượng</th>
+                                <th class="text-end">Thành tiền</th>
+                                <th th:if="${order.trangThai == 'Đã giao'}" class="text-center">Đánh giá</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="detail : ${order.orderDetails}">
+                                <td th:text="${detail.tenSanPham}"></td>
+                                <td th:text="${#numbers.formatDecimal(detail.donGia, 0, 'COMMA', 0, 'POINT')} + ' ₫'"></td>
+                                <td th:text="${detail.soLuong}"></td>
+                                <td class="text-end" th:text="${#numbers.formatDecimal(detail.thanhTien, 0, 'COMMA', 0, 'POINT')} + ' ₫'"></td>
+                                <td th:if="${order.trangThai == 'Đã giao'}" class="text-center">
+                                    <a th:if="${@orderServiceImpl.canUserReviewProduct(#authentication.principal.username == 'anonymousUser' ? null : @userRepository.findByEmail(#authentication.principal.username).get().maNguoiDung, detail.sanPham.maSanPham)}"
+                                       th:href="@{/product/{id}(id=${detail.sanPham.maSanPham}, _fragment='reviews')}"
+                                       class="axil-btn btn-sm btn-outline-primary">Viết đánh giá</a>
+                                    <span th:unless="${@orderServiceImpl.canUserReviewProduct(#authentication.principal.username == 'anonymousUser' ? null : @userRepository.findByEmail(#authentication.principal.username).get().maNguoiDung, detail.sanPham.maSanPham)}"
+                                          class="text-muted fst-italic">Đã đánh giá</span>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="cancelOrderModal" tabindex="-1" aria-labelledby="cancelOrderModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="cancelOrderModalLabel">Xác nhận Hủy Đơn Hàng</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Bạn có chắc chắn muốn hủy đơn hàng này không? Hành động này không thể hoàn tác.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy bỏ</button>
+                    <button type="button" class="btn btn-danger" id="confirmCancelBtn">Xác nhận Hủy</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<th:block layout:fragment="script">
+    <script th:inline="javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            let formToSubmit = null;
+            const confirmCancelBtn = document.getElementById('confirmCancelBtn');
+            const cancelBtn = document.querySelector('.cancel-order-btn'); // Chỉ có 1 nút trên trang này
+
+            if (cancelBtn) {
+                cancelBtn.addEventListener('click', function (event) {
+                    formToSubmit = event.target.closest('form');
+                });
+            }
+            if (confirmCancelBtn) {
+                confirmCancelBtn.addEventListener('click', function () {
+                    if (formToSubmit) {
+                        formToSubmit.submit();
+                    }
+                });
+            }
+        });
+    </script>
+</th:block>
+
+</body>
+</html>

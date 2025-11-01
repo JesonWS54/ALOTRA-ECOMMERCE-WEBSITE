@@ -1,0 +1,185 @@
+<!doctype html>
+<html class="no-js" lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="_is_logged_in" th:content="${#authentication.principal != 'anonymousUser'}"/>
+    <meta name="user-id" th:content="${#authentication.principal != 'anonymousUser' ? #authentication.principal.username : 'anonymous'}">
+    <title>ALoTra - Chuỗi cửa hàng trà sữa trà trái cây cà phê dụng cụ số 1</title>
+    <meta name="robots" content="noindex, follow" />
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="shortcut icon" type="image/x-icon" th:href="@{/web/assets/images/favicon.png}">
+
+    <link rel="stylesheet" th:href="@{/web/assets/css/vendor/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/web/assets/css/vendor/font-awesome.css}">
+    <link rel="stylesheet" th:href="@{/web/assets/css/vendor/flaticon/flaticon.css}">
+    <link rel="stylesheet" th:href="@{/web/assets/css/vendor/slick.css}">
+    <link rel="stylesheet" th:href="@{/web/assets/css/vendor/slick-theme.css}">
+    <link rel="stylesheet" th:href="@{/web/assets/css/vendor/jquery-ui.min.css}">
+    <link rel="stylesheet" th:href="@{/web/assets/css/vendor/sal.css}">
+    <link rel="stylesheet" th:href="@{/web/assets/css/vendor/magnific-popup.css}">
+    <link rel="stylesheet" th:href="@{/web/assets/css/vendor/base.css}">
+    <link rel="stylesheet" th:href="@{/web/assets/css/style.min.css}">
+    <link rel="stylesheet" th:href="@{/web/assets/css/custom.css}">
+</head>
+
+<body class="sticky-header newsletter-popup-modal">
+<a href="#top" class="back-to-top" id="backto-top"><i class="fal fa-arrow-up"></i></a>
+
+<div th:replace="~{/fragments/user/header :: user-header}"></div>
+<main layout:fragment="content"></main>
+<div th:replace="~{/fragments/user/footer :: user-footer}"></div>
+<div class="cart-dropdown" id="cart-dropdown" th:if="${globalCartItems != null}">
+    <div class="cart-content-wrap">
+        <div class="cart-header">
+            <h2 class="header-title">Giỏ hàng</h2>
+            <button class="cart-close sidebar-close"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="cart-body">
+            <ul class="cart-item-list">
+                <li th:each="item : ${globalCartItems}" class="cart-item">
+                    <div class="item-img">
+                        <a th:href="@{/product/{id}(id=${item.sanPham.maSanPham})}">
+                            <img th:src="@{'/uploads/' + ${item.sanPham.hinhAnh}}" alt="Product">
+                        </a>
+                    </div>
+                    <div class="item-content">
+                        <h3 class="item-title">
+                            <a th:href="@{/product/{id}(id=${item.sanPham.maSanPham})}" th:text="${item.sanPham.tenSanPham}"></a>
+                        </h3>
+                        <div class="item-price" th:text="${item.soLuong} + ' x ' + ${#numbers.formatDecimal(item.donGia, 0, 'COMMA', 0, 'POINT')} + ' ₫'"></div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+        <div class="cart-footer">
+            <div class="group-btn">
+                <a th:href="@{/cart}" class="axil-btn btn-bg-primary viewcart-btn">Xem giỏ hàng</a>
+                <a th:href="@{/checkout}" class="axil-btn btn-bg-secondary checkout-btn">Thanh toán</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="quick-view-modal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content">
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" style="position: absolute; top: 15px; right: 15px; z-index: 10;"></button>
+            <div class="modal-body">
+            </div>
+        </div>
+    </div>
+</div>
+<div class="header-search-modal" id="header-search-modal">
+    <button class="card-close sidebar-close"><i class="fas fa-times"></i></button>
+    <div class="header-search-wrap">
+        <div class="card-header">
+            <form th:action="@{/shop}" method="get">
+                <div class="input-group">
+                    <input type="search" class="form-control" name="keyword" id="prod-search" placeholder="Bạn muốn tìm gì...">
+                    <button type="submit" class="axil-btn btn-bg-primary"><i class="far fa-search"></i></button>
+                </div>
+            </form>
+        </div>
+        <div class="card-body">
+            <div class="psearch-results" id="live-search-results-container">
+                <div class="axil-product-list" style="display: none;" id="live-search-item-template">
+                    <div class="thumbnail"><a href="#"><img src="#" alt="Live Search Product"></a></div>
+                    <div class="product-content">
+                        <h6 class="product-title"><a href="#">Product Name</a></h6>
+                        <div class="product-price-variant"><span class="price current-price">0 ₫</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<link rel="stylesheet" th:href="@{/web/assets/css/chat-widget.css}">
+
+<script th:src="@{/web/assets/js/vendor/modernizr.min.js}"></script>
+<script th:src="@{/web/assets/js/vendor/jquery.js}"></script>
+
+<script th:src="@{/web/assets/js/vendor/popper.min.js}"></script>
+
+<script th:src="@{/web/assets/js/vendor/bootstrap.min.js}"></script>
+
+<script th:src="@{/web/assets/js/vendor/slick.min.js}"></script>
+<script th:src="@{/web/assets/js/vendor/js.cookie.js}"></script>
+<script th:src="@{/web/assets/js/vendor/jquery-ui.min.js}"></script>
+<script th:src="@{/web/assets/js/vendor/jquery.ui.touch-punch.min.js}"></script>
+<script th:src="@{/web/assets/js/vendor/jquery.countdown.min.js}"></script>
+<script th:src="@{/web/assets/js/vendor/sal.js}"></script>
+<script th:src="@{/web/assets/js/vendor/jquery.magnific-popup.min.js}"></script>
+<script th:src="@{/web/assets/js/vendor/imagesloaded.pkgd.min.js}"></script>
+<script th:src="@{/web/assets/js/vendor/isotope.pkgd.min.js}"></script>
+<script th:src="@{/web/assets/js/vendor/counterup.js}"></script>
+<script th:src="@{/web/assets/js/vendor/waypoints.min.js}"></script>
+
+<script th:src="@{/web/assets/js/main.js}"></script>
+<script th:src="@{/web/assets/js/custom-functions.js}"></script>
+<script th:src="@{/web/assets/js/quick-view.js}"></script> <script th:src="@{/web/assets/js/chat-widget.js}"></script>
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('prod-search');
+        const resultsContainer = document.getElementById('live-search-results-container');
+        const itemTemplate = document.getElementById('live-search-item-template');
+        let debounceTimer;
+
+        if (searchInput) {
+            searchInput.addEventListener('keyup', () => {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(performLiveSearch, 300);
+            });
+        }
+
+        async function performLiveSearch() {
+            const keyword = searchInput.value.trim();
+            if (keyword.length < 2) {
+                resultsContainer.innerHTML = '';
+                return;
+            }
+            try {
+                const response = await fetch(`/api/search?keyword=${encodeURIComponent(keyword)}`);
+                if (!response.ok) return;
+                const products = await response.json();
+                displayLiveResults(products);
+            } catch (error) {
+                console.error('Live search failed:', error);
+            }
+        }
+
+        function formatPrice(price) {
+            return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
+        }
+
+        function displayLiveResults(products) {
+            resultsContainer.innerHTML = '';
+            if (products && products.length > 0) {
+                products.forEach(product => {
+                    const newItem = itemTemplate.cloneNode(true);
+                    newItem.removeAttribute('id');
+                    newItem.style.display = 'flex';
+                    const productUrl = `/product/${product.maSanPham}`;
+                    newItem.querySelector('a').href = productUrl;
+                    newItem.querySelector('img').src = `/uploads/${product.hinhAnh || 'placeholder.png'}`;
+                    newItem.querySelector('.product-title a').href = productUrl;
+                    newItem.querySelector('.product-title a').textContent = product.tenSanPham;
+                    newItem.querySelector('.current-price').textContent = formatPrice(product.giaBan);
+                    resultsContainer.appendChild(newItem);
+                });
+            }
+        }
+    });
+    /*]]>*/
+</script>
+
+<th:block layout:fragment="script"></th:block>
+
+</body>
+</html>

@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layouts/user}">
+<head><title>Đặt hàng thành công</title></head>
+<body>
+<main layout:fragment="content">
+    <div class="axil-checkout-area axil-section-gap">
+        <div class="container text-center">
+            <div class="alert alert-success">
+                <h4 class="alert-heading">Đặt hàng thành công!</h4>
+                <p>Cảm ơn bạn đã mua hàng tại AloTra. Chúng tôi sẽ xử lý đơn hàng của bạn trong thời gian sớm nhất.</p>
+            </div>
+            <a th:href="@{/shop}" class="axil-btn btn-bg-primary">Tiếp tục mua sắm</a>
+            <a th:href="@{/my-orders}" class="axil-btn btn-outline">Xem lịch sử đơn hàng</a>
+        </div>
+    </div>
+</main>
+</body>
+</html>

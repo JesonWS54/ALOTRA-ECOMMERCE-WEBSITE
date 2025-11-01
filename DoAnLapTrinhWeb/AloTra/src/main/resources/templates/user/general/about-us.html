@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/user}">
+<head>
+    <title>Về Chúng Tôi</title>
+</head>
+<body>
+
+<div layout:fragment="content">
+    <div class="axil-breadcrumb-area">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6 col-md-8">
+                    <div class="inner">
+                        <ul class="axil-breadcrumb">
+                            <li class="axil-breadcrumb-item"><a th:href="@{/}">Home</a></li>
+                            <li class="separator"></li>
+                            <li class="axil-breadcrumb-item active" aria-current="page">Thông Tin Về AloTra</li>
+                        </ul>
+                        <h1 class="title">Giới thiệu về cửa hàng</h1>
+                    </div>
+                </div>
+                <div class="col-lg-6 col-md-4">
+                    <div class="inner">
+                        <div class="bradcrumb-thumb">
+                            <img th:src="@{/web/assets/images/product/product-45.png}" alt="Image">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="axil-about-area about-style-1 axil-section-gap ">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-xl-4 col-lg-6">
+                    <div class="about-thumbnail">
+                        <div class="thumbnail">
+                            <img th:src="@{/web/assets/images/about/about-01.png}" alt="About Us">
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-8 col-lg-6">
+                    <div class="about-content content-right">
+                        <span class="title-highlighter highlighter-primary2"> <i class="far fa-shopping-basket"></i>Về Cửa hàng</span>
+                        <h3 class="title">Mua sắm trực tuyến mang đem đến sự thuận tiện dễ dàng.</h3>
+                        <span class="text-heading">AloTra giúp bạn có thể lựa món mua và tận hưởng thương mại kỹ thuật số thống nhất, thông minh — cả trực tuyến tại cửa hàng.</span>
+                        <div class="row">
+                            <div class="col-xl-6">
+                                <p>Trao quyền cho đội ngũ bán hàng của bạn bằng các giải pháp phù hợp với ngành, hỗ trợ các nhà sản xuất khi họ chuyển sang kỹ thuật số và thích ứng với thị trường và khách hàng thay đổi nhanh hơn bằng cách tạo ra các hoạt động kinh doanh mới.</p>
+                            </div>
+                            <div class="col-xl-6">
+                                <p class="mb--0">AloTra mang đến cho người mua trải nghiệm tự phục vụ liền mạch khi mua sắm trực tuyến với tất cả các tính năng B2B.</p>
+                            </div>
+                        </div>
+
+                        <div class="mt--40">
+                            <h4 style="font-weight: 500;">Sứ mệnh của chúng tôi</h4>
+                            <p>Chúng tôi cam kết mang đến cho khách hàng những sản phẩm chất lượng nhất với giá cả phải chăng và dịch vụ khách hàng vượt trội. Sứ mệnh của OneShop là trở thành điểm đến mua sắm trực tuyến tin cậy hàng đầu tại Việt Nam.</p>
+
+                            <h4 style="font-weight: 500;" class="mt--30">Giá trị cốt lõi</h4>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-check-circle text-success"></i> <strong>Chất lượng:</strong> Chỉ cung cấp sản phẩm chính hãng, đã qua kiểm định.</li>
+                                <li><i class="fas fa-check-circle text-success"></i> <strong>Tin cậy:</strong> Minh bạch trong thông tin, an toàn trong giao dịch.</li>
+                                <li><i class="fas fa-check-circle text-success"></i> <strong>Tận tâm:</strong> Hỗ trợ khách hàng 24/7, giải quyết mọi vấn đề.</li>
+                            </ul>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

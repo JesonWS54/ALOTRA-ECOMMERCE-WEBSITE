@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/user}">
+<head>
+    <title>Danh sách yêu thích</title>
+</head>
+<body>
+<main layout:fragment="content">
+    <div class="axil-wishlist-area axil-section-gap">
+        <div class="container">
+            <div class="axil-wishlist-box">
+                <div th:if="${wishlistItems.isEmpty()}" class="text-center">
+                    <h4>Danh sách yêu thích của bạn đang trống.</h4>
+                    <a th:href="@{/shop}" class="axil-btn btn-bg-primary mt-4">Tiếp tục mua sắm</a>
+                </div>
+                <div th:unless="${wishlistItems.isEmpty()}" class="table-responsive">
+                    <table class="table axil-product-table axil-wishlist-table">
+                        <thead>
+                        <tr>
+                            <th scope="col" class="product-remove"></th>
+                            <th scope="col" class="product-thumbnail">Sản phẩm</th>
+                            <th scope="col" class="product-title"></th>
+                            <th scope="col" class="product-price">Giá</th>
+                            <th scope="col" class="product-stock-status">Trạng thái</th>
+                            <th scope="col" class="product-add-cart"></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="item : ${wishlistItems}">
+                            <td class="product-remove">
+                                <form th:action="@{'/wishlist/toggle/' + ${item.sanPham.maSanPham}}" method="post">
+                                    <button type="submit" class="remove-wishlist" style="border:none; background: none; cursor: pointer; padding:0;">
+                                        <i class="fal fa-times"></i>
+                                    </button>
+                                </form>
+                            </td>
+                            <td class="product-thumbnail">
+                                <a th:href="@{/product/{id}(id=${item.sanPham.maSanPham})}">
+                                    <img th:src="@{'/uploads/' + ${item.sanPham.hinhAnh}}" alt="Product">
+                                </a>
+                            </td>
+                            <td class="product-title">
+                                <a th:href="@{/product/{id}(id=${item.sanPham.maSanPham})}" th:text="${item.sanPham.tenSanPham}"></a>
+                            </td>
+                            <td class="product-price" data-title="Price" th:text="${#numbers.formatDecimal(item.sanPham.giaBan, 0, 'COMMA', 0, 'POINT')} + ' ₫'"></td>
+                            <td class="product-stock-status" data-title="Status" th:text="${item.sanPham.kichHoat ? 'Còn hàng' : 'Hết hàng'}"></td>
+                            <td class="product-add-cart">
+                                <form th:action="@{/cart/add}" method="post">
+                                    <input type="hidden" name="productId" th:value="${item.sanPham.maSanPham}" />
+                                    <button type="submit" class="axil-btn btn-outline">Thêm vào giỏ</button>
+                                </form>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+</body>
+</html>

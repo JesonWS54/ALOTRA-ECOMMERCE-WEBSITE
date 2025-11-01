@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/user}">
+
+<head>
+    <meta charset="utf-8"/>
+    <title>Trang chủ</title>
+    <style>
+        .slide-link, .card-link { position: absolute; inset: 0; display: block; text-indent: -9999px; background: transparent; }
+        .axil-product.product-style-one { position: relative; }
+        .axil-product.product-style-one .card-link { z-index: 2; }
+        .main-slider-content .title a { color: inherit; text-decoration: none !important; }
+        .main-slider-content .title a:hover, .main-slider-content .title a:focus, .main-slider-content .title a:active { text-decoration: none !important; }
+        .axil-product a { text-decoration: none; }
+        .axil-product a:hover, .axil-product a:focus, .axil-product a:active { text-decoration: none; }
+    </style>
+</head>
+
+<body>
+<main layout:fragment="content">
+
+    <div class="axil-main-slider-area main-slider-style-1">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-5 col-sm-6">
+                    <div class="main-slider-content">
+                        <div class="slider-content-activation-one">
+                            <div th:each="product : ${sliderProducts}" class="single-slide slick-slide" data-sal="slide-up" data-sal-delay="400" data-sal-duration="800">
+                                <span class="subtitle"><i class="fas fa-fire"></i> Ưu đãi hấp dẫn trong tuần</span>
+                                <h1 class="title"><a th:href="@{/product/{id}(id=${product.maSanPham})}" th:text="${product.tenSanPham}"></a></h1>
+                                <div class="slide-action">
+                                    <div class="shop-btn"><a th:href="@{/product/{id}(id=${product.maSanPham})}" class="axil-btn btn-bg-white"><i class="fal fa-shopping-cart"></i> Xem chi tiết</a></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-7 col-sm-6">
+                    <div class="main-slider-large-thumb">
+                        <div class="slider-thumb-activation-one axil-slick-dots">
+                            <div th:each="product : ${sliderProducts}" class="single-slide slick-slide" data-sal="slide-up" data-sal-delay="600" data-sal-duration="1500" style="position:relative;">
+                                <img th:src="@{'/uploads/' + ${product.hinhAnh}}" alt="Product">
+                                <div class="product-price">
+                                    <span class="text">Chỉ từ</span>
+                                    <span class="price-amount" th:text="${#numbers.formatDecimal(product.giaBan, 0, 'COMMA', 0, 'POINT')} + ' ₫'"></span>
+                                </div>
+                                <a class="slide-link" th:href="@{/product/{id}(id=${product.maSanPham})}" th:aria-label="'Xem chi tiết ' + ${product.tenSanPham}"></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <ul class="shape-group">
+            <li class="shape-1"><img th:src="@{/web/assets/images/others/shape-1.png}" alt="Shape"></li>
+            <li class="shape-2"><img th:src="@{/web/assets/images/others/shape-2.png}" alt="Shape"></li>
+        </ul>
+    </div>
+    <div class="axil-categorie-area bg-color-white axil-section-gapcommon">
+        <div class="container">
+            <div class="section-title-wrapper">
+                <span class="title-highlighter highlighter-secondary"><i class="far fa-tags"></i> Danh mục</span>
+                <h2 class="title">Duyệt theo danh mục</h2>
+            </div>
+            <div class="categrie-product-activation slick-layout-wrapper--15 axil-slick-arrow arrow-top-slide">
+                <div th:each="category : ${categories}" class="slick-single-layout">
+                    <div class="categrie-product" data-sal="zoom-out" data-sal-delay="200" data-sal-duration="500">
+                        <a th:href="@{/shop(categoryId=${category.maDanhMuc})}">
+                            <img class="img-fluid" th:src="@{'/uploads/' + ${category.hinhAnh}}" alt="product categorie">
+                            <h6 class="cat-title" th:text="${category.tenDanhMuc}"></h6>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="axil-product-area bg-color-white axil-section-gap">
+        <div class="container">
+            <div class="section-title-wrapper">
+                <span class="title-highlighter highlighter-primary"><i class="far fa-shopping-basket"></i> Sản phẩm của chúng tôi</span>
+                <h2 class="title">Khám phá sản phẩm</h2>
+            </div>
+            <div class="explore-product-activation slick-layout-wrapper slick-layout-wrapper--15 axil-slick-arrow arrow-top-slide">
+                <div th:each="productGroup : ${groupedProducts}" class="slick-single-layout">
+                    <div class="row row--15">
+                        <div th:each="product : ${productGroup}" class="col-xl-3 col-lg-4 col-sm-6 col-12 mb--30">
+                            <div class="axil-product product-style-one">
+                                <div class="thumbnail">
+                                    <a th:href="@{/product/{id}(id=${product.maSanPham})}"><img data-sal="zoom-out" class="main-img" th:src="@{'/uploads/' + ${product.hinhAnh}}" alt="Product Images"></a>
+                                    <div class="product-hover-action">
+                                        <ul class="cart-action">
+                                            <li class="quickview"><a href="#" class="quick-view-btn" data-bs-toggle="modal" data-bs-target="#quick-view-modal" th:data-product-id="${product.maSanPham}"><i class="far fa-eye"></i></a></li>
+                                            <li class="select-option"><th:block th:if="${product.inventory != null && product.inventory.soLuongTon > 0}"><a href="#" class="add-to-cart-btn-ajax" th:data-product-id="${product.maSanPham}">Thêm vào giỏ</a></th:block><th:block th:unless="${product.inventory != null && product.inventory.soLuongTon > 0}"><a href="javascript:void(0)" style="cursor: not-allowed; background-color: #6c757d !important; border-color: #6c757d !important;">Hết hàng</a></th:block></li>
+                                            <li class="wishlist"><a href="#" class="toggle-wishlist-btn" th:data-product-id="${product.maSanPham}"><i class="far fa-heart"></i></a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="axil-product-area bg-color-white axil-section-gap">
+        <div class="container">
+            <div class="section-title-wrapper">
+                <span class="title-highlighter highlighter-primary"><i class="far fa-lightbulb-on"></i> Hàng Mới Về</span>
+                <h2 class="title">Sản Phẩm Mới Nhất</h2>
+            </div>
+            <div class="explore-product-activation slick-layout-wrapper slick-layout-wrapper--15 axil-slick-arrow arrow-top-slide">
+                <div th:each="productGroup : ${newestProductsGrouped}" class="slick-single-layout">
+                    <div class="row row--15">
+                        <div th:each="product : ${productGroup}" class="col-xl-3 col-lg-4 col-sm-6 col-12 mb--30">
+                            <div class="axil-product product-style-one">
+                                <div class="thumbnail">
+                                    <a th:href="@{/product/{id}(id=${product.maSanPham})}"><img th:src="@{'/uploads/' + ${product.hinhAnh}}" alt="Product Images"></a>
+                                    <div class="product-hover-action">
+                                        <ul class="cart-action">
+                                            <li class="quickview"><a href="#" class="quick-view-btn" data-bs-toggle="modal" data-bs-target="#quick-view-modal" th:data-product-id="${product.maSanPham}"><i class="far fa-eye"></i></a></li>
+                                            <li class="select-option"><th:block th:if="${product.inventory != null && product.inventory.soLuongTon > 0}"><a href="#" class="add-to-cart-btn-ajax" th:data-product-id="${product.maSanPham}">Thêm vào giỏ</a></th:block><th:block th:unless="${product.inventory != null && product.inventory.soLuongTon > 0}"><a href="javascript:void(0)" style="cursor: not-allowed; background-color: #6c757d !important; border-color: #6c757d !important;">Hết hàng</a></th:block></li>
+                                            <li class="wishlist"><a href="#" class="toggle-wishlist-btn" th:data-product-id="${product.maSanPham}"><i class="far fa-heart"></i></a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="axil-product-area bg-color-white axil-section-gap">
+        <div class="container">
+            <div class="section-title-wrapper">
+                <span class="title-highlighter highlighter-secondary"><i class="fas fa-fire"></i> Hot Nhất Tuần</span>
+                <h2 class="title">Sản Phẩm Bán Chạy</h2>
+            </div>
+            <div class="explore-product-activation slick-layout-wrapper slick-layout-wrapper--15 axil-slick-arrow arrow-top-slide">
+                <div th:each="productGroup : ${topSellingProductsGrouped}" class="slick-single-layout">
+                    <div class="row row--15">
+                        <div th:each="product : ${productGroup}" class="col-xl-3 col-lg-4 col-sm-6 col-12 mb--30">
+                            <div class="axil-product product-style-one">
+                                <div class="thumbnail">
+                                    <a th:href="@{/product/{id}(id=${product.maSanPham})}"><img th:src="@{'/uploads/' + ${product.hinhAnh}}" alt="Product Images"></a>
+                                    <div class="product-hover-action">
+                                        <ul class="cart-action">
+                                            <li class="quickview"><a href="#" class="quick-view-btn" data-bs-toggle="modal" data-bs-target="#quick-view-modal" th:data-product-id="${product.maSanPham}"><i class="far fa-eye"></i></a></li>
+                                            <li class="select-option"><th:block th:if="${product.inventory != null && product.inventory.soLuongTon > 0}"><a href="#" class="add-to-cart-btn-ajax" th:data-product-id="${product.maSanPham}">Thêm vào giỏ</a></th:block><th:block th:unless="${product.inventory != null && product.inventory.soLuongTon > 0}"><a href="javascript:void(0)" style="cursor: not-allowed; background-color: #6c757d !important; border-color: #6c757d !important;">Hết hàng</a></th:block></li>
+                                            <li class="wishlist"><a href="#" class="toggle-wishlist-btn" th:data-product-id="${product.maSanPham}"><i class="far fa-heart"></i></a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="axil-product-area bg-color-white axil-section-gap">
+        <div class="container">
+            <div class="section-title-wrapper">
+                <span class="title-highlighter highlighter-primary"><i class="fas fa-tags"></i> Deal Sốc</span>
+                <h2 class="title">Giảm Giá Nhiều Nhất</h2>
+            </div>
+            <div class="explore-product-activation slick-layout-wrapper slick-layout-wrapper--15 axil-slick-arrow arrow-top-slide">
+                <div th:each="productGroup : ${mostDiscountedProductsGrouped}" class="slick-single-layout">
+                    <div class="row row--15">
+                        <div th:each="product : ${productGroup}" class="col-xl-3 col-lg-4 col-sm-6 col-12 mb--30">
+                            <div class="axil-product product-style-one">
+                                <div class="thumbnail">
+                                    <a th:href="@{/product/{id}(id=${product.maSanPham})}"><img th:src="@{'/uploads/' + ${product.hinhAnh}}" alt="Product Images"></a>
+                                    <div class="product-badget" th:if="${product.giaNiemYet > product.giaBan and product.giaNiemYet > 0}">
+                                        <span class="percentage" th:text="'-' + ${#numbers.formatDecimal(((product.giaNiemYet - product.giaBan) / product.giaNiemYet) * 100, 0, 0)} + '%'"></span>
+                                    </div>
+                                    <div class="product-hover-action">
+                                        <ul class="cart-action">
+                                            <li class="quickview"><a href="#" class="quick-view-btn" data-bs-toggle="modal" data-bs-target="#quick-view-modal" th:data-product-id="${product.maSanPham}"><i class="far fa-eye"></i></a></li>
+                                            <li class="select-option"><th:block th:if="${product.inventory != null && product.inventory.soLuongTon > 0}"><a href="#" class="add-to-cart-btn-ajax" th:data-product-id="${product.maSanPham}">Thêm vào giỏ</a></th:block><th:block th:unless="${product.inventory != null && product.inventory.soLuongTon > 0}"><a href="javascript:void(0)" style="cursor: not-allowed; background-color: #6c757d !important; border-color: #6c757d !important;">Hết hàng</a></th:block></li>
+                                            <li class="wishlist"><a href="#" class="toggle-wishlist-btn" th:data-product-id="${product.maSanPham}"><i class="far fa-heart"></i></a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</main>
+</body>
+</html>

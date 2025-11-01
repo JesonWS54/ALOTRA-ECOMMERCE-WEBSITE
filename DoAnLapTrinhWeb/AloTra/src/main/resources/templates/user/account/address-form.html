@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" layout:decorate="~{layouts/user}"
+      xmlns:layout="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Thêm địa chỉ mới</title>
+</head>
+<body>
+<main layout:fragment="content">
+    <div class="axil-checkout-area axil-section-gap">
+        <div class="container">
+            <h4 class="title mb-4">Thông tin địa chỉ</h4>
+
+            <form th:action="@{/my-account/add-address}" th:object="${address}" method="post" class="axil-checkout-billing">
+                <div class="row">
+                    <div class="col-lg-6">
+                        <div class="form-group">
+                            <label>Tên người nhận <span>*</span></label>
+                            <input type="text" class="form-control" th:field="*{tenNguoiNhan}" required>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="form-group">
+                            <label>Số điện thoại <span>*</span></label>
+                            <input type="tel" class="form-control" th:field="*{soDienThoai}" required>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Combobox Tỉnh/Thành -->
+                <div class="form-group">
+                    <label>Tỉnh/Thành phố <span>*</span></label>
+                    <select class="form-select" id="provinceSelect" required></select>
+                    <input type="hidden" th:field="*{tinhThanh}">
+                </div>
+
+                <!-- Combobox Quận/Huyện -->
+                <div class="form-group">
+                    <label>Quận/Huyện <span>*</span></label>
+                    <select class="form-select" id="districtSelect" required disabled></select>
+                    <input type="hidden" th:field="*{quanHuyen}">
+                </div>
+
+                <!-- Combobox Phường/Xã -->
+                <div class="form-group">
+                    <label>Phường/Xã <span>*</span></label>
+                    <select class="form-select" id="wardSelect" required disabled></select>
+                    <input type="hidden" th:field="*{phuongXa}">
+                </div>
+
+                <!-- Số nhà, tên đường -->
+                <div class="form-group">
+                    <label>Số nhà, tên đường <span>*</span></label>
+                    <input type="text" class="form-control" th:field="*{soNhaDuong}" required>
+                </div>
+
+                <!-- Quan trọng: nơi muốn quay về sau khi lưu -->
+                <input type="hidden" name="return" th:value="@{/my-account(tab=${'addresses'})}"/>
+
+                <!-- Nút Lưu/Hủy -->
+                <div class="d-flex gap-2">
+                    <button type="submit" class="axil-btn btn-bg-primary w-50">Lưu địa chỉ</button>
+                    <a th:href="@{/my-account(tab=${'addresses'})}" class="axil-btn btn-outline w-50 text-center">Hủy</a>
+                </div>
+            </form>
+
+            <div th:attr="data-vnjson-url=@{/web/assets/data/vn-divisions.json}"></div>
+            <script th:src="@{/web/assets/js/address-form.js}" defer></script>
+        </div>
+    </div>
+</main>
+</body>
+</html>

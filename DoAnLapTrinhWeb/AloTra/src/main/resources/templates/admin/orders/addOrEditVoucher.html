@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{/layouts/admin}">
+<head>
+    <title th:text="${isEditMode ? 'Sửa Khuyến mãi' : 'Thêm Khuyến mãi'}"></title>
+</head>
+<body>
+<h4 class="fw-bold py-3 mb-4" layout:fragment="page_title">
+    <span class="text-muted fw-light">Khuyến mãi / </span>
+    <span th:text="${isEditMode ? 'Chỉnh sửa' : 'Thêm mới'}"></span>
+</h4>
+<main layout:fragment="content">
+    <!-- Action của form vẫn sạch sẽ -->
+    <form th:action="@{/admin/voucher/save}" th:object="${voucherRequest}" method="post">
+        <div class="card">
+            <div class="card-body">
+                <div th:if="${errorMessage}" class="alert alert-danger" role="alert">
+                    <span th:text="${errorMessage}"></span>
+                </div>
+
+                <input type="hidden" name="page" th:value="${page}">
+                <input type="hidden" name="size" th:value="${size}">
+                <input type="hidden" name="keyword" th:value="${keyword}">
+                <input type="hidden" name="status" th:value="${status}">
+                <input type="hidden" name="filterKieuApDung" th:value="${filterKieuApDung}">
+                <input type="hidden" name="isEditMode" th:value="${isEditMode}">
+
+                <div class="row">
+                    <div class="mb-3 col-md-6">
+                        <label class="form-label">Mã khuyến mãi <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <input type="text" th:field="*{maKhuyenMai}" class="form-control text-uppercase" required th:readonly="${isEditMode}" placeholder="Tự nhập hoặc tạo ngẫu nhiên">
+                            <button class="btn btn-outline-secondary" type="button" id="generate-voucher-code-btn" th:disabled="${isEditMode}">Tạo mã</button>
+                        </div>
+                    </div>
+                    <div class="mb-3 col-md-6"><label class="form-label">Tên chiến dịch <span class="text-danger">*</span></label><input type="text" th:field="*{tenChienDich}" class="form-control" required></div>
+
+                    <div class="mb-3 col-md-6">
+                        <label class="form-label">Kiểu áp dụng <span class="text-danger">*</span></label>
+                        <select th:field="*{kieuApDung}" class="form-select" required>
+                            <option th:value="0">Phần trăm (%)</option>
+                            <option th:value="1">Số tiền cố định (₫)</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3 col-md-6"><label class="form-label">Giá trị <span class="text-danger">*</span></label><input type="number" th:field="*{giaTri}" class="form-control" required placeholder="Nếu là %, nhập 10. Nếu là tiền, nhập 10000"></div>
+                    <div class="mb-3 col-md-6"><label class="form-label">Bắt đầu lúc <span class="text-danger">*</span></label><input type="datetime-local" th:field="*{batDauLuc}" class="form-control" required></div>
+                    <div class="mb-3 col-md-6"><label class="form-label">Kết thúc lúc <span class="text-danger">*</span></label><input type="datetime-local" th:field="*{ketThucLuc}" class="form-control" required></div>
+                    <div class="mb-3 col-md-6"><label class="form-label">Đơn hàng tối thiểu (₫)</label><input type="number" th:field="*{tongTienToiThieu}" class="form-control" placeholder="Để trống nếu không yêu cầu"></div>
+                    <div class="mb-3 col-md-6"><label class="form-label">Giảm tối đa (₫)</label><input type="number" th:field="*{giamToiDa}" class="form-control" placeholder="Chỉ áp dụng cho kiểu Phần trăm"></div>
+                    <div class="mb-3 col-md-6"><label class="form-label">Giới hạn tổng số lần sử dụng</label><input type="number" th:field="*{gioiHanTongSoLan}" class="form-control" placeholder="Để trống nếu không giới hạn"></div>
+                    <div class="mb-3 col-md-6"><label class="form-label">Giới hạn mỗi người dùng</label><input type="number" th:field="*{gioiHanMoiNguoi}" class="form-control" placeholder="Để trống nếu không giới hạn"></div>
+                    <div class="mb-3 col-md-12"><label class="form-label">Trạng thái <span class="text-danger">*</span></label><select th:field="*{trangThai}" class="form-select"><option value="1">Hoạt động</option><option value="0">Hết hạn</option></select></div>
+                </div>
+                <div class="mt-3">
+                    <a th:href="@{/admin/voucher(page=${page}, size=${size}, keyword=${keyword}, status=${status}, filterKieuApDung=${filterKieuApDung})}" class="btn btn-outline-secondary">Hủy</a>
+                    <button type="submit" class="btn btn-primary" th:text="${isEditMode ? 'Cập nhật' : 'Lưu'}"></button>
+                </div>
+            </div>
+        </div>
+    </form>
+</main>
+</body>
+</html>

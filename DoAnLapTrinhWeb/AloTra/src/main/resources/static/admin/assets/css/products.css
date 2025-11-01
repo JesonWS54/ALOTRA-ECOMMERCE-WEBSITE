@@ -1,0 +1,121 @@
+/* Categories Page Styles */
+.categories-management-page .card {
+    margin-bottom: 1.5rem;
+    box-shadow: 0 0.125rem 0.25rem rgba(165, 163, 174, 0.3);
+}
+
+.categories-management-page .card-header {
+    padding: 1.5rem;
+}
+
+.categories-management-page .card-body {
+    padding: 1.5rem;
+}
+
+.categories-management-page .table th {
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+    color: #6e6b7b;
+}
+
+.categories-management-page .table td {
+    vertical-align: middle;
+}
+
+/* Modal Styles */
+.categories-management-page .modal-header {
+    border-bottom: 1px solid #ebe9f1;
+    padding: 1.5rem;
+}
+
+.categories-management-page .modal-body {
+    padding: 1.5rem;
+}
+
+.categories-management-page .modal-footer {
+    border-top: 1px solid #ebe9f1;
+    padding: 1rem 1.5rem;
+}
+
+/* Action Buttons */
+.btn-action {
+    padding: 0.4rem 0.5rem;
+    font-size: 1rem;
+    line-height: 1;
+    border-radius: 0.375rem;
+}
+
+/* Status Badge */
+.badge-status {
+    font-weight: 500;
+    padding: 0.35rem 0.75rem;
+    border-radius: 1.5rem;
+    font-size: 0.75rem;
+}
+
+/* Category Image */
+.category-img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+
+.product-detail-page .price-section .selling-price {
+    font-size: 2.25rem;
+    font-weight: bold;
+    color: #ff3e1d !important; /* Đảm bảo màu đỏ được ưu tiên */
+}
+
+.product-detail-page .price-section .list-price {
+    font-size: 1.25rem;
+    text-decoration: line-through; /* ✅ Đảm bảo gạch ngang được ưu tiên */
+    color: #a1acb8;
+}
+
+.product-detail-page .info-label {
+    font-weight: 600;
+    color: #566a7f;
+}
+
+.product-detail-page .info-label i {
+    margin-right: 8px;
+    color: #697a8d;
+}
+
+.product-detail-page .card-footer {
+    background-color: transparent;
+    border-top: 1px solid #ebe9f1;
+}
+
+.review-media {
+    margin-top: 10px;
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.review-media img, .review-media video {
+    max-width: 150px;
+    max-height: 150px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    object-fit: cover;
+    cursor: pointer;
+}
+
+.review-media video {
+     width: 150px;
+}
+/* Responsive Table */
+@media (max-width: 768px) {
+    .categories-management-page .table-responsive {
+        display: block;
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+}

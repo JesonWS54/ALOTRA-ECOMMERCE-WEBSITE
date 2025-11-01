@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{/layouts/admin}">
+<head>
+    <title>Chi tiết Phiếu nhập</title>
+</head>
+<body>
+<h4 class="fw-bold py-3 mb-4" layout:fragment="page_title">
+    <span class="text-muted fw-light">Phiếu nhập /</span> Chi tiết
+</h4>
+<main layout:fragment="content">
+    <div class="card">
+        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+            <h5 class="mb-0" th:text="'Chi tiết Phiếu nhập #PN' + ${receipt.maPhieuNhap}"></h5>
+        </div>
+        <div class="card-body">
+            <div class="row mb-4">
+                <div class="col-md-6"><p class="mb-1"><strong>Nhà cung cấp:</strong></p><p th:text="${receipt.nhaCungCap.tenNCC}"></p></div>
+                <div class="col-md-6"><p class="mb-1"><strong>Ngày tạo:</strong></p><p th:text="${#temporals.format(receipt.ngayTao, 'dd/MM/yyyy HH:mm')}"></p></div>
+            </div>
+            <h6 class="mb-3 text-primary">Danh sách sản phẩm đã nhập</h6>
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead class="table-light">
+                    <tr><th>Mã SP</th><th>Tên sản phẩm</th><th class="text-end">Số lượng</th><th class="text-end">Giá nhập</th><th class="text-end">Thành tiền</th></tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="detail : ${receipt.chiTietPhieuNhapList}">
+                        <td th:text="${detail.sanPham.maSanPham}"></td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <img th:src="@{'/uploads/' + ${detail.sanPham.hinhAnh}}" class="img-thumbnail me-2" style="width: 40px; height: 40px;" alt="Ảnh SP">
+                                <span th:text="${detail.sanPham.tenSanPham}"></span>
+                            </div>
+                        </td>
+                        <td class="text-end" th:text="${detail.soLuong}"></td>
+                        <td class="text-end" th:text="${#numbers.formatDecimal(detail.giaNhap, 0, 'COMMA', 0, 'POINT')} + ' ₫'"></td>
+                        <td class="text-end" th:text="${#numbers.formatDecimal(detail.thanhTien, 0, 'COMMA', 0, 'POINT')} + ' ₫'"></td>
+                    </tr>
+                    </tbody>
+                    <tfoot>
+                    <tr class="fw-bold"><td colspan="4" class="text-end">Tổng cộng:</td><td class="text-end text-danger" th:text="${#numbers.formatDecimal(receipt.tongTien, 0, 'COMMA', 0, 'POINT')} + ' ₫'"></td></tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+        <div class="card-footer text-end">
+            <a th:href="@{/admin/import}" class="btn btn-outline-secondary"><i class="bx bx-arrow-back me-1"></i> Quay lại danh sách</a>
+        </div>
+    </div>
+</main>
+</body>
+</html>

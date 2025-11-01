@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{/layouts/admin}">
+<head>
+    <title>Chi tiết sản phẩm</title>
+</head>
+<body>
+<h4 class="fw-bold py-3 mb-4" layout:fragment="page_title">
+    <span class="text-muted fw-light">Sản phẩm /</span> Chi tiết
+</h4>
+
+<main layout:fragment="content" class="product-detail-page">
+    <div class="card">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-5 text-center">
+                    <img th:src="@{'/uploads/' + ${product.hinhAnh}}" class="img-fluid rounded border p-2"
+                         alt="Ảnh sản phẩm" style="max-height: 400px;">
+                </div>
+                <div class="col-md-7">
+                    <h2 class="card-title" th:text="${product.tenSanPham}"></h2>
+                    <div>
+                        <span th:if="${product.kichHoat}" class="badge bg-label-success fs-6"><i class="bx bx-check-circle me-1"></i>Đang hoạt động</span>
+                        <span th:unless="${product.kichHoat}" class="badge bg-label-danger fs-6"><i class="bx bx-x-circle me-1"></i>Ngừng hoạt động</span>
+                    </div>
+                    <hr>
+                    <div class="price-section mb-4">
+                        <span class="selling-price" th:text="${#numbers.formatDecimal(product.giaBan, 0, 'COMMA', 0, 'POINT')} + ' ₫'"></span>
+                        <span class="list-price ms-2" th:if="${product.giaNiemYet != null and product.giaNiemYet.doubleValue() > 0}"
+                              th:text="${#numbers.formatDecimal(product.giaNiemYet, 0, 'COMMA', 0, 'POINT')} + ' ₫'"></span>
+                    </div>
+                    <div class="info-details">
+                        <div class="row mb-2"><div class="col-sm-4 info-label"><i class="bx bx-purchase-tag-alt"></i> Danh mục:</div><div class="col-sm-8"><span class="badge bg-label-primary" th:text="${product.danhMuc.tenDanhMuc}"></span></div></div>
+                        <div class="row mb-2"><div class="col-sm-4 info-label"><i class="bx bxl-bootstrap"></i> Thành phần:</div><div class="col-sm-8"><span class="badge bg-label-info" th:text="${product.thuongHieu.tenThuongHieu}"></span></div></div>
+                        <div class="row mb-2"><div class="col-sm-4 info-label"><i class="bx bx-barcode-reader"></i> Mã sản phẩm:</div><div class="col-sm-8" th:text="${product.maSanPham}"></div></div>
+                        <div class="row mb-2"><div class="col-sm-4 info-label"><i class="bx bx-calendar-x"></i> Hạn sử dụng:</div><div class="col-sm-8" th:text="${product.hanSuDung} + ' ngày'"></div></div>
+                        <div class="row mb-2"><div class="col-sm-4 info-label"><i class="bx bx-calendar-plus"></i> Ngày tạo:</div><div class="col-sm-8" th:text="${#temporals.format(product.ngayTao, 'dd/MM/yyyy HH:mm')}"></div></div>
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-4"><div class="col-12"><hr><h5 class="mb-3">Mô tả chi tiết</h5><p th:text="${product.moTa}" style="white-space: pre-wrap;"></p></div></div>
+        </div>
+        <div class="card-footer d-flex justify-content-end">
+            <a th:href="@{/admin/product}" class="btn btn-outline-secondary me-2"><i class="bx bx-arrow-back me-1"></i> Quay lại danh sách</a>
+            <a th:href="@{/admin/product/edit/{id}(id=${product.maSanPham})}" class="btn btn-warning"><i class="bx bx-edit-alt me-1"></i> Chỉnh sửa sản phẩm</a>
+        </div>
+    </div>
+
+    <div class="card mt-4">
+        <div class="card-header"><h5 class="mb-0"><i class="bx bxs-star me-1"></i> Đánh giá sản phẩm</h5></div>
+        <div class="card-body">
+            <div th:if="${#lists.isEmpty(reviews)}" class="text-center text-muted py-4">
+                <p class="mb-1">Chưa có đánh giá nào cho sản phẩm này.</p>
+            </div>
+            <div th:unless="${#lists.isEmpty(reviews)}">
+                <div th:each="review : ${reviews}" class="d-flex mb-4 border-bottom pb-3">
+                    <div class="flex-shrink-0">
+                        <img th:src="${review.nguoiDung.anhDaiDien != null ? review.nguoiDung.anhDaiDien : '/admin/assets/img/avatars/default.png'}" alt="user" class="rounded-circle" width="50" height="50">
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0" th:text="${review.nguoiDung.hoTen}"></h6>
+                            <small class="text-muted" th:text="${#temporals.format(review.ngayTao, 'dd/MM/yyyy HH:mm')}"></small>
+                        </div>
+                        <div class="my-2">
+                            <span th:each="i : ${#numbers.sequence(1, 5)}">
+                                <i class="bx bxs-star" th:classappend="${i <= review.diemDanhGia} ? 'text-warning' : 'text-light'"></i>
+                            </span>
+                        </div>
+                        <p class="mb-0" th:text="${review.binhLuan}"></p>
+
+                        <!-- HIỂN THỊ HÌNH ẢNH VÀ VIDEO NẾU CÓ -->
+                        <div class="review-media">
+                            <!-- Hiển thị hình ảnh -->
+                            <div th:if="${review.imageUrl != null}">
+                                <a th:href="@{'/uploads/' + ${review.imageUrl}}" data-bs-toggle="tooltip" title="Xem ảnh đầy đủ" target="_blank">
+                                    <img th:src="@{'/uploads/' + ${review.imageUrl}}" alt="Ảnh đánh giá">
+                                </a>
+                            </div>
+                            <!-- Hiển thị video -->
+                            <div th:if="${review.videoUrl != null}">
+                                <video controls>
+                                    <source th:src="@{'/uploads/' + ${review.videoUrl}}" type="video/mp4">
+                                    Trình duyệt của bạn không hỗ trợ thẻ video.
+                                </video>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+</body>
+</html>

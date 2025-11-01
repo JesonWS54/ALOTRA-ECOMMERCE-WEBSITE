@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{/layouts/admin}">
+<head>
+    <title>Quản lý Phí vận chuyển</title>
+</head>
+<body>
+<h4 class="fw-bold py-3 mb-4" layout:fragment="page_title">
+    <a th:href="@{/admin/shipping-carrier}">
+        <span class="text-muted fw-light">Nhà vận chuyển /</span>
+    </a>
+    <span th:text="${carrier.tenNVC}"></span>
+</h4>
+
+<main layout:fragment="content">
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Danh sách gói phí</h5>
+            <div class="d-flex gap-2">
+                <a th:href="@{/admin/shipping-carrier}" class="btn btn-secondary">
+                    <i class='bx bx-arrow-back me-1'></i> Quay lại
+                </a>
+                <a th:href="@{/admin/shipping-carrier/{carrierId}/fees/add(carrierId=${carrier.maNVC})}" class="btn btn-primary">
+                    <i class='bx bx-plus me-1'></i> Thêm gói phí
+                </a>
+            </div>
+        </div>
+
+        <div class="card-body">
+            <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+                <span th:text="${successMessage}"></span><button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                <span th:text="${errorMessage}"></span><button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            <div class="table-responsive text-nowrap">
+                <table class="table table-hover">
+                    <thead>
+                    <tr>
+                        <th>Tên gói cước</th>
+                        <th>Phương thức</th>
+                        <th>Chi phí</th>
+                        <th>Thời gian giao (dự kiến)</th>
+                        <th>Tỉnh áp dụng</th>
+                        <th class="text-center">Thao tác</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:if="${!feeList.isEmpty()}" th:each="fee : ${feeList}">
+                        <td th:text="${fee.tenGoiCuoc}"></td>
+                        <td th:text="${fee.phuongThucVanChuyen}"></td>
+                        <td th:text="${#numbers.formatDecimal(fee.chiPhi, 0, 'COMMA', 0, 'POINT')} + ' ₫'"></td>
+                        <td th:text="${fee.ngayGiaoSomNhat} + ' - ' + ${fee.ngayGiaoMuonNhat} + ' ' + ${fee.donViThoiGian}"></td>
+                        <td style="max-width: 38ch; white-space: normal; word-wrap: break-word;">
+                            <span th:each="tinh, iter : ${fee.cacTinhApDung}" th:text="${tinh.id.tenTinhThanh} + (${!iter.last} ? ', ' : '')"></span>
+                        </td>
+                        <td class="text-center">
+                            <a class="btn btn-sm btn-outline-warning" th:href="@{/admin/shipping-carrier/{carrierId}/fees/edit/{feeId}(carrierId=${carrier.maNVC}, feeId=${fee.maChiPhiVC})}"><i class="bx bx-edit"></i></a>
+                            <a class="btn btn-sm btn-outline-danger" th:href="@{/admin/shipping-carrier/{carrierId}/fees/delete/{feeId}(carrierId=${carrier.maNVC}, feeId=${fee.maChiPhiVC})}" onclick="return confirm('Bạn có chắc muốn xóa gói phí này?')"><i class="bx bx-trash"></i></a>
+                        </td>
+                    </tr>
+                    <tr th:if="${feeList.isEmpty()}">
+                        <td colspan="6" class="text-center py-3">Nhà vận chuyển này chưa có gói phí nào.</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</main>
+</body>
+</html>

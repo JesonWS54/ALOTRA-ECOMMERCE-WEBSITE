@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{/layouts/admin}">
+<head>
+    <title>Trang chủ | AloTra Admin</title>
+</head><body>
+
+<div layout:fragment="page_title">
+    <div class="d-flex flex-wrap justify-content-between align-items-center">
+        <h4 class="fw-bold py-3 mb-0">Tổng quan kinh doanh</h4>
+        <div class="d-flex align-items-center">
+            <form th:action="@{/admin/dashboard}" method="get" class="d-flex align-items-center">
+                <select name="month" class="form-select me-2" onchange="this.form.submit()" style="min-width: 120px;">
+                    <option th:each="m : ${#numbers.sequence(1, 12)}" th:value="${m}" th:text="'Tháng ' + ${m}" th:selected="${m == selectedMonth}"></option>
+                </select>
+                <select name="year" class="form-select me-3" onchange="this.form.submit()">
+                    <option th:each="y : ${#numbers.sequence(#temporals.createNow().getYear() - 5, #temporals.createNow().getYear())}" th:value="${y}" th:text="${y}" th:selected="${y == selectedYear}"></option>
+                </select>
+            </form>
+        </div>
+    </div>
+</div>
+
+<main layout:fragment="content">
+    <!-- Hàng KPI chính -->
+    <div class="row">
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="card"><div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div><p class="card-text">Tổng Doanh Thu</p><h4 class="card-title mb-2" th:text="${#numbers.formatDecimal(dashboardData.totalRevenue, 0, 'COMMA', 0, 'POINT')} + ' ₫'"></h4></div>
+                    <div class="card-icon"><span class="badge bg-label-success rounded p-2"><i class="bx bx-dollar-circle bx-sm"></i></span></div>
+                </div>
+            </div></div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="card"><div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div><p class="card-text">Tổng Lợi Nhuận</p><h4 class="card-title mb-2" th:text="${#numbers.formatDecimal(dashboardData.totalProfit, 0, 'COMMA', 0, 'POINT')} + ' ₫'"></h4></div>
+                    <div class="card-icon"><span class="badge bg-label-primary rounded p-2"><i class='bx bx-trending-up bx-sm'></i></span></div>
+                </div>
+            </div></div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="card"><div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div><p class="card-text">Tổng Đơn Hàng</p><h4 class="card-title mb-2" th:text="${dashboardData.totalOrders}"></h4></div>
+                    <div class="card-icon"><span class="badge bg-label-info rounded p-2"><i class="bx bx-cart-alt bx-sm"></i></span></div>
+                </div>
+            </div></div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="card"><div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div><p class="card-text">Sản Phẩm Đã Bán</p><h4 class="card-title mb-2" th:text="${dashboardData.totalProductsSold}"></h4></div>
+                    <div class="card-icon"><span class="badge bg-label-danger rounded p-2"><i class="bx bx-package bx-sm"></i></span></div>
+                </div>
+            </div></div>
+        </div>
+    </div>
+
+    <!-- Biểu đồ và Top sản phẩm -->
+    <div class="row">
+        <div class="col-lg-8 mb-4">
+            <div class="card">
+                <div class="card-header"><h5 class="mb-0">Biểu đồ Doanh thu theo ngày</h5></div>
+                <div class="card-body">
+                    <!-- ✅ SỬA LỖI: Thêm dấu nháy đơn vào các giá trị chuỗi -->
+                    <div id="revenueAndProfitChart"
+                         th:data-revenue-data="${dashboardData.revenueByDayData}"
+                         th:data-day-labels="'[&quot;' + ${#strings.listJoin(dashboardData.revenueByDayLabels, '&quot;,&quot;')} + '&quot;]'">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header"><h5 class="mb-0">Top 5 Sản Phẩm Bán Chạy</h5></div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li th:each="product : ${dashboardData.topSellingProducts}" class="list-group-item d-flex align-items-center">
+                            <img th:src="${product.imageUrl != null and !product.imageUrl.isEmpty() ? '/uploads/' + product.imageUrl : '/admin/assets/img/avatars/default.png'}"
+                                 th:alt="${product.productName}" class="rounded me-3" style="width: 40px; height: 40px; object-fit: cover;">
+                            <div class="w-100">
+                                <div class="fw-semibold" th:text="${product.productName}"></div>
+                                <small class="text-muted" th:text="${product.totalQuantity} + ' đã bán'"></small>
+                            </div>
+                            <span class="fw-bold text-end ms-2" style="min-width: 110px;" th:text="${#numbers.formatDecimal(product.totalRevenue, 0, 'COMMA', 0, 'POINT')} + ' ₫'"></span>
+                        </li>
+                        <li th:if="${#lists.isEmpty(dashboardData.topSellingProducts)}" class="list-group-item text-center text-muted py-5">Không có dữ liệu.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hàng KPI phụ và biểu đồ tròn -->
+    <div class="row">
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header d-flex align-items-center justify-content-between"><h5 class="card-title m-0 me-2">Thống kê phụ</h5></div>
+                <div class="card-body">
+                    <ul class="p-0 m-0">
+                        <li class="d-flex mb-3"><div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2"><div class="me-2"><h6 class="mb-0">Giá trị đơn trung bình</h6></div><div class="user-progress"><h6 class="mb-0" th:text="${#numbers.formatDecimal(dashboardData.averageOrderValue, 0, 'COMMA', 0, 'POINT')} + ' ₫'"></h6></div></div></li>
+                        <li class="d-flex mb-3"><div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2"><div class="me-2"><h6 class="mb-0">Tổng giá vốn (COGS)</h6></div><div class="user-progress"><h6 class="mb-0" th:text="${#numbers.formatDecimal(dashboardData.totalCostOfGoodsSold, 0, 'COMMA', 0, 'POINT')} + ' ₫'"></h6></div></div></li>
+                        <li class="d-flex"><div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2"><div class="me-2"><h6 class="mb-0">Tỷ lệ lợi nhuận</h6></div><div class="user-progress"><h6 class="mb-0" th:text="${#numbers.formatDecimal(dashboardData.profitMargin, 1, 'COMMA', 2, 'POINT')} + '%'"></h6></div></div></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-8 mb-4">
+            <div class="card h-100">
+                <div class="card-header"><h5 class="mb-0">Tỷ trọng Doanh thu theo Danh mục</h5></div>
+                <div class="card-body">
+                    <!-- ✅ SỬA LỖI: Thêm dấu nháy đơn vào các giá trị chuỗi -->
+                    <div id="revenueByCategoryChart"
+                         th:data-category-labels="'[&quot;' + ${#strings.listJoin(dashboardData.revenueByCategoryLabels, '&quot;,&quot;')} + '&quot;]'"
+                         th:data-category-data="${dashboardData.revenueByCategoryData}">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+</body>
+</html>

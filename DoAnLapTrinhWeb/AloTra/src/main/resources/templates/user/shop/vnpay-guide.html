@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layouts/user}">
+<head><title>Thanh toán VNPAY (VietQR)</title></head>
+<body>
+<main layout:fragment="content">
+    <div class="axil-checkout-area axil-section-gap">
+        <div class="container">
+            <h3 class="mb-3">Thanh toán bằng VNPAY / VietQR</h3>
+            <p class="text-muted">Quét mã QR bên dưới để thanh toán. Sau khi thanh toán xong, vui lòng bấm “Hoàn tất” để xác nhận.</p>
+
+            <div class="text-center my-4">
+                <!-- Đặt ảnh này vào: src/main/resources/static/web/assets/images/payments/vnpay-qr.jpg -->
+                <img src="/web/assets/images/payments/vnpay-qr.jpg" alt="QR VNPAY/VietQR" style="max-width: 520px; width: 100%; height: auto;">
+            </div>
+
+            <div class="d-flex gap-2">
+                <a th:href="@{/order-success(method='VNPAY')}" class="axil-btn btn-bg-primary">Hoàn tất</a>
+                <a th:href="@{/checkout}" class="axil-btn btn-outline">Chọn phương thức khác</a>
+            </div>
+        </div>
+    </div>
+</main>
+</body>
+</html>

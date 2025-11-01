@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{/layouts/admin}">
+<head><title>Chi tiết Khuyến mãi</title></head>
+<body>
+<h4 class="fw-bold py-3 mb-4" layout:fragment="page_title">
+    <span class="text-muted fw-light">Khuyến mãi /</span> Chi tiết
+</h4>
+<main layout:fragment="content">
+    <div class="card">
+        <div class="card-header">
+            <h5 class="card-title mb-0 fs-3 fw-bold" th:text="${voucher.tenChienDich}"></h5>
+            <small class="text-muted fs-5" th:text="'Mã: ' + ${voucher.maKhuyenMai}"></small>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="info-section">
+                        <h5>Thông tin cơ bản</h5>
+                        <dl class="row mt-3">
+                            <dt class="col-sm-5">Kiểu áp dụng:</dt>
+                            <dd class="col-sm-7"><span th:if="${voucher.kieuApDung == 0}" class="badge bg-label-info">Phần trăm</span><span th:if="${voucher.kieuApDung == 1}" class="badge bg-label-primary">Số tiền</span></dd>
+
+                            <dt class="col-sm-5">Giá trị:</dt>
+                            <dd class="col-sm-7 fw-bold" th:text="${voucher.kieuApDung == 0} ? ${voucher.giaTri} + '%' : ${#numbers.formatDecimal(voucher.giaTri, 0, 'COMMA', 0, 'POINT')} + ' ₫'"></dd>
+
+                            <dt class="col-sm-5">Trạng thái:</dt>
+                            <dd class="col-sm-7"><span th:switch="${voucher.trangThai}"><span th:case="1" class="badge bg-label-success">Hoạt động</span><span th:case="0" class="badge bg-label-secondary">Ngừng</span><span th:case="2" class="badge bg-label-danger">Hết hạn</span></span></dd>
+
+                            <dt class="col-sm-5">Ngày tạo:</dt>
+                            <dd class="col-sm-7" th:text="${#temporals.format(voucher.ngayTao, 'dd/MM/yyyy')}"></dd>
+                        </dl>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="info-section">
+                        <h5>Thời gian và Điều kiện</h5>
+                        <dl class="row mt-3">
+                            <dt class="col-sm-5">Bắt đầu lúc:</dt>
+                            <dd class="col-sm-7" th:text="${#temporals.format(voucher.batDauLuc, 'dd/MM/yyyy HH:mm')}"></dd>
+
+                            <dt class="col-sm-5">Kết thúc lúc:</dt>
+                            <dd class="col-sm-7" th:text="${#temporals.format(voucher.ketThucLuc, 'dd/MM/yyyy HH:mm')}"></dd>
+
+                            <dt class="col-sm-5">Đơn hàng tối thiểu:</dt>
+                            <dd class="col-sm-7" th:text="${voucher.tongTienToiThieu != null ? #numbers.formatDecimal(voucher.tongTienToiThieu, 0, 'COMMA', 0, 'POINT') + ' ₫' : 'Không yêu cầu'}"></dd>
+
+                            <dt class="col-sm-5">Giảm tối đa:</dt>
+                            <dd class="col-sm-7" th:text="${voucher.giamToiDa != null ? #numbers.formatDecimal(voucher.giamToiDa, 0, 'COMMA', 0, 'POINT') + ' ₫' : 'Không giới hạn'}"></dd>
+
+                            <dt class="col-sm-5">Giới hạn tổng số lần sử dụng:</dt>
+                            <dd class="col-sm-7" th:text="${voucher.gioiHanTongSoLan != null ? voucher.gioiHanTongSoLan + ' lần' : 'Không giới hạn'}"></dd>
+
+                            <dt class="col-sm-5">Giới hạn mỗi người:</dt>
+                            <dd class="col-sm-7" th:text="${voucher.gioiHanMoiNguoi != null ? voucher.gioiHanMoiNguoi + ' lần' : 'Không giới hạn'}"></dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer text-end">
+            <a th:href="@{/admin/voucher}" class="btn btn-outline-secondary me-2"><i class="bx bx-arrow-back me-1"></i> Quay lại</a>
+            <a th:href="@{/admin/voucher/edit/{id}(id=${voucher.maKhuyenMai})}" class="btn btn-warning me-2"><i class="bx bx-edit-alt me-1"></i> Sửa</a>
+            <a th:href="@{/admin/voucher/delete/{id}(id=${voucher.maKhuyenMai})}" onclick="return confirm('Bạn có chắc muốn xóa?')" class="btn btn-danger"><i class="bx bx-trash me-1"></i> Xóa</a>
+        </div>
+    </div>
+</main>
+</body>
+</html>

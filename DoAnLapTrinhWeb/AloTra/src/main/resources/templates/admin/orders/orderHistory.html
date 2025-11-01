@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{/layouts/admin}">
+<head>
+    <title>Lịch sử Đơn hàng</title>
+</head>
+<body>
+<h4 class="fw-bold py-3 mb-4" layout:fragment="page_title">
+    <span class="text-muted fw-light">Đơn hàng /</span>
+    <span th:text="'Lịch sử đơn hàng #' + ${order.maDonHang}"></span>
+</h4>
+<main layout:fragment="content">
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">Lịch sử thay đổi trạng thái</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive text-nowrap">
+                <table class="table table-hover">
+                    <thead>
+                    <tr>
+                        <th>Thời điểm thay đổi</th>
+                        <th>Từ trạng thái</th>
+                        <th>Đến trạng thái</th>
+                        <th>Người thực hiện</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="history : ${historyList}">
+                        <td th:text="${#temporals.format(history.thoiDiemThayDoi, 'dd/MM/yyyy HH:mm:ss')}"></td>
+                        <td><span class="badge bg-label-secondary" th:text="${history.tuTrangThai}"></span></td>
+                        <td><span class="badge bg-label-primary" th:text="${history.denTrangThai}"></span></td>
+                        <td th:text="${history.nguoiThucHien?.hoTen}"></td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(historyList)}">
+                        <td colspan="5" class="text-center py-4">Chưa có lịch sử thay đổi nào.</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card-footer">
+            <a th:href="@{/admin/order/{id}(id=${order.maDonHang}, page=${page}, size=${size}, keyword=${keyword}, status=${status}, paymentMethod=${paymentMethod}, paymentStatus=${paymentStatus}, shippingMethod=${shippingMethod})}"
+               class="btn btn-outline-secondary">
+                <i class="bx bx-arrow-back me-1"></i> Quay lại chi tiết đơn hàng
+            </a>
+        </div>
+    </div>
+</main>
+</body>
+</html>

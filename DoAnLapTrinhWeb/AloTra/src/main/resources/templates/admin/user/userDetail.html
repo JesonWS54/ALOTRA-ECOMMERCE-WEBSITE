@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{/layouts/admin}">
+<head>
+    <title>Chi tiết người dùng</title>
+</head>
+<body>
+<h4 class="fw-bold py-3 mb-4" layout:fragment="page_title">
+    <span class="text-muted fw-light">Quản lý tài khoản /</span> Chi tiết người dùng
+</h4>
+<main layout:fragment="content">
+    <div class="card">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-lg-7 mb-4">
+                    <div class="info-section">
+                        <h5>Thông tin cá nhân</h5>
+                        <dl class="info-grid">
+                            <dt><i class='bx bx-image-alt fs-5 text-muted'></i> Ảnh đại diện</dt>
+                            <dd>
+                                <img class="user-avatar-detail" th:src="${user.anhDaiDien != null ? '/uploads/' + user.anhDaiDien : '/admin/assets/img/avatars/default.png'}"  alt="user-avatar">
+                            </dd>
+
+                            <dt><i class='bx bx-hash fs-5 text-muted'></i> Mã người dùng</dt>
+                            <dd th:text="'#' + ${user.maNguoiDung}"></dd>
+
+                            <dt><i class='bx bx-user fs-5 text-muted'></i> Họ tên</dt>
+                            <dd th:text="${user.hoTen}"></dd>
+
+                            <dt><i class='bx bx-envelope fs-5 text-muted'></i> Email</dt>
+                            <dd th:text="${user.email}"></dd>
+
+                            <dt><i class='bx bx-phone fs-5 text-muted'></i> Số điện thoại</dt>
+                            <dd th:text="${user.soDienThoai}"></dd>
+
+                            <dt><i class='bx bx-calendar-check fs-5 text-muted'></i> Ngày tạo</dt>
+                            <dd th:text="${#temporals.format(user.ngayTao, 'dd-MM-yyyy')}"></dd>
+                        </dl>
+                    </div>
+                </div>
+
+                <div class="col-lg-5">
+                    <div class="info-section">
+                        <h5>Thông tin tài khoản</h5>
+                        <dl class="info-grid">
+                            <dt><i class='bx bx-user-circle fs-5 text-muted'></i> Tên đăng nhập</dt>
+                            <dd th:text="${user.tenDangNhap}"></dd>
+
+                            <dt><i class='bx bx-key fs-5 text-muted'></i> Mật khẩu</dt>
+                            <dd>**********</dd>
+
+                            <dt><i class='bx bx-shield-quarter fs-5 text-muted'></i> Vai trò</dt>
+                            <dd th:text="${user.vaiTro.tenVaiTro}"></dd>
+
+                            <dt><i class='bx bx-info-circle fs-5 text-muted'></i> Trạng thái</dt>
+                            <dd>
+                                <span th:if="${user.trangThai == 1}" class="badge bg-label-success">Hoạt động</span>
+                                <span th:if="${user.trangThai == 0}" class="badge bg-label-danger">Khóa</span>
+                            </dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+            <hr>
+            <div class="mt-4 d-flex justify-content-end">
+                <a th:href="@{/admin/user}" class="btn btn-outline-secondary me-2"><i class="bx bx-arrow-back me-1"></i> Quay lại</a>
+                <a th:href="@{/admin/user/edit/{id}(id=${user.maNguoiDung})}" class="btn btn-warning me-2"><i class="bx bx-edit-alt me-1"></i> Sửa thông tin</a>
+                <a th:href="@{/admin/user/delete/{id}(id=${user.maNguoiDung})}" class="btn btn-danger" onclick="return confirm('Bạn có chắc muốn xóa người dùng này?')"> Xóa người dùng</a>
+            </div>
+        </div>
+    </div>
+</main>
+</body>
+</html>

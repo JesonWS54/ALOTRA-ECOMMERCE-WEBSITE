@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{/layouts/admin}">
+<head>
+    <title>Quản lý Đơn hàng</title>
+</head>
+<body>
+<h4 class="fw-bold py-3 mb-4" layout:fragment="page_title">
+    <span class="text-muted fw-light">Quản lý bán hàng /</span> Đơn hàng
+</h4>
+<main layout:fragment="content">
+    <div class="card mb-4">
+        <div class="card-body">
+            <form th:action="@{/admin/order}" method="get" class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label">Tìm theo Mã Đơn hàng</label>
+                    <input type="text" class="form-control" name="keyword" th:value="${keyword}" placeholder="Nhập mã đơn hàng...">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Trạng thái đơn hàng</label>
+                    <select class="form-select" name="status" onchange="this.form.submit()">
+                        <option value="">Tất cả</option>
+                        <option th:value="'Đang xử lý'" th:selected="${status == 'Đang xử lý'}">Đang xử lý</option>
+                        <option th:value="'Đã xác nhận'" th:selected="${status == 'Đã xác nhận'}">Đã xác nhận</option>
+                        <option th:value="'Đang giao'" th:selected="${status == 'Đang giao'}">Đang giao</option>
+                        <option th:value="'Đã giao'" th:selected="${status == 'Đã giao'}">Đã giao</option>
+                        <option th:value="'Đã hủy'" th:selected="${status == 'Đã hủy'}">Đã hủy</option>
+                        <option th:value="'Trả hàng-Hoàn tiền'" th:selected="${status == 'Trả hàng-Hoàn tiền'}">Trả hàng-Hoàn tiền</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Phương thức vận chuyển</label>
+                    <select class="form-select" name="shippingMethod" onchange="this.form.submit()">
+                        <option value="">Tất cả</option>
+                        <option th:each="m : ${shippingMethods}"
+                                th:value="${m}"
+                                th:text="${m}"
+                                th:selected="${shippingMethod == m}">
+                        </option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Phương thức thanh toán</label>
+                    <select class="form-select" name="paymentMethod" onchange="this.form.submit()">
+                        <option value="">Tất cả</option>
+                        <option value="COD" th:selected="${paymentMethod == 'COD'}">COD</option>
+                        <option value="ONLINE" th:selected="${paymentMethod == 'ONLINE'}">Online</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Trạng thái thanh toán</label>
+                    <select class="form-select" name="paymentStatus" onchange="this.form.submit()">
+                        <option value="">Tất cả</option>
+                        <option th:value="'Chưa thanh toán'" th:selected="${paymentStatus == 'Chưa thanh toán'}">Chưa thanh toán</option>
+                        <option th:value="'Đã thanh toán'" th:selected="${paymentStatus == 'Đã thanh toán'}">Đã thanh toán</option>
+                    </select>
+                </div>
+                <div class="col-md-3 d-flex">
+                    <button class="btn btn-primary me-2" type="submit"><i class="bx bx-search"></i> Tìm</button>
+                    <a th:href="@{/admin/order}" class="btn btn-outline-secondary"><i class="bx bx-reset"></i> Đặt lại</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header"><h5 class="mb-0">Danh sách đơn hàng</h5></div>
+        <div class="card-body">
+            <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+                <span th:text="${successMessage}"></span><button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                <span th:text="${errorMessage}"></span><button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+
+            <div class="table-responsive text-nowrap">
+                <table class="table table-hover">
+                    <thead>
+                    <tr>
+                        <th>Mã ĐH</th>
+                        <th>Tên người nhận</th>
+                        <th>Mã vận đơn</th>
+                        <th>Tổng tiền</th>
+                        <th>Trạng thái ĐH</th>
+                        <th>Phương thức TT</th>
+                        <th>Trạng thái TT</th>
+                        <th class="text-center">Thao tác</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:if="${!orderPage.empty}" th:each="order : ${orderPage.content}">
+                        <td th:text="'#' + ${order.maDonHang}" class="fw-semibold"></td>
+                        <td th:text="${order.tenNguoiNhan}"></td>
+                        <td>
+                            <span th:if="${order.shipping != null}" th:text="${order.shipping.maVanDon}"></span>
+                            <span th:unless="${order.shipping != null}" class="text-muted">Chưa có</span>
+                        </td>
+                        <td th:text="${#numbers.formatDecimal(order.tongTien, 0, 'COMMA', 0, 'POINT')} + ' ₫'"></td>
+                        <td>
+                            <span th:switch="${order.trangThai}">
+                                <span th:case="'Đã giao'" class="badge bg-label-success" th:text="${order.trangThai}"></span>
+                                <span th:case="'Đã hủy'" class="badge bg-label-danger" th:text="${order.trangThai}"></span>
+                                <span th:case="'Trả hàng-Hoàn tiền'" class="badge bg-label-warning" th:text="${order.trangThai}"></span>
+                                <span th:case="*" class="badge bg-label-info" th:text="${order.trangThai}"></span>
+                            </span>
+                        </td>
+                        <td th:text="${order.phuongThucThanhToan}"></td>
+                        <td>
+                            <span th:if="${order.trangThaiThanhToan == 'Đã thanh toán'}" class="badge bg-label-success" th:text="${order.trangThaiThanhToan}"></span>
+                            <span th:if="${order.trangThaiThanhToan == 'Chưa thanh toán'}" class="badge bg-label-warning" th:text="${order.trangThaiThanhToan}"></span>
+                        </td>
+                        <td class="text-center">
+                            <a th:href="@{/admin/order/{id}(id=${order.maDonHang}, page=${orderPage.number + 1}, size=${orderPage.size}, keyword=${keyword}, status=${status}, paymentMethod=${paymentMethod}, paymentStatus=${paymentStatus}, shippingMethod=${shippingMethod})}"
+                               class="btn btn-sm btn-outline-secondary" title="Xem chi tiết đơn hàng">
+                                <i class="bx bx-show"></i>
+                            </a>
+                            <button th:if="${order.shipping == null}" type="button"
+                                    class="btn btn-sm btn-outline-primary create-shipping-btn"
+                                    data-bs-toggle="modal" data-bs-target="#createShippingModal"
+                                    th:data-order-id="${order.maDonHang}"
+                                    th:data-phuongthuc="${order.phuongThucVanChuyen}"
+                                    title="Tạo đơn vận chuyển">
+                                <i class="bx bxs-truck"></i>
+                            </button>
+                            <a th:if="${order.shipping != null}"
+                               th:href="@{/admin/shipping(keyword=${order.shipping.maVanDon})}"
+                               class="btn btn-sm btn-outline-info" title="Xem đơn vận chuyển">
+                                <i class="bx bx-search-alt"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    <tr th:if="${orderPage.empty}">
+                        <td colspan="8" class="text-center py-3">Không có đơn hàng nào phù hợp.</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <nav th:if="${orderPage.totalPages > 0}" aria-label="Page navigation" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item" th:classappend="${orderPage.first} ? 'disabled'">
+                        <a class="page-link"
+                           th:href="@{/admin/order(page=${orderPage.number}, size=${orderPage.size}, keyword=${keyword}, status=${status}, paymentMethod=${paymentMethod}, paymentStatus=${paymentStatus}, shippingMethod=${shippingMethod})}">&laquo;</a>
+                    </li>
+                    <li class="page-item" th:each="i : ${#numbers.sequence(1, orderPage.totalPages)}"
+                        th:classappend="${i == orderPage.number + 1} ? 'active'">
+                        <a class="page-link"
+                           th:href="@{/admin/order(page=${i}, size=${orderPage.size}, keyword=${keyword}, status=${status}, paymentMethod=${paymentMethod}, paymentStatus=${paymentStatus}, shippingMethod=${shippingMethod})}"
+                           th:text="${i}"></a>
+                    </li>
+                    <li class="page-item" th:classappend="${orderPage.last} ? 'disabled'">
+                        <a class="page-link"
+                           th:href="@{/admin/order(page=${orderPage.number + 2}, size=${orderPage.size}, keyword=${keyword}, status=${status}, paymentMethod=${paymentMethod}, paymentStatus=${paymentStatus}, shippingMethod=${shippingMethod})}">&raquo;</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+
+    <div class="modal fade" id="createShippingModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <form th:action="@{/admin/shipping/saveFromOrder}" th:object="${shippingRequest}" method="post" class="modal-content">
+                <input type="hidden" id="createShipping_maDonHang" name="maDonHang">
+                <input type="hidden" name="page" th:value="${orderPage.number + 1}">
+                <input type="hidden" name="size" th:value="${orderPage.size}">
+                <input type="hidden" name="keyword" th:value="${keyword}">
+                <input type="hidden" name="status" th:value="${status}">
+                <input type="hidden" name="paymentMethod" th:value="${paymentMethod}">
+                <input type="hidden" name="paymentStatus" th:value="${paymentStatus}">
+                <input type="hidden" name="shippingMethod" th:value="${shippingMethod}">
+
+                <div class="modal-header bg-primary">
+                    <h5 class="modal-title text-white">
+                        Tạo đơn vận chuyển cho đơn hàng #<span id="orderIdInModal"></span>
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+
+                    <div class="mb-3">
+                        <label class="form-label">Phương thức vận chuyển</label>
+                        <input type="text" id="phuongThucVanChuyen" name="phuongThucVanChuyen"
+                               class="form-control bg-light" readonly>
+                        <small class="text-muted fst-italic">
+                            Phương thức được xác định từ đơn hàng, không thể thay đổi.
+                        </small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Nhà vận chuyển <span class="text-danger">*</span></label>
+                        <select th:field="*{maNVC}" id="nhaVanChuyenSelect" class="form-select" required>
+                            <option value="">-- Chọn nhà vận chuyển --</option>
+
+                            <optgroup th:each="entry : ${carriersWithFeesByOrder}"
+                                      th:label="'Đơn hàng #' + ${entry.key}">
+                                <option th:each="fee : ${entry.value}"
+                                        th:value="${fee.nhaVanChuyen.maNVC}"
+                                        th:text="${fee.nhaVanChuyen.tenNVC + ' - ' + #numbers.formatDecimal(fee.chiPhi, 0, 'COMMA', 0, 'POINT') + ' ₫'}">
+                                </option>
+                            </optgroup>
+                        </select>
+
+                        <small class="text-muted fst-italic">
+                            Chỉ hiển thị các nhà vận chuyển có thể giao đến tỉnh của người nhận.
+                        </small>
+                    </div>
+
+
+                    <p class="text-muted small">
+                        Mã vận đơn sẽ được tạo tự động, trạng thái ban đầu là <b>“Đã khởi tạo”</b>.
+                    </p>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <button type="submit" class="btn btn-primary">Tạo đơn</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</main>
+
+</body>
+</html>

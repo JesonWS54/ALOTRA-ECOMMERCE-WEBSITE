@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="user-footer">
+    <div class="service-area">
+        <div class="container">
+            <div class="row row-cols-xl-4 row-cols-sm-2 row-cols-1 row--20">
+                <div class="col">
+                    <div class="service-box service-style-2">
+                        <div class="icon">
+                            <img th:src="@{/web/assets/images/icons/service1.png}" alt="Service">
+                        </div>
+                        <div class="content">
+                            <h6 class="title">Giao Hàng đảm bảo chất lượng và nhanh</h6>
+                            <p>Miễn phí cho đơn hàng tổng hóa đơn trên 300k.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="service-box service-style-2">
+                        <div class="icon">
+                            <img th:src="@{/web/assets/images/icons/service2.png}" alt="Service">
+                        </div>
+                        <div class="content">
+                            <h6 class="title">Đảm Bảo Hoàn Tiền</h6>
+                            <p>Trong vòng 7 ngày.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="service-box service-style-2">
+                        <div class="icon">
+                            <img th:src="@{/web/assets/images/icons/service3.png}" alt="Service">
+                        </div>
+                        <div class="content">
+                            <h6 class="title">Chính Sách Đổi Trả 24h</h6>
+                            <p>Không cần lý do.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="service-box service-style-2">
+                        <div class="icon">
+                            <img th:src="@{/web/assets/images/icons/service4.png}" alt="Service">
+                        </div>
+                        <div class="content">
+                            <h6 class="title">Hỗ Trợ Nhanh</h6>
+                            <p>Hỗ trợ lúc nào cũng có mặt.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="axil-footer-area footer-style-2">
+        <div class="footer-top separator-top">
+            <div class="container">
+                <div class="row">
+                    <!-- Hỗ trợ -->
+                    <div class="col-lg-4 col-sm-6">
+                        <div class="axil-footer-widget">
+                            <h5 class="widget-title">Hỗ trợ</h5>
+                            <div class="inner">
+                                <p>
+                                    Số 1 đường Võ Văn Ngân, <br>
+                                    phường Linh Chiểu, Thành phố Thủ Đức, <br>
+                                    Thành phố Hồ Chí Minh.
+                                </p>
+                                <ul class="support-list-item">
+                                    <li>
+                                        <a href="mailto:sponeshop99@gmail.com">
+                                            <i class="fal fa-envelope-open"></i> AloTra@gmail.com
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="tel:19005262">
+                                            <i class="fal fa-phone-alt"></i> 1900 5262
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tài khoản -->
+                    <div class="col-lg-4 col-sm-6">
+                        <div class="axil-footer-widget">
+                            <h5 class="widget-title">Tài khoản</h5>
+                            <div class="inner">
+                                <ul>
+                                    <li><a th:href="@{/my-account}">Tài khoản của tôi</a></li>
+                                    <li><a th:href="@{/sign-in}">Đăng nhập / Đăng ký</a></li>
+                                    <li><a th:href="@{/cart}">Giỏ hàng</a></li>
+                                    <li><a th:href="@{/wishlist}">Yêu thích</a></li>
+                                    <li><a th:href="@{/shop}">Cửa hàng</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Liên kết nhanh -->
+                    <div class="col-lg-4 col-sm-6">
+                        <div class="axil-footer-widget">
+                            <h5 class="widget-title">Liên kết nhanh</h5>
+                            <div class="inner">
+                                <ul>
+                                    <li><a th:href="@{/privacy-policy}">Chính sách &amp; điều khoản</a></li>
+                                    <li><a th:href="@{/contact}">Liên hệ</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+
+                </div>
+            </div>
+        </div>
+
+        <div class="copyright-area copyright-default separator-top">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-xl-4">
+                        <div class="social-share">
+                            <a href="#"><i class="fab fa-facebook-f"></i></a>
+                            <a href="#"><i class="fab fa-instagram"></i></a>
+                            <a href="#"><i class="fab fa-twitter"></i></a>
+                        </div>
+                    </div>
+                    <div class="col-xl-4 col-lg-12">
+                        <div class="copyright-left d-flex flex-wrap justify-content-center">
+                            <ul class="quick-link">
+                                <li>© 2025. Bản quyền thuộc về AloTra.</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-xl-4 col-lg-12">
+                        <div class="copyright-right d-flex flex-wrap justify-content-xl-end justify-content-center align-items-center">
+                            <span class="card-text">Chấp nhận thanh toán</span>
+                            <ul class="payment-icons-bottom quick-link">
+                                <li><img th:src="@{/web/assets/images/icons/cart/cart-1a.png}" alt="paypal cart"></li>
+                                <li><img th:src="@{/web/assets/images/icons/cart/cart-2a.png}" alt="paypal cart"></li>
+                                <li><img th:src="@{/web/assets/images/icons/cart/cart-5.png}" alt="paypal cart"></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+</div>
+</body>
+</html>

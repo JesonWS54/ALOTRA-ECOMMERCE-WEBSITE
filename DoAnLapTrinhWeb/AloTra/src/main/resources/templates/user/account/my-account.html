@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/user}">
+<head>
+    <title>Tài Khoản Của Tôi</title>
+    <style>
+        .axil-dashboard-author .thumbnail img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="axil-dashboard-area axil-section-gap">
+        <div class="container">
+            <div class="axil-dashboard-warp">
+
+                <div class="axil-dashboard-author">
+                    <div class="media">
+                        <div class="thumbnail">
+                            <img th:src="${user.anhDaiDien != null and !#strings.isEmpty(user.anhDaiDien) ? '/uploads/' + user.anhDaiDien : '/web/assets/images/product/author1.png'}" alt="Avatar">
+                        </div>
+                        <div class="media-body">
+                            <h5 class="title mb-0" th:text="'Xin chào, ' + ${user.hoTen}"></h5>
+                            <span class="joining-date">Thành viên AloTra</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="axil-dashboard-account mb-5 shadow-sm p-4 bg-white rounded">
+                    <h5 class="title">Ảnh đại diện</h5>
+                    <form th:action="@{/my-account/update-avatar}" method="post" enctype="multipart/form-data" class="account-details-form">
+                        <!-- Sử dụng Bootstrap grid để đặt các thành phần ngang hàng -->
+                        <div class="row align-items-end">
+                            <div class="col-lg-8">
+                                <div class="form-group mb-lg-0"> <!-- Bỏ margin bottom trên màn hình lớn -->
+                                    <label>Chọn ảnh mới</label>
+                                    <input type="file" name="avatarFile" class="form-control" accept="image/png, image/jpeg, image/gif" required>
+                                </div>
+                            </div>
+                            <div class="col-lg-4">
+                                <div class="form-group mb-0"> <!-- Bỏ margin bottom -->
+                                    <button type="submit" class="axil-btn w-100">Lưu ảnh</button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="row">
+                    <div class="col-xl-3 col-md-4">
+                        <aside class="axil-dashboard-aside">
+                            <nav class="axil-dashboard-nav">
+                                <div class="nav nav-tabs" role="tablist">
+                                    <a class="nav-item nav-link"
+                                       data-bs-toggle="tab" href="#nav-account" role="tab"
+                                       th:classappend="${activeTab}=='account' ? ' active' : ''">
+                                        <i class="fas fa-user"></i>Chi tiết tài khoản
+                                    </a>
+                                    <a class="nav-item nav-link" th:href="@{/my-orders}">
+                                        <i class="fas fa-shopping-basket"></i>Đơn hàng
+                                    </a>
+                                    <a class="nav-item nav-link"
+                                       data-bs-toggle="tab" href="#nav-address" role="tab"
+                                       th:classappend="${activeTab}=='addresses' ? ' active' : ''">
+                                        <i class="fas fa-home"></i>Địa chỉ
+                                    </a>
+                                    <form th:action="@{/logout}" method="post" class="nav-item nav-link" style="all: unset;">
+                                        <button type="submit" style="all: unset; cursor:pointer; display:block; width:100%; text-align:left; padding:15px 25px;">
+                                            Đăng xuất
+                                        </button>
+                                    </form>
+                                </div>
+                            </nav>
+                        </aside>
+                    </div>
+
+                    <div class="col-xl-9 col-md-8">
+                        <div class="tab-content">
+
+                            <div class="tab-pane fade" id="nav-address" role="tabpanel"
+                                 th:classappend="${activeTab}=='addresses' ? ' show active' : ''">
+                                <div class="axil-dashboard-address">
+                                    <div class="d-flex justify-content-between align-items-center flex-nowrap gap-3 mb-4">
+                                        <p class="notice-text mb-0">Các địa chỉ sau sẽ được sử dụng trên trang thanh toán.</p>
+                                        <a th:href="@{/my-account/add-address}" class="axil-btn btn-primary btn-sm text-nowrap">Thêm địa chỉ</a>
+                                    </div>
+                                    <div th:if="${addresses.isEmpty()}"><p>Bạn chưa lưu địa chỉ nào.</p></div>
+                                    <div class="row row--30">
+                                        <div th:each="address : ${addresses}" class="col-lg-6 mb--40">
+                                            <div class="address-info">
+                                                <div class="addrss-header d-flex align-items-center justify-content-between">
+                                                    <h4 class="title mb-0">Địa chỉ giao hàng</h4>
+                                                    <div class="d-flex align-items-center gap-2">
+                                                        <a th:href="@{/checkout/edit-address/{id}(id=${address.maDiaChi})}" class="address-edit d-inline-flex align-items-center" title="Chỉnh sửa"><i class="far fa-edit"></i></a>
+                                                        <form th:action="@{/my-account/delete-address/{id}(id=${address.maDiaChi})}" method="post" class="m-0 p-0">
+                                                            <button type="submit" class="address-delete btn btn-link p-0 border-0 d-inline-flex align-items-center" style="color:#0d6efd;" onclick="return confirm('Bạn có chắc muốn xóa địa chỉ này?')" title="Xóa"><i class="far fa-trash-alt"></i></button>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                                <ul class="address-details">
+                                                    <li th:text="'Tên: ' + ${address.tenNguoiNhan}"></li>
+                                                    <li th:text="'SĐT: ' + ${address.soDienThoai}"></li>
+                                                    <li class="mt--30" th:text="${address.soNhaDuong} + ', ' + ${address.phuongXa} + ', ' + ${address.quanHuyen} + ', ' + ${address.tinhThanh}"></li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="tab-pane fade" id="nav-account" role="tabpanel"
+                                 th:classappend="${activeTab}=='account' ? ' show active' : ''">
+                                <div class="axil-dashboard-account">
+                                    <div th:if="${success} or ${param.success}" class="alert alert-success alert-dismissible fade show" role="alert" data-auto-hide="true" th:text="${success != null ? success : param.success}"><button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>
+                                    <div th:if="${error} or ${param.error}" class="alert alert-danger alert-dismissible fade show" role="alert" data-auto-hide="true" th:text="${error != null ? error : param.error}"><button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>
+                                    <form class="account-details-form" th:action="@{/my-account/update-details}" th:object="${user}" method="post">
+                                        <div class="row">
+                                            <div class="col-12"><div class="form-group"><label>Họ và Tên</label><input type="text" class="form-control" th:field="*{hoTen}"></div></div>
+                                            <div class="col-12"><div class="form-group"><label>Tên đăng nhập</label><input type="text" class="form-control" th:field="*{tenDangNhap}" readonly></div></div>
+                                            <div class="col-12"><div class="form-group"><label>Số điện thoại</label><input type="text" class="form-control" th:field="*{soDienThoai}"></div></div>
+                                            <div class="col-12"><div class="form-group"><label>Email</label><input type="email" class="form-control" th:field="*{email}" readonly></div></div>
+                                            <div class="col-12"><div class="form-group"><label>Hạng thành viên</label><input type="text" class="form-control" th:value="${user.hangThanhVien != null ? user.hangThanhVien.tenHang : 'Chưa có hạng'}" readonly></div></div>
+                                            <div class="form-group mb--0"><button type="submit" class="axil-btn">Lưu thay đổi</button></div>
+                                        </div>
+                                    </form>
+                                    <hr class="my-5">
+                                    <form class="account-details-form" th:action="@{/my-account/change-password}" method="post">
+                                        <h5 class="title">Đổi mật khẩu</h5>
+                                        <div class="row">
+                                            <div class="col-12"><div class="form-group"><label>Mật khẩu hiện tại</label><input type="password" class="form-control" name="currentPassword" required></div></div>
+                                            <div class="col-12"><div class="form-group"><label>Mật khẩu mới</label><input type="password" class="form-control" name="newPassword" required></div></div>
+                                            <div class="col-12"><div class="form-group"><label>Xác nhận mật khẩu mới</label><input type="password" class="form-control" name="confirmPassword" required></div></div>
+                                            <div class="form-group mb--0"><button type="submit" class="axil-btn">Đổi mật khẩu</button></div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <script th:inline="javascript">
+                    /*<![CDATA[*/
+                    document.addEventListener('DOMContentLoaded', function () {
+                      document.querySelectorAll('.alert[data-auto-hide="true"]').forEach(function (el) {
+                        setTimeout(function () {
+                          try {
+                            if (window.bootstrap && bootstrap.Alert) { bootstrap.Alert.getOrCreateInstance(el).close(); }
+                            else { el.classList.remove('show'); }
+                          } catch (e) {}
+                        }, 4000);
+                      });
+                    });
+                    /*]]>*/
+                </script>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

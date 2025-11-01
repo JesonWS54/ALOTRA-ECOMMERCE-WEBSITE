@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{layouts/admin}">
+
+<head>
+<title>Hỗ trợ khách hàng - AloTra Admin</title>
+
+<!-- Chat CSS -->
+<style>
+/* ========================================
+           ADMIN CHAT DASHBOARD STYLES
+        ======================================== */
+.chat-dashboard {
+	height: calc(100vh - 100px);
+	display: flex;
+	background: #fff;
+	border-radius: 8px;
+	overflow: hidden;
+	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* ========================================
+           LEFT SIDEBAR - Danh sách conversations
+        ======================================== */
+.conversations-sidebar {
+	width: 350px;
+	border-right: 1px solid #e9ecef;
+	display: flex;
+	flex-direction: column;
+	background: #f8f9fa;
+}
+
+.conversations-header {
+	padding: 20px;
+	background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+	color: white;
+}
+
+.conversations-header h4 {
+	margin: 0 0 10px 0;
+	font-size: 18px;
+	font-weight: 600;
+}
+
+.conversations-stats {
+	display: flex;
+	gap: 15px;
+	font-size: 13px;
+}
+
+.stat-item {
+	display: flex;
+	align-items: center;
+	gap: 5px;
+}
+
+.conversations-list {
+	flex: 1;
+	overflow-y: auto;
+	padding: 10px;
+}
+
+.conversation-item {
+	background: white;
+	border-radius: 8px;
+	padding: 15px;
+	margin-bottom: 10px;
+	cursor: pointer;
+	transition: all 0.2s;
+	border: 2px solid transparent;
+}
+
+.conversation-item:hover {
+	border-color: #28a745;
+	transform: translateX(5px);
+}
+
+.conversation-item.active {
+	background: #e8f5e9;
+	border-color: #28a745;
+}
+
+.conversation-item.has-unread {
+	border-left: 4px solid #dc3545;
+}
+
+.conversation-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 8px;
+}
+
+.customer-name {
+	font-weight: 600;
+	font-size: 15px;
+	color: #212529;
+}
+
+.conversation-time {
+	font-size: 12px;
+	color: #6c757d;
+}
+
+.last-message {
+	font-size: 13px;
+	color: #6c757d;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.unread-badge {
+	display: inline-block;
+	background: #dc3545;
+	color: white;
+	border-radius: 12px;
+	padding: 2px 8px;
+	font-size: 11px;
+	font-weight: 600;
+	margin-left: 5px;
+}
+
+/* ========================================
+           RIGHT PANEL - Chi tiết conversation
+        ======================================== */
+.chat-panel {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+}
+
+.chat-header {
+	padding: 20px;
+	border-bottom: 1px solid #e9ecef;
+	background: white;
+}
+
+.customer-info {
+	display: flex;
+	align-items: center;
+	gap: 15px;
+}
+
+.customer-avatar {
+	width: 50px;
+	height: 50px;
+	border-radius: 50%;
+	background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: white;
+	font-size: 20px;
+	font-weight: 600;
+}
+
+.customer-details h5 {
+	margin: 0 0 5px 0;
+	font-size: 16px;
+	font-weight: 600;
+}
+
+.customer-email {
+	font-size: 13px;
+	color: #6c757d;
+}
+
+.chat-actions {
+	display: flex;
+	gap: 10px;
+	margin-top: 10px;
+}
+
+.chat-messages {
+	flex: 1;
+	overflow-y: auto;
+	padding: 20px;
+	background: #f8f9fa;
+}
+
+.message-group {
+	margin-bottom: 20px;
+}
+
+.message-item {
+	display: flex;
+	gap: 10px;
+	margin-bottom: 15px;
+}
+
+.message-item.admin {
+	flex-direction: row-reverse;
+}
+
+.message-bubble {
+	max-width: 60%;
+	padding: 12px 16px;
+	border-radius: 18px;
+	font-size: 14px;
+	line-height: 1.5;
+}
+
+.message-bubble.customer {
+	background: white;
+	border: 1px solid #e9ecef;
+	border-radius: 18px 18px 18px 4px;
+}
+
+.message-bubble.admin {
+	background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+	color: white;
+	border-radius: 18px 18px 4px 18px;
+}
+
+.message-meta {
+	display: flex;
+	align-items: center;
+	gap: 5px;
+	margin-top: 5px;
+	font-size: 11px;
+	color: #6c757d;
+}
+
+.message-item.admin .message-meta {
+	justify-content: flex-end;
+}
+
+.chat-input-area {
+	padding: 20px;
+	background: white;
+	border-top: 1px solid #e9ecef;
+}
+
+.input-wrapper {
+	display: flex;
+	gap: 10px;
+	align-items: flex-end;
+}
+
+.chat-input {
+	flex: 1;
+	border: 1px solid #dee2e6;
+	border-radius: 25px;
+	padding: 12px 20px;
+	font-size: 14px;
+	resize: none;
+	max-height: 120px;
+	outline: none;
+	transition: border-color 0.2s;
+}
+
+.chat-input:focus {
+	border-color: #28a745;
+}
+
+.send-btn {
+	width: 45px;
+	height: 45px;
+	border-radius: 50%;
+	background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+	border: none;
+	color: white;
+	font-size: 18px;
+	cursor: pointer;
+	transition: transform 0.2s;
+}
+
+.send-btn:hover {
+	transform: scale(1.1);
+}
+
+.empty-state {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	height: 100%;
+	color: #6c757d;
+}
+
+.empty-state i {
+	font-size: 64px;
+	margin-bottom: 20px;
+	opacity: 0.3;
+}
+
+/* Scrollbar custom */
+.conversations-list::-webkit-scrollbar, .chat-messages::-webkit-scrollbar
+	{
+	width: 6px;
+}
+
+.conversations-list::-webkit-scrollbar-track, .chat-messages::-webkit-scrollbar-track
+	{
+	background: #f1f1f1;
+}
+
+.conversations-list::-webkit-scrollbar-thumb, .chat-messages::-webkit-scrollbar-thumb
+	{
+	background: #28a745;
+	border-radius: 3px;
+}
+
+/* Responsive */
+@media ( max-width : 992px) {
+	.conversations-sidebar {
+		width: 300px;
+	}
+	.message-bubble {
+		max-width: 75%;
+	}
+}
+</style>
+</head>
+
+<body>
+	<div layout:fragment="content">
+		<div class="container-fluid">
+			<div class="row mb-3">
+				<div class="col-12">
+					<h4 class="mb-0">💬 Hỗ trợ khách hàng</h4>
+				</div>
+			</div>
+
+			<div class="chat-dashboard">
+				<!-- LEFT SIDEBAR: Danh sách conversations -->
+				<div class="conversations-sidebar">
+					<div class="conversations-header">
+						<h4>Tin nhắn</h4>
+						<div class="conversations-stats">
+							<div class="stat-item">
+								<i class="bi bi-chat-dots"></i> <span id="totalCount">0</span>
+								cuộc trò chuyện
+							</div>
+							<div class="stat-item">
+								<i class="bi bi-exclamation-circle"></i> <span id="unreadCount"
+									th:text="${unreadCount}">0</span> chưa đọc
+							</div>
+						</div>
+					</div>
+
+					<div class="conversations-list" id="conversationsList">
+						<!-- Conversations sẽ được load bằng JavaScript -->
+					</div>
+				</div>
+
+				<!-- RIGHT PANEL: Chi tiết conversation -->
+				<div class="chat-panel">
+					<!-- Header: Thông tin khách hàng -->
+					<div class="chat-header" id="chatHeader" style="display: none;">
+						
+						<div class="customer-info">
+							<div class="customer-avatar" id="customerAvatar">K</div>
+							<div class="customer-details">
+								<h5 id="customerName">Chọn một khách hàng</h5>
+								<!-- ↑ SỬA TEXT MẶC ĐỊNH -->
+								<p class="customer-email mb-0" id="customerEmail">--</p>
+								<!-- ↑ SỬA TEXT MẶC ĐỊNH -->
+							</div>
+						</div>
+
+					</div>
+
+					<!-- Body: Tin nhắn -->
+					<div class="chat-messages" id="chatMessages">
+						<div class="empty-state" id="emptyState">
+							<i class="bi bi-chat-text"></i>
+							<h5>Chọn một cuộc trò chuyện</h5>
+							<p>Chọn từ danh sách bên trái để bắt đầu</p>
+						</div>
+					</div>
+
+					<!-- Footer: Input trả lời -->
+					<div class="chat-input-area" id="chatInputArea"
+						style="display: none;">
+						<div class="input-wrapper">
+							<textarea class="chat-input" id="replyInput"
+								placeholder="Nhập tin nhắn trả lời..." rows="1"></textarea>
+							<button class="send-btn" onclick="sendReply()">
+								<i class="bi bi-send"></i>
+							</button>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- JavaScript -->
+		<script th:inline="javascript">
+        // ========================================
+        // ADMIN CHAT DASHBOARD SCRIPT
+        // ========================================
+        
+        const CONFIG = {
+            API_BASE: '/admin/chat',
+            POLL_INTERVAL: 3000  // Kiểm tra tin mới mỗi 3s
+        };
+        
+        let state = {
+            currentSessionId: null,
+            conversations: [],
+            messages: [],
+            pollTimer: null
+        };
+        
+        // ========================================
+        // INITIALIZE
+        // ========================================
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Initializing Admin Chat Dashboard...');
+            loadConversations();
+            startPolling();
+            
+            // Auto-resize textarea
+            document.getElementById('replyInput').addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = this.scrollHeight + 'px';
+            });
+            
+            // Enter để gửi
+            document.getElementById('replyInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendReply();
+                }
+            });
+        });
+        
+        // ========================================
+        // LOAD CONVERSATIONS
+        // ========================================
+        async function loadConversations() {
+            try {
+                const response = await fetch(CONFIG.API_BASE + '/conversations');
+                const conversations = await response.json();
+                
+                state.conversations = conversations;
+                renderConversations(conversations);
+                
+                // Update counters
+                document.getElementById('totalCount').textContent = conversations.length;
+                const unreadCount = conversations.reduce((sum, c) => sum + (c.soTinChuaDoc || 0), 0);
+                document.getElementById('unreadCount').textContent = unreadCount;
+                
+                console.log('✅ Loaded', conversations.length, 'conversations');
+                
+            } catch (error) {
+                console.error('❌ Failed to load conversations:', error);
+            }
+        }
+        
+        // ========================================
+        // RENDER CONVERSATIONS LIST
+        // ========================================
+        function renderConversations(conversations) {
+            const container = document.getElementById('conversationsList');
+            
+            if (conversations.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-5">
+                        <i class="bi bi-inbox" style="font-size: 48px; color: #ccc;"></i>
+                        <p class="mt-3 text-muted">Chưa có tin nhắn nào</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = conversations.map(conv => `
+                <div class="conversation-item ${conv.soTinChuaDoc > 0 ? 'has-unread' : ''} ${conv.maPhienChat === state.currentSessionId ? 'active' : ''}" 
+                     onclick="selectConversation('${conv.maPhienChat}')">
+                    <div class="conversation-header">
+                        <span class="customer-name">
+                            ${escapeHtml(conv.tenKhach || 'Khách')}
+                            ${conv.soTinChuaDoc > 0 ? `<span class="unread-badge">${conv.soTinChuaDoc}</span>` : ''}
+                        </span>
+                        <span class="conversation-time">${formatTime(conv.thoiGianCuoi)}</span>
+                    </div>
+                    <div class="last-message">${escapeHtml(conv.tinNhanCuoi || 'Chưa có tin nhắn')}</div>
+                </div>
+            `).join('');
+        }
+        
+        // ========================================
+        // SELECT CONVERSATION
+        // ========================================
+        async function selectConversation(sessionId) {
+		    state.currentSessionId = sessionId;
+		    
+		    // Update active state
+		    document.querySelectorAll('.conversation-item').forEach(item => {
+		        item.classList.remove('active');
+		    });
+		    event.currentTarget.classList.add('active');
+		    
+		    // ========================================
+		    // UPDATE CUSTOMER INFO FIRST (NGAY LẬP TỨC)
+		    // ========================================
+		    const conv = state.conversations.find(c => c.maPhienChat === sessionId);
+		    if (conv) {
+		        // Update tên
+		        document.getElementById('customerName').textContent = conv.tenKhach || 'Khách';
+		        
+		        // Update email
+		        document.getElementById('customerEmail').textContent = conv.emailKhach || 'Chưa có email';
+		        
+		        // Update avatar (chữ cái đầu)
+		        const firstLetter = (conv.tenKhach || 'K')[0].toUpperCase();
+		        document.getElementById('customerAvatar').textContent = firstLetter;
+		        
+		        console.log('✅ Updated customer info:', conv.tenKhach, conv.emailKhach);
+		    }
+		    
+		    // Show chat panel
+		    document.getElementById('chatHeader').style.display = 'block';
+		    document.getElementById('chatInputArea').style.display = 'block';
+		    document.getElementById('emptyState').style.display = 'none';
+		    
+		    // Load messages (sau khi đã update info)
+		    await loadMessages(sessionId);
+		}
+        
+        // ========================================
+        // LOAD MESSAGES
+        // ========================================
+        async function loadMessages(sessionId) {
+            try {
+                const response = await fetch(`${CONFIG.API_BASE}/messages?sessionId=${sessionId}`);
+                const messages = await response.json();
+                
+                state.messages = messages;
+                renderMessages(messages);
+                
+                console.log('✅ Loaded', messages.length, 'messages');
+                
+            } catch (error) {
+                console.error('❌ Failed to load messages:', error);
+            }
+        }
+        
+        // ========================================
+        // RENDER MESSAGES
+        // ========================================
+        function renderMessages(messages) {
+            const container = document.getElementById('chatMessages');
+            
+            if (messages.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-5">
+                        <p class="text-muted">Chưa có tin nhắn</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = messages.map(msg => `
+                <div class="message-item ${msg.loaiNguoiGui.toLowerCase()}">
+                    <div class="message-bubble ${msg.loaiNguoiGui.toLowerCase()}">
+                        ${escapeHtml(msg.noiDung)}
+                    </div>
+                </div>
+                <div class="message-meta" style="text-align: ${msg.loaiNguoiGui === 'ADMIN' ? 'right' : 'left'}">
+                    <span>${formatDateTime(msg.thoiGian)}</span>
+                    ${msg.loaiNguoiGui === 'ADMIN' ? '<i class="bi bi-check-all text-success"></i>' : ''}
+                </div>
+            `).join('');
+            
+            // Scroll to bottom
+            container.scrollTop = container.scrollHeight;
+        }
+        
+        // ========================================
+        // SEND REPLY
+        // ========================================
+        async function sendReply() {
+            const input = document.getElementById('replyInput');
+            const message = input.value.trim();
+            
+            if (!message || !state.currentSessionId) return;
+            
+            try {
+                const response = await fetch(CONFIG.API_BASE + '/reply', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        sessionId: state.currentSessionId,
+                        noiDung: message
+                    })
+                });
+                
+                const data = await response.json();
+                
+                // Clear input
+                input.value = '';
+                input.style.height = 'auto';
+                
+                // Reload messages
+                await loadMessages(state.currentSessionId);
+                
+                // Reload conversations (để cập nhật tin nhắn cuối)
+                await loadConversations();
+                
+                console.log('✅ Reply sent');
+                
+            } catch (error) {
+                console.error('❌ Failed to send reply:', error);
+                alert('Không thể gửi tin nhắn. Vui lòng thử lại!');
+            }
+        }
+        
+        // ========================================
+        // MARK AS READ
+        // ========================================
+        async function markAsRead() {
+            if (!state.currentSessionId) return;
+            
+            // Already marked when loading messages
+            console.log('✅ Marked as read');
+            await loadConversations();
+        }
+        
+        // ========================================
+        // CLOSE CONVERSATION
+        // ========================================
+        async function closeConversation() {
+            if (!state.currentSessionId) return;
+            
+            if (!confirm('Bạn có chắc muốn đóng cuộc trò chuyện này?')) return;
+            
+            try {
+                await fetch(CONFIG.API_BASE + '/close', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ sessionId: state.currentSessionId })
+                });
+                
+                alert('Đã đóng cuộc trò chuyện');
+                await loadConversations();
+                
+            } catch (error) {
+                console.error('❌ Failed to close:', error);
+            }
+        }
+        
+        // ========================================
+        // POLLING (Check tin mới)
+        // ========================================
+        function startPolling() {
+            state.pollTimer = setInterval(async () => {
+                await loadConversations();
+                
+                // Nếu đang xem conversation, reload messages
+                if (state.currentSessionId) {
+                    await loadMessages(state.currentSessionId);
+                }
+            }, CONFIG.POLL_INTERVAL);
+        }
+        
+        // ========================================
+        // UTILITY FUNCTIONS
+        // ========================================
+        function formatTime(timestamp) {
+            if (!timestamp) return '';
+            const date = new Date(timestamp);
+            const now = new Date();
+            const diff = now - date;
+            
+            if (diff < 60000) return 'Vừa xong';
+            if (diff < 3600000) return Math.floor(diff / 60000) + ' phút trước';
+            if (diff < 86400000) return Math.floor(diff / 3600000) + ' giờ trước';
+            
+            return date.toLocaleDateString('vi-VN');
+        }
+        
+        function formatDateTime(timestamp) {
+            if (!timestamp) return '';
+            const date = new Date(timestamp);
+            const hours = date.getHours().toString().padStart(2, '0');
+            const minutes = date.getMinutes().toString().padStart(2, '0');
+            return `${hours}:${minutes}`;
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+	</div>
+</body>
+</html>

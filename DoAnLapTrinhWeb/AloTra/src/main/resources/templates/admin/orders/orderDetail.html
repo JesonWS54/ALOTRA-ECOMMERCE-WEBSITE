@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{/layouts/admin}">
+<head>
+    <title>Chi tiết Đơn hàng</title>
+</head>
+<body>
+<h4 class="fw-bold py-3 mb-4" layout:fragment="page_title">
+    <span class="text-muted fw-light">Đơn hàng /</span> Chi tiết
+</h4>
+<main layout:fragment="content">
+    <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <span th:text="${successMessage}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <span th:text="${errorMessage}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0" th:text="'Đơn hàng #' + ${order.maDonHang}"></h5>
+                    <small class="text-muted" th:text="'Ngày đặt: ' + ${#temporals.format(order.ngayDat, 'dd/MM/yyyy HH:mm')}"></small>
+                </div>
+                <div class="card-body">
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th>Sản phẩm</th>
+                            <th class="text-end">Đơn giá</th>
+                            <th class="text-end">Số lượng</th>
+                            <th class="text-end">Thành tiền</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="detail : ${order.orderDetails}">
+                            <td th:text="${detail.tenSanPham}"></td>
+                            <td class="text-end" th:text="${#numbers.formatDecimal(detail.donGia, 0, 'COMMA', 0, 'POINT')} + ' ₫'"></td>
+                            <td class="text-end" th:text="${detail.soLuong}"></td>
+                            <td class="text-end" th:text="${#numbers.formatDecimal(detail.thanhTien, 0, 'COMMA', 0, 'POINT')} + ' ₫'"></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <hr>
+                    <div class="row justify-content-end text-end">
+                        <div class="col-md-6">
+                            <p><strong>Tiền hàng:</strong> <span th:text="${#numbers.formatDecimal(order.tienHang, 0, 'COMMA', 0, 'POINT')} + ' ₫'"></span></p>
+                            <p><strong>Phí vận chuyển:</strong> <span th:text="${#numbers.formatDecimal(order.phiVanChuyen, 0, 'COMMA', 0, 'POINT')} + ' ₫'"></span></p>
+                            <p><strong>Giảm giá:</strong> <span th:text="${#numbers.formatDecimal(order.tienHang + order.phiVanChuyen - order.tongTien, 0, 'COMMA', 0, 'POINT')} + ' ₫'"></span></p>
+
+                            <h5 class="fw-bold">Tổng tiền: <span class="text-primary" th:text="${#numbers.formatDecimal(order.tongTien, 0, 'COMMA', 0, 'POINT')} + ' ₫'"></span></h5>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card mb-4">
+                <div class="card-header"><h5 class="mb-0">Thông tin người nhận</h5></div>
+                <div class="card-body">
+                    <p class="mb-1"><strong>Tên:</strong> <span th:text="${order.tenNguoiNhan}"></span></p>
+                    <p class="mb-1"><strong>SĐT:</strong> <span th:text="${order.soDienThoaiNhan}"></span></p>
+                    <p class="mb-0"><strong>Địa chỉ:</strong> <span th:text="${order.diaChiNhan}"></span></p>
+
+                    <hr class="my-2">
+                    <p class="mb-0">
+                        <strong>Ghi chú:</strong>
+                        <th:block th:if="${order.ghiChu != null && !order.ghiChu.isEmpty()}">
+                            <span th:text="${order.ghiChu}"></span>
+                        </th:block>
+                        <th:block th:unless="${order.ghiChu != null && !order.ghiChu.isEmpty()}">
+                            <span class="text-muted fst-italic">Không có ghi chú.</span>
+                        </th:block>
+                    </p>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header"><h5 class="mb-0">Cập nhật trạng thái</h5></div>
+                <div class="card-body">
+                    <form th:action="@{/admin/order/update/{id}(id=${order.maDonHang})}" th:object="${orderUpdateRequest}" method="post">
+                        <input type="hidden" name="page" th:value="${page}">
+                        <input type="hidden" name="size" th:value="${size}">
+                        <input type="hidden" name="keyword" th:value="${keyword}">
+                        <input type="hidden" name="status" th:value="${status}">
+                        <input type="hidden" name="paymentMethod" th:value="${paymentMethod}">
+                        <input type="hidden" name="paymentStatus" th:value="${paymentStatus}">
+                        <input type="hidden" name="shippingMethod" th:value="${shippingMethod}">
+
+                        <div class="mb-3">
+                            <label class="form-label">Trạng thái đơn hàng</label>
+                            <select class="form-select" th:field="*{trangThai}">
+                                <option th:value="'Đang xử lý'">Đang xử lý</option>
+                                <option th:value="'Đã xác nhận'">Đã xác nhận</option>
+                                <option th:value="'Đang giao'">Đang giao</option>
+                                <option th:value="'Đã giao'">Đã giao</option>
+                                <option th:value="'Trả hàng-Hoàn tiền'">Trả hàng-Hoàn tiền</option>
+                                <option th:value="'Đã hủy'">Đã hủy</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Phương thức thanh toán</label>
+                            <select class="form-select" th:field="*{phuongThucThanhToan}">
+                                <option value="COD">COD</option>
+                                <option value="ONLINE">ONLINE</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Trạng thái thanh toán</label>
+                            <select class="form-select" th:field="*{trangThaiThanhToan}">
+                                <option th:value="'Chưa thanh toán'">Chưa thanh toán</option>
+                                <option th:value="'Đã thanh toán'">Đã thanh toán</option>
+                            </select>
+                        </div>
+                        <div class="d-grid gap-2 mt-3">
+                            <a th:href="@{/admin/order(page=${page}, size=${size}, keyword=${keyword}, status=${status}, paymentMethod=${paymentMethod}, paymentStatus=${paymentStatus}, shippingMethod=${shippingMethod})}"
+                               class="btn btn-outline-secondary">
+                                Quay lại danh sách
+                            </a>
+                            <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+                            <a th:href="@{/admin/order/{id}/history(id=${order.maDonHang}, page=${page}, size=${size}, keyword=${keyword}, status=${status}, paymentMethod=${paymentMethod}, paymentStatus=${paymentStatus}, shippingMethod=${shippingMethod})}"
+                               class="btn btn-outline-info">
+                                Xem lịch sử
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+</body>
+</html>

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{/layouts/admin}">
+<head>
+    <title>Quản lý Người dùng</title>
+</head>
+<body>
+<h4 class="fw-bold py-3 mb-4" layout:fragment="page_title">
+    <span class="text-muted fw-light">Quản lý tài khoản /</span> Danh sách người dùng
+</h4>
+<main layout:fragment="content">
+    <div class="card mb-4">
+        <div class="card-body">
+            <form th:action="@{/admin/user}" method="get" class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label">Tìm kiếm theo tên đăng nhập</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" name="keyword" th:value="${keyword}" placeholder="Nhập tên đăng nhập...">
+                        <button class="btn btn-outline-primary" type="submit"><i class="bx bx-search"></i></button>
+                    </div>
+                </div>
+                <div class="col-md-2"><label class="form-label">Vai trò</label><select name="roleId" class="form-select" onchange="this.form.submit()"><option value="">Tất cả</option><option th:each="r : ${roles}" th:value="${r.maVaiTro}" th:text="${r.tenVaiTro}" th:selected="${roleId != null && roleId == r.maVaiTro}"></option></select></div>
+                <div class="col-md-2"><label class="form-label">Hạng thành viên</label><select name="tierId" class="form-select" onchange="this.form.submit()"><option value="">Tất cả</option><option th:each="t : ${tiers}" th:value="${t.maHangThanhVien}" th:text="${t.tenHang}" th:selected="${tierId != null && tierId == t.maHangThanhVien}"></option></select></div>
+                <div class="col-md-2"><label class="form-label">Trạng thái</label><select name="status" class="form-select" onchange="this.form.submit()"><option value="">Tất cả</option><option value="1" th:selected="${status != null && status == 1}">Hoạt động</option><option value="0" th:selected="${status != null && status == 0}">Khóa</option></select></div>
+                <div class="col-md-3 d-flex">
+                    <a th:href="@{/admin/user}" class="btn btn-outline-secondary w-100">
+                        <i class="bx bx-reset me-1"></i>Đặt lại
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-header d-flex justify-content-between">
+            <h5 class="mb-0">Danh sách người dùng</h5>
+            <a th:href="@{/admin/user/add(page=${userPage.number + 1}, size=${userPage.size}, keyword=${keyword}, roleId=${roleId}, tierId=${tierId}, status=${status})}" class="btn btn-primary"><i class="bx bx-plus me-1"></i>Thêm mới</a>
+        </div>
+        <div class="card-body">
+            <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+                <span th:text="${successMessage}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                <span th:text="${errorMessage}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            <div class="table-responsive text-nowrap">
+                <table class="table table-hover">
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Họ tên</th>
+                        <th>Tên đăng nhập</th>
+                        <th>Vai trò</th>
+                        <th>Hạng thành viên</th>
+                        <th>Trạng thái</th>
+                        <th class="text-center">Thao tác</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="u : ${userPage.content}">
+                        <td th:text="${u.maNguoiDung}"></td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <img th:src="${u.anhDaiDien != null ? '/uploads/' + u.anhDaiDien : '/admin/assets/img/avatars/default.png'}"
+                                     th:alt="${u.hoTen}" class="rounded-circle me-2"
+                                     style="width: 32px; height: 32px; object-fit: cover;">
+                                <span th:text="${u.hoTen}"></span>
+                            </div>
+                        </td>
+                        <td th:text="${u.tenDangNhap}"></td>
+                        <td>
+                            <span th:switch="${u.vaiTro.tenVaiTro}">
+                                <span th:case="'Admin'" class="badge bg-label-danger" th:text="${u.vaiTro.tenVaiTro}"></span>
+                                <span th:case="'Customer'" class="badge bg-label-primary" th:text="${u.vaiTro.tenVaiTro}"></span>
+                                <span th:case="*" class="badge bg-label-secondary" th:text="${u.vaiTro.tenVaiTro}"></span>
+                            </span>
+                        </td>
+                        <td>
+                            <span th:if="${u.hangThanhVien != null}" th:text="${u.hangThanhVien.tenHang}"></span>
+                        </td>
+                        <td>
+                            <span th:if="${u.trangThai == 1}" class="badge bg-label-success">Hoạt động</span>
+                            <span th:if="${u.trangThai == 0}" class="badge bg-label-danger">Khóa</span>
+                        </td>
+                        <td class="text-center">
+                            <a th:href="@{/admin/user/{id}(id=${u.maNguoiDung})}" class="btn btn-sm btn-outline-info"><i class="bx bx-show"></i></a>
+                            <a th:href="@{/admin/user/edit/{id}(id=${u.maNguoiDung}, page=${userPage.number + 1}, size=${userPage.size}, keyword=${keyword}, roleId=${roleId}, tierId=${tierId}, status=${status})}" class="btn btn-sm btn-outline-warning"><i class="bx bx-edit"></i></a>
+                            <a th:href="@{/admin/user/delete/{id}(id=${u.maNguoiDung}, page=${userPage.number + 1}, size=${userPage.size}, keyword=${keyword}, roleId=${roleId}, tierId=${tierId}, status=${status})}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Bạn có chắc muốn xóa người dùng này?')"><i class="bx bx-trash"></i></a>
+                        </td>
+                    </tr>
+                    <tr th:if="${userPage.empty}"><td colspan="7" class="text-center py-3">Không tìm thấy người dùng nào.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <nav th:if="${userPage.totalPages > 0}" aria-label="Page navigation" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item" th:classappend="${userPage.first} ? 'disabled'">
+                        <a class="page-link"
+                           th:href="@{/admin/user(page=${userPage.number}, size=${userPage.size}, keyword=${keyword}, roleId=${roleId}, tierId=${tierId}, status=${status})}">&laquo;</a>
+                    </li>
+                    <li class="page-item" th:each="i : ${#numbers.sequence(1, userPage.totalPages)}"
+                        th:classappend="${i == userPage.number + 1} ? 'active'">
+                        <a class="page-link"
+                           th:href="@{/admin/user(page=${i}, size=${userPage.size}, keyword=${keyword}, roleId=${roleId}, tierId=${tierId}, status=${status})}"
+                           th:text="${i}"></a>
+                    </li>
+                    <li class="page-item" th:classappend="${userPage.last} ? 'disabled'">
+                        <a class="page-link"
+                           th:href="@{/admin/user(page=${userPage.number + 2}, size=${userPage.size}, keyword=${keyword}, roleId=${roleId}, tierId=${tierId}, status=${status})}">&raquo;</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</main>
+</body>
+</html>

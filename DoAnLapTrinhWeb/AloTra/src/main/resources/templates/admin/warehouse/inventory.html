@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{/layouts/admin}">
+<head>
+    <title>Quản lý Tồn kho</title>
+</head>
+<body>
+<h4 class="fw-bold py-3 mb-4" layout:fragment="page_title">
+    <span class="text-muted fw-light">Quản lý Kho /</span> Tồn kho
+</h4>
+<main layout:fragment="content">
+    <div class="card">
+        <div class="card-header">
+            <form th:action="@{/admin/inventory}" method="get" class="row g-3 align-items-end">
+                <div class="col-md-5">
+                    <label class="form-label">Tìm theo tên sản phẩm</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" name="keyword" th:value="${keyword}" placeholder="Nhập tên sản phẩm...">
+                        <button class="btn btn-outline-primary" type="submit"><i class="bx bx-search"></i></button>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Sắp xếp</label>
+                    <select class="form-select" name="sort" onchange="this.form.submit()">
+                        <option value="">Mặc định</option>
+                        <option value="qty_desc" th:selected="${sort == 'qty_desc'}">Tồn kho giảm dần</option>
+                        <option value="qty_asc" th:selected="${sort == 'qty_asc'}">Tồn kho tăng dần</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <a th:href="@{/admin/inventory}" class="btn btn-outline-secondary w-100">
+                        <i class="bx bx-reset me-1"></i> Đặt lại
+                    </a>
+                </div>
+            </form>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive text-nowrap">
+                <table class="table table-hover">
+                    <thead>
+                    <tr>
+                        <th>Mã SP</th>
+                        <th>Tên sản phẩm</th>
+                        <th class="text-end">Số lượng tồn</th>
+                        <th>Ngày nhập gần nhất</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:if="${!inventoryPage.empty}" th:each="item : ${inventoryPage.content}">
+                        <td th:text="${item.maSanPham}"></td>
+                        <td th:text="${item.sanPham?.tenSanPham}"></td>
+                        <td class="text-end fw-bold" th:text="${item.soLuongTon}"></td>
+                        <td th:text="${item.ngayNhapGanNhat != null ? #temporals.format(item.ngayNhapGanNhat, 'dd/MM/yyyy HH:mm') : 'Chưa nhập'}"></td>
+                    </tr>
+                    <tr th:if="${inventoryPage.empty}">
+                        <td colspan="4" class="text-center py-3">Không có sản phẩm nào trong kho.</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <nav th:if="${inventoryPage.totalPages > 0}" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item" th:classappend="${inventoryPage.first} ? 'disabled'"><a class="page-link" th:href="@{/admin/inventory(page=${inventoryPage.number}, size=${inventoryPage.size}, keyword=${keyword}, sort=${sort})}">&laquo;</a></li>
+                    <li class="page-item" th:each="i : ${#numbers.sequence(1, inventoryPage.totalPages)}" th:classappend="${i == inventoryPage.number + 1} ? 'active'"><a class="page-link" th:text="${i}" th:href="@{/admin/inventory(page=${i}, size=${inventoryPage.size}, keyword=${keyword}, sort=${sort})}"></a></li>
+                    <li class="page-item" th:classappend="${inventoryPage.last} ? 'disabled'"><a class="page-link" th:href="@{/admin/inventory(page=${inventoryPage.number + 2}, size=${inventoryPage.size}, keyword=${keyword}, sort=${sort})}">&raquo;</a></li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</main>
+</body>
+</html>

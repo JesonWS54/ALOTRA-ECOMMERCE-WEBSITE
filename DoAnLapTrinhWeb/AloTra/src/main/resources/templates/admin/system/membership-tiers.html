@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{/layouts/admin}">
+<head>
+    <title>Quản lý Hạng thành viên</title>
+</head>
+<body>
+<h4 class="fw-bold py-3 mb-4" layout:fragment="page_title">
+    <span class="text-muted fw-light">Quản lý hệ thống /</span> Hạng thành viên
+</h4>
+<main layout:fragment="content">
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Danh sách hạng thành viên</h5>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTierModal"><i class='bx bx-plus me-1'></i> Thêm mới</button>
+        </div>
+        <div class="card-body">
+            <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+                <span th:text="${successMessage}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                <span th:text="${errorMessage}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            <div class="table-responsive text-nowrap">
+                <table id="tiersTable" class="table table-hover">
+                    <thead><tr><th>ID</th><th>Tên hạng</th><th>Điểm tối thiểu</th><th>Giảm giá (%)</th><th>Thao tác</th></tr></thead>
+                    <tbody>
+                    <tr th:each="t : ${tiers}">
+                        <td th:text="${t.maHangThanhVien}"></td>
+                        <td th:text="${t.tenHang}"></td>
+                        <td th:text="${t.diemToiThieu}"></td>
+                        <td th:text="${t.phanTramGiamGia}"></td>
+                        <td>
+                            <button type="button" class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editTierModal"
+                                    th:data-id="${t.maHangThanhVien}" th:data-name="${t.tenHang}"
+                                    th:data-points="${t.diemToiThieu}" th:data-discount="${t.phanTramGiamGia}">
+                                <i class="bx bx-edit"></i>
+                            </button>
+                            <a th:href="@{/admin/membership-tier/delete/{id}(id=${t.maHangThanhVien})}"
+                               class="btn btn-sm btn-danger" onclick="return confirm('Bạn có chắc muốn xóa hạng này?')"><i class="bx bx-trash"></i></a>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="addTierModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <form th:action="@{/admin/membership-tier/save}" th:object="${tierRequest}" method="post" class="modal-content">
+                <div class="modal-header bg-primary"><h5 class="modal-title text-white">Thêm hạng thành viên</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body">
+                    <div class="mb-3"><label class="form-label">Tên hạng <span class="text-danger">*</span></label><input type="text" th:field="*{tenHang}" class="form-control" required></div>
+                    <div class="mb-3"><label class="form-label">Điểm tối thiểu <span class="text-danger">*</span></label><input type="number" th:field="*{diemToiThieu}" class="form-control" min="0" required></div>
+                    <div class="mb-3"><label class="form-label">Phần trăm giảm giá (%) <span class="text-danger">*</span></label><input type="number" step="0.01" th:field="*{phanTramGiamGia}" class="form-control" min="0" max="100" required></div>
+                </div>
+                <div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Hủy</button><button type="submit" class="btn btn-primary">Lưu</button></div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal fade" id="editTierModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <form th:action="@{/admin/membership-tier/save}" th:object="${tierRequest}" method="post" class="modal-content">
+                <input type="hidden" th:field="*{maHangThanhVien}">
+                <div class="modal-header bg-warning"><h5 class="modal-title text-white">Chỉnh sửa hạng thành viên</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body">
+                    <div class="mb-3"><label class="form-label">Tên hạng <span class="text-danger">*</span></label><input type="text" th:field="*{tenHang}" class="form-control" required></div>
+                    <div class="mb-3"><label class="form-label">Điểm tối thiểu <span class="text-danger">*</span></label><input type="number" th:field="*{diemToiThieu}" class="form-control" min="0" required></div>
+                    <div class="mb-3"><label class="form-label">Phần trăm giảm giá (%) <span class="text-danger">*</span></label><input type="number" step="0.01" th:field="*{phanTramGiamGia}" class="form-control" min="0" max="100" required></div>
+                </div>
+                <div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Hủy</button><button type="submit" class="btn btn-warning">Cập nhật</button></div>
+            </form>
+        </div>
+    </div>
+</main>
+
+</body>
+</html>

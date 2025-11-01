@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/user}">
+<head>
+    <title>Lịch sử đơn hàng</title>
+    <style>
+        .axil-dashboard-author .thumbnail img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="axil-dashboard-area axil-section-gap">
+        <div class="container">
+            <div class="axil-dashboard-warp">
+
+                <div class="axil-dashboard-author">
+                    <div class="media">
+                        <div class="thumbnail">
+                            <img th:src="${user.anhDaiDien != null and !#strings.isEmpty(user.anhDaiDien) ? '/uploads/' + user.anhDaiDien : '/web/assets/images/product/author1.png'}" alt="Avatar">
+                        </div>
+                        <div class="media-body">
+                            <h5 class="title mb-0" th:text="'Xin chào, ' + ${user.hoTen}"></h5>
+                            <span class="joining-date">Thành viên AloTra</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-xl-3 col-md-4">
+                        <aside class="axil-dashboard-aside">
+                            <nav class="axil-dashboard-nav">
+                                <div class="nav nav-tabs" role="tablist">
+                                    <a class="nav-item nav-link" th:href="@{/my-account}"><i class="fas fa-user"></i>Chi tiết tài khoản</a>
+                                    <a class="nav-item nav-link active"><i class="fas fa-shopping-basket"></i>Đơn hàng</a>
+                                    <a class="nav-item nav-link" th:href="@{/my-account(tab=${'addresses'})}"><i class="fas fa-home"></i>Địa chỉ</a>
+                                    <form th:action="@{/logout}" method="post" class="nav-item nav-link" style="all: unset;">
+                                        <button type="submit" style="all: unset; cursor:pointer; display:block; width:100%; text-align:left; padding:15px 25px;">Đăng xuất</button>
+                                    </form>
+                                </div>
+                            </nav>
+                        </aside>
+                    </div>
+
+                    <div class="col-xl-9 col-md-8">
+                        <div class="axil-dashboard-account">
+                            <h4 class="mb-4">Lịch sử đơn hàng</h4>
+                            <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert" data-auto-hide="true" th:text="${success}">
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                            <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert" data-auto-hide="true" th:text="${error}">
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                            <div th:if="${#lists.isEmpty(orders)}" class="text-center text-muted">
+                                Bạn chưa có đơn hàng nào.
+                            </div>
+                            <div th:if="${!#lists.isEmpty(orders)}" class="table-responsive">
+                                <table class="table align-middle">
+                                    <thead>
+                                    <tr>
+                                        <th>Mã đơn</th>
+                                        <th>Ngày đặt</th>
+                                        <th>Trạng thái</th>
+                                        <th class="text-end">Tổng tiền</th>
+                                        <th class="text-end">Hành động</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr th:each="o : ${orders}">
+                                        <td th:text="'#' + ${o.maDonHang}"></td>
+                                        <td th:text="${#temporals.format(o.ngayDat,'dd/MM/yyyy')}"></td>
+                                        <td>
+                                            <span class="badge" th:classappend="${o.trangThai == 'Đã hủy' ? 'bg-danger' : (o.trangThai == 'Đã giao' ? 'bg-success' : 'bg-secondary')}" th:text="${o.trangThai}"></span>
+                                        </td>
+                                        <td class="text-end" th:text="${#numbers.formatDecimal(o.tongTien,0,'COMMA',0,'POINT')} + ' ₫'"></td>
+                                        <td class="text-end d-flex gap-2 justify-content-end">
+                                            <a th:href="@{/order-details/{id}(id=${o.maDonHang})}" class="axil-btn btn-sm">Xem</a>
+                                            <form th:if="${o.trangThai == 'Đang xử lý'}"
+                                                  th:action="@{/my-orders/cancel/{id}(id=${o.maDonHang})}"
+                                                  method="post"
+                                                  class="cancel-form">
+                                                <button type="button" class="axil-btn btn-sm btn-danger cancel-order-btn" data-bs-toggle="modal" data-bs-target="#cancelOrderModal">Hủy đơn</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="cancelOrderModal" tabindex="-1" aria-labelledby="cancelOrderModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="cancelOrderModalLabel">Xác nhận Hủy Đơn Hàng</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Bạn có chắc chắn muốn hủy đơn hàng này không? Hành động này không thể hoàn tác.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy bỏ</button>
+                    <button type="button" class="btn btn-danger" id="confirmCancelBtn">Xác nhận Hủy</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<th:block layout:fragment="script">
+    <script th:inline="javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            // --- Logic cho Alert tự đóng ---
+            document.querySelectorAll('.alert[data-auto-hide="true"]').forEach(function (el) {
+                setTimeout(function () {
+                    try {
+                        if (window.bootstrap && bootstrap.Alert) { bootstrap.Alert.getOrCreateInstance(el).close(); }
+                        else { el.classList.remove('show'); }
+                    } catch (e) {}
+                }, 4000);
+            });
+
+            // --- Logic cho Modal Hủy Đơn Hàng ---
+            let formToSubmit = null;
+            const confirmCancelBtn = document.getElementById('confirmCancelBtn');
+
+            document.querySelectorAll('.cancel-order-btn').forEach(button => {
+                button.addEventListener('click', function (event) {
+                    formToSubmit = event.target.closest('form');
+                });
+            });
+
+            if (confirmCancelBtn) {
+                confirmCancelBtn.addEventListener('click', function () {
+                    if (formToSubmit) {
+                        formToSubmit.submit();
+                    }
+                });
+            }
+        });
+    </script>
+</th:block>
+</body>
+</html>

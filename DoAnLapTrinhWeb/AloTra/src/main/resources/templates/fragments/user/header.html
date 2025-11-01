@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<header class="header axil-header header-style-1" th:fragment="user-header">
+    <div id="axil-sticky-placeholder"></div>
+    <div class="axil-mainmenu">
+        <div class="container">
+            <div class="header-navbar">
+                <div class="header-brand">
+                    <a th:href="@{/}" class="logo logo-dark"><img th:src="@{/web/assets/images/logo/logo.png}" alt="Site Logo"></a>
+                    <a th:href="@{/}" class="logo logo-light"><img th:src="@{/web/assets/images/logo/logo-light.png}" alt="Site Logo"></a>
+                </div>
+                <div class="header-main-nav">
+                    <nav class="mainmenu-nav">
+                        <button class="mobile-close-btn mobile-nav-toggler"><i class="fas fa-times"></i></button>
+                        <div class="mobile-nav-brand">
+                            <a th:href="@{/}" class="logo"><img th:src="@{/web/assets/images/logo/logo.png}" alt="Site Logo"></a>
+                        </div>
+                        <ul class="mainmenu">
+                            <li><a th:href="@{/}">Trang chủ</a></li>
+                            <li><a th:href="@{/shop}">Cửa hàng</a></li>
+                            <li><a th:href="@{/about-us}">Giới thiệu</a></li>
+                            <li><a th:href="@{/contact}">Liên hệ</a></li>
+                        </ul>
+                    </nav>
+                </div>
+                <div class="header-action">
+                    <ul class="action-list">
+                        <li class="axil-search">
+                            <a href="javascript:void(0)" class="header-search-icon" id="header-search-toggle" title="Tìm kiếm">
+                                <i class="flaticon-magnifying-glass"></i>
+                            </a>
+                        </li>
+                        <li class="wishlist"><a th:href="@{/wishlist}"><i class="flaticon-heart"></i></a></li>
+                        <li class="shopping-cart">
+                            <a href="#" class="cart-dropdown-btn">
+                                <span class="cart-count" th:text="${#lists.size(globalCartItems)}">3</span>
+                                <i class="flaticon-shopping-cart"></i>
+                            </a>
+                        </li>
+                        <li class="my-account">
+                            <a href="javascript:void(0)"><i class="flaticon-person"></i></a>
+                            <div class="my-account-dropdown">
+                                <th:block th:if="${globalCurrentUser == null}">
+                                    <span class="title">LIÊN KẾT NHANH</span>
+                                    <div class="login-btn"><a th:href="@{/sign-in}" class="axil-btn btn-bg-primary">Đăng nhập</a></div>
+                                    <div class="reg-footer text-center">Chưa có tài khoản? <a th:href="@{/sign-up}" class="btn-link">ĐĂNG KÝ NGAY.</a></div>
+                                </th:block>
+                                <th:block th:if="${globalCurrentUser != null}">
+                                    <span class="title" th:text="'Xin chào, ' + ${globalCurrentUser.hoTen}"></span>
+                                    <ul><li><a th:href="@{/my-account}">Tài khoản của tôi</a></li></ul>
+                                    <form th:action="@{/logout}" method="post" class="logout-form"><button type="submit" class="axil-btn btn-bg-primary">Đăng xuất</button></form>
+                                </th:block>
+                            </div>
+                        </li>
+                        <li class="axil-mobile-toggle"><button class="menu-btn mobile-nav-toggler"><i class="flaticon-menu-2"></i></button></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+</body>
+</html>

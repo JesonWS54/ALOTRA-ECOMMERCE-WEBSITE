@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layouts/user}">
+
+<head>
+    <title th:text="${product.tenSanPham}"></title>
+</head>
+
+<body>
+<main layout:fragment="content">
+    <div class="axil-single-product-area bg-color-white">
+        <div class="single-product-thumb axil-section-gapcommon">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-7 mb--40">
+                        <div class="row">
+                            <div class="col-lg-10 order-lg-2">
+                                <div class="single-product-thumbnail-wrap zoom-gallery">
+                                    <div class="single-product-thumbnail product-large-thumbnail-3 axil-product">
+                                        <div class="thumbnail">
+                                            <a th:href="@{'/uploads/' + ${product.hinhAnh}}" class="popup-zoom">
+                                                <img th:src="@{'/uploads/' + ${product.hinhAnh}}" th:alt="${product.tenSanPham}">
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-2 order-lg-1">
+                                <div class="product-small-thumb-3 small-thumb-wrapper">
+                                    <div class="small-thumb-img">
+                                        <img th:src="@{'/uploads/' + ${product.hinhAnh}}" alt="product thumb">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-5 mb--40">
+                        <div class="single-product-content">
+                            <div class="inner">
+                                <h2 class="product-title" th:text="${product.tenSanPham}"></h2>
+                                <div class="price-amount-wrapper d-flex align-items-center">
+                                    <span class="price current-price" th:text="${#numbers.formatDecimal(product.giaBan, 0, 'COMMA', 0, 'POINT')} + ' ₫'"></span>
+                                    <span class="price old-price" style="text-decoration: line-through; color: #6c757d; margin-left: 10px;" th:text="${#numbers.formatDecimal(product.giaNiemYet, 0, 'COMMA', 0, 'POINT')} + ' ₫'"></span>
+                                </div>
+                                <div class="product-rating">
+                                    <div class="star-rating">
+                                        <span th:text="${#numbers.formatDecimal(averageRating, 1, 1)}"></span>
+                                        <i class="fas fa-star"></i>
+                                    </div>
+                                    <div class="review-link">
+                                        <a href="#reviews" th:text="'(' + ${totalReviews} + ' đánh giá)'"></a>
+                                    </div>
+                                </div>
+                                <div class="product-meta">
+                                    <ul class="d-flex">
+                                        <li th:if="${product.inventory != null && product.inventory.soLuongTon > 0}"><i class="fal fa-check text-success"></i><span class="text-success">Còn hàng</span></li>
+                                        <li th:unless="${product.inventory != null && product.inventory.soLuongTon > 0}"><i class="fal fa-times text-danger"></i><span class="text-danger">Hết hàng</span></li>
+                                        <li><i class="fal fa-check"></i>Miễn phí vận chuyển</li>
+                                    </ul>
+                                </div>
+                                <div class="description" th:utext="${product.moTa}"></div>
+
+                                <div id="detail-cart-message" class="mt-2 mb-3"></div>
+
+                                <th:block th:if="${product.inventory != null && product.inventory.soLuongTon > 0}">
+                                    <form id="detail-add-cart-form">
+                                        <input type="hidden" name="productId" th:value="${product.maSanPham}">
+                                        <div class="product-variation quantity-variant-wrapper">
+                                            <h6 class="title">Số lượng</h6>
+                                            <div class="pro-qty">
+                                                <input type="number" name="quantity" class="cart-plus-minus-box" value="1" min="1" th:max="${product.inventory.soLuongTon}">
+                                            </div>
+                                        </div>
+                                        <div class="product-action-wrapper d-flex-center">
+                                            <ul class="product-action d-flex-center mb--0">
+                                                <li class="add-to-cart">
+                                                    <button type="submit" class="axil-btn btn-bg-primary"><i class="far fa-shopping-cart"></i> Thêm vào giỏ</button>
+                                                </li>
+                                                <li class="wishlist ms-3">
+                                                    <a href="javascript:void(0)" class="toggle-wishlist-btn" th:data-product-id="${product.maSanPham}">
+                                                        <i class="far fa-heart"></i>
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </form>
+                                </th:block>
+
+                                <th:block th:unless="${product.inventory != null && product.inventory.soLuongTon > 0}">
+                                    <div class="product-action-wrapper d-flex-center">
+                                        <ul class="product-action d-flex-center mb--0">
+                                            <li class="add-to-cart">
+                                                <button type="button" class="axil-btn btn-bg-primary" disabled style="background-color: #6c757d !important; cursor: not-allowed;"><i class="far fa-shopping-cart"></i> Hết hàng</button>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </th:block>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="woocommerce-tabs wc-tabs-wrapper bg-lighter wc-tab-style-two">
+        <div class="container">
+            <ul class="nav tabs" role="tablist">
+                <li class="nav-item" role="presentation"><a class="active" data-bs-toggle="tab" href="#description">Mô tả sản phẩm</a></li>
+                <li class="nav-item" role="presentation"><a data-bs-toggle="tab" href="#reviews">Đánh giá</a></li>
+            </ul>
+            <div class="tab-content">
+                <div class="tab-pane fade show active" id="description" role="tabpanel">
+                    <div class="product-desc-wrapper" th:utext="${product.moTa}"></div>
+                </div>
+                <div class="tab-pane fade" id="reviews" role="tabpanel">
+                    <div class="reviews-wrapper">
+                        <div class="row">
+                            <div class="col-lg-6 mb--40">
+                                <div class="axil-comment-area pro-desc-commnet-area">
+                                    <h5 class="title" th:text="${totalReviews} + ' đánh giá cho sản phẩm này'"></h5>
+                                    <ul class="comment-list">
+                                        <li th:if="${reviews.isEmpty() and currentUserReview == null}"><p>Chưa có đánh giá nào.</p></li>
+                                        <li th:if="${currentUserReview != null}" class="comment your-review-item">
+                                            <div class="comment-body">
+                                                <div class="single-comment">
+                                                    <div class="comment-inner">
+                                                        <h6 class="commenter" th:text="${currentUserReview.nguoiDung?.hoTen} + ' (Bạn)'"></h6>
+                                                        <div class="comment-rating rating-stars mb-2" style="direction: ltr; font-size: 16px;" th:with="score=${currentUserReview.diemDanhGia}">
+                                                            <span th:each="i : ${#numbers.sequence(1, 5)}" th:classappend="${i <= score ? 'text-warning' : 'text-secondary'}">★</span>
+                                                        </div>
+                                                        <div class="comment-text"><p th:text="${currentUserReview.binhLuan}"></p></div>
+                                                        <div class="review-media mt-3 d-flex gap-3">
+                                                            <a th:if="${currentUserReview.imageUrl}" th:href="@{'/uploads/reviews/' + ${currentUserReview.imageUrl}}" data-mfp-src="" class="popup-image"><img th:src="@{'/uploads/reviews/' + ${currentUserReview.imageUrl}}" alt="Review Image" style="max-width: 80px; height: auto;"></a>
+                                                            <video th:if="${currentUserReview.videoUrl}" controls style="max-width: 150px; height: auto;"><source th:src="@{'/uploads/reviews/' + ${currentUserReview.videoUrl}}"></video>
+                                                        </div>
+                                                        <small class="text-muted" th:text="${#temporals.format(currentUserReview.ngayTao, 'dd/MM/yyyy HH:mm')}"></small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </li>
+                                        <li th:each="review : ${reviews}" class="comment">
+                                            <div class="comment-body">
+                                                <div class="single-comment">
+                                                    <div class="comment-inner">
+                                                        <h6 class="commenter" th:text="${review.nguoiDung?.hoTen}"></h6>
+                                                        <div class="comment-rating rating-stars mb-2" style="direction: ltr; font-size: 16px;" th:with="score=${review.diemDanhGia}">
+                                                            <span th:each="i : ${#numbers.sequence(1, 5)}" th:classappend="${i <= score ? 'text-warning' : 'text-secondary'}">★</span>
+                                                        </div>
+                                                        <div class="comment-text"><p th:text="${review.binhLuan}"></p></div>
+                                                        <div class="review-media mt-3 d-flex gap-3">
+                                                            <a th:if="${review.imageUrl}" th:href="@{'/uploads/reviews/' + ${review.imageUrl}}" data-mfp-src="" class="popup-image"><img th:src="@{'/uploads/reviews/' + ${review.imageUrl}}" alt="Review Image" style="max-width: 80px; height: auto;"></a>
+                                                            <video th:if="${review.videoUrl}" controls style="max-width: 150px; height: auto;"><source th:src="@{'/uploads/reviews/' + ${review.videoUrl}}"></video>
+                                                        </div>
+                                                        <small class="text-muted" th:text="${#temporals.format(review.ngayTao, 'dd/MM/yyyy HH:mm')}"></small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="col-lg-6 mb--40">
+                                <div class="comment-respond pro-des-commend-respond mt--0">
+                                    <div sec:authorize="!isAuthenticated()">
+                                        <h5 class="title mb--30">Thêm đánh giá</h5>
+                                        <div class="alert alert-warning">Vui lòng <a th:href="@{/sign-in}">đăng nhập</a> để để lại đánh giá.</div>
+                                    </div>
+                                    <div sec:authorize="isAuthenticated()">
+                                        <div th:if="${currentUserReview != null}">
+                                            <h5 class="title mb--30">Đánh giá của bạn</h5>
+                                            <div class="your-review-box p-3 border rounded">
+                                                <div class="rating-stars mb-2" style="direction: ltr; font-size: 20px;" th:with="score=${currentUserReview.diemDanhGia}">
+                                                    <span th:each="i : ${#numbers.sequence(1, 5)}" th:classappend="${i <= score ? 'text-warning' : 'text-secondary'}">★</span>
+                                                </div>
+                                                <p id="your-review-comment" class="mb-2" th:text="${currentUserReview.binhLuan}"></p>
+                                                <div class="review-media mt-3 d-flex gap-3">
+                                                    <a th:if="${currentUserReview.imageUrl}" th:href="@{'/uploads/reviews/' + ${currentUserReview.imageUrl}}" data-mfp-src="" class="popup-image"><img th:src="@{'/uploads/reviews/' + ${currentUserReview.imageUrl}}" alt="Review Image" style="max-width: 80px; height: auto;"></a>
+                                                    <video th:if="${currentUserReview.videoUrl}" controls style="max-width: 150px; height: auto;"><source th:src="@{'/uploads/reviews/' + ${currentUserReview.videoUrl}}"></video>
+                                                </div>
+                                                <span id="your-review-data" th:data-score="${currentUserReview.diemDanhGia}" style="display: none;"></span>
+                                                <button type="button" class="axil-btn btn-bg-secondary w-100 mt-3" id="open-edit-review-modal-btn">Sửa đánh giá</button>
+                                            </div>
+                                        </div>
+                                        <div th:if="${canReview}">
+                                            <h5 class="title mb--30">Thêm đánh giá</h5>
+                                            <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+                                            <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+                                            <form th:action="@{/submit-review}" method="post" enctype="multipart/form-data" class="rating-form">
+                                                <input type="hidden" name="productId" th:value="${product.maSanPham}">
+                                                <p class="your-rating mb-2">Đánh giá của bạn <span class="require">*</span></p>
+                                                <div class="rating-stars mb-4">
+                                                    <input type="radio" id="star5" name="rating" value="5" required/><label for="star5" title="5 sao">★</label>
+                                                    <input type="radio" id="star4" name="rating" value="4"/><label for="star4" title="4 sao">★</label>
+                                                    <input type="radio" id="star3" name="rating" value="3"/><label for="star3" title="3 sao">★</label>
+                                                    <input type="radio" id="star2" name="rating" value="2"/><label for="star2" title="2 sao">★</label>
+                                                    <input type="radio" id="star1" name="rating" value="1"/><label for="star1" title="1 sao">★</label>
+                                                </div>
+                                                <div class="form-group"><label>Bình luận của bạn</label><textarea name="comment" placeholder="Viết bình luận ở đây..." required class="form-control"></textarea></div>
+                                                <div class="form-group mb-3 mt-3">
+                                                    <div class="upload-card"><h6><i class="fas fa-paperclip"></i> Thêm ảnh hoặc video</h6><input id="mediaFile" name="mediaFile" type="file" accept="image/*,video/*"></div>
+                                                    <small id="mediaName" class="text-muted ms-2"></small><div id="mediaError" class="media-error"></div>
+                                                    <div class="helper-note" style="font-size: 14px; line-height: 1.5; font-weight: 600; color: #4b5563;">Chỉ đính kèm <b>1 file</b> (ảnh hoặc video), tối đa 20MB.</div>
+                                                </div>
+                                                <div class="preview-container"><div class="preview-box" id="image-preview-box"><img id="image-preview" alt="Xem trước ảnh"></div><div class="preview-box" id="video-preview-box"><video id="video-preview" controls></video></div></div>
+                                                <div class="form-submit"><button type="submit" class="axil-btn btn-bg-primary w-auto">Gửi đánh giá</button></div>
+                                            </form>
+                                        </div>
+                                        <div th:if="${!canReview and currentUserReview == null}">
+                                            <h5 class="title mb--30">Thêm đánh giá</h5>
+                                            <div class="alert alert-info">Bạn cần mua sản phẩm này để có thể đánh giá.</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="editReviewModal" tabindex="-1" aria-labelledby="editReviewModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editReviewModalLabel">Sửa đánh giá của bạn</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="edit-review-form" th:action="@{/update-review}" method="post" enctype="multipart/form-data" class="rating-form">
+                        <input type="hidden" name="productId" th:value="${product.maSanPham}">
+                        <p class="your-rating mb-2">Đánh giá của bạn <span class="require">*</span></p>
+                        <div id="edit-rating-stars" class="rating-stars mb-4">
+                            <input type="radio" id="edit-star5" name="rating" value="5" required/><label for="edit-star5" title="5 sao">★</label>
+                            <input type="radio" id="edit-star4" name="rating" value="4"/><label for="edit-star4" title="4 sao">★</label>
+                            <input type="radio" id="edit-star3" name="rating" value="3"/><label for="edit-star3" title="3 sao">★</label>
+                            <input type="radio" id="edit-star2" name="rating" value="2"/><label for="edit-star2" title="2 sao">★</label>
+                            <input type="radio" id="edit-star1" name="rating" value="1"/><label for="edit-star1" title="1 sao">★</label>
+                        </div>
+                        <div class="form-group">
+                            <label>Bình luận của bạn</label>
+                            <textarea id="edit-comment" name="comment" class="form-control" rows="4" placeholder="Viết bình luận ở đây..." required></textarea>
+                        </div>
+                        <div class="form-group mb-3 mt-3">
+                            <div class="upload-card"><h6><i class="fas fa-paperclip"></i> Thêm/Thay đổi ảnh hoặc video</h6><input id="edit-mediaFile" name="mediaFile" type="file" accept="image/*,video/*"></div>
+                            <small id="edit-mediaName" class="text-muted ms-2"></small><div id="edit-mediaError" class="media-error"></div>
+                            <div class="helper-note" style="font-size: 14px; line-height: 1.5; font-weight: 600; color: #4b5563;">Tải file mới sẽ thay thế file cũ (nếu có).</div>
+                        </div>
+                        <div class="preview-container"><div class="preview-box" id="edit-image-preview-box"><img id="edit-image-preview" alt="Xem trước ảnh"></div><div class="preview-box" id="edit-video-preview-box"><video id="edit-video-preview" controls></video></div></div>
+
+                        <div class="form-submit mt-4 d-flex gap-3">
+                            <button type="button" class="btn btn-secondary w-100" data-bs-dismiss="modal">Hủy</button>
+                            <button type="submit" class="axil-btn btn-bg-primary w-100">Lưu thay đổi</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<th:block layout:fragment="script">
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+
+            // --- LOGIC CHO UPLOAD FILE (CHO CẢ 2 FORM) ---
+            function setupFileUpload(inputId, nameId, errorId, imgBoxId, imgId, videoBoxId, videoId) {
+                const mediaInput = document.getElementById(inputId);
+                if (!mediaInput) return;
+
+                const mediaName = document.getElementById(nameId);
+                const mediaError = document.getElementById(errorId);
+                const imagePreviewBox = document.getElementById(imgBoxId);
+                const imagePreview = document.getElementById(imgId);
+                const videoPreviewBox = document.getElementById(videoBoxId);
+                const videoPreview = document.getElementById(videoId);
+                const MAX_SIZE = 20 * 1024 * 1024; // 20MB
+
+                function resetPreview() {
+                    if (imagePreviewBox) imagePreviewBox.style.display = 'none';
+                    if (videoPreviewBox) videoPreviewBox.style.display = 'none';
+                    if (imagePreview) imagePreview.src = '';
+                    if (videoPreview) videoPreview.src = '';
+                     // Giải phóng bộ nhớ cho video cũ
+                    if (videoPreview && videoPreview.src && videoPreview.src.startsWith('blob:')) {
+                         URL.revokeObjectURL(videoPreview.src);
+                    }
+                }
+                function showError(msg) { if(mediaError) { mediaError.textContent = msg; mediaError.style.display = 'block'; } }
+                function clearError() { if(mediaError) { mediaError.textContent = ''; mediaError.style.display = 'none'; } }
+
+                mediaInput.addEventListener('change', function (e) {
+                    resetPreview();
+                    clearError();
+                    if(mediaName) mediaName.textContent = '';
+                    const file = e.target.files && e.target.files[0];
+                    if (!file) return;
+                    if (file.size > MAX_SIZE) { showError('File vượt quá 20MB.'); mediaInput.value = ''; return; }
+                    if(mediaName) mediaName.textContent = file.name;
+                    const type = (file.type || '').toLowerCase();
+                    if (type.startsWith('image/')) {
+                        const reader = new FileReader();
+                        reader.onload = (evt) => { if(imagePreview) imagePreview.src = evt.target.result; if(imagePreviewBox) imagePreviewBox.style.display = 'block'; };
+                        reader.readAsDataURL(file);
+                    } else if (type.startsWith('video/')) {
+                        const url = URL.createObjectURL(file);
+                         // Quan trọng: Gắn sự kiện để giải phóng bộ nhớ khi modal đóng hoặc file thay đổi
+                         if (videoPreview) {
+                            videoPreview.onloadedmetadata = () => { URL.revokeObjectURL(url); }; // Tối ưu: giải phóng sớm hơn
+                         }
+                        if(videoPreview) videoPreview.src = url; if(videoPreviewBox) videoPreviewBox.style.display = 'block';
+
+                    } else {
+                        showError('Định dạng không hỗ trợ. Chỉ nhận ảnh hoặc video.');
+                        mediaInput.value = ''; if(mediaName) mediaName.textContent = '';
+                    }
+                });
+
+                 // Thêm: Giải phóng video URL khi modal bị ẩn (đặc biệt quan trọng cho form sửa)
+                 const modalElement = mediaInput.closest('.modal');
+                 if (modalElement) {
+                     modalElement.addEventListener('hidden.bs.modal', resetPreview);
+                 }
+            }
+
+            // Thiết lập cho form Thêm Mới
+            setupFileUpload('mediaFile', 'mediaName', 'mediaError', 'image-preview-box', 'image-preview', 'video-preview-box', 'video-preview');
+            // Thiết lập cho form Sửa
+            setupFileUpload('edit-mediaFile', 'edit-mediaName', 'edit-mediaError', 'edit-image-preview-box', 'edit-image-preview', 'edit-video-preview-box', 'edit-video-preview');
+
+
+            // --- LOGIC CHO NÚT SỬA ĐÁNH GIÁ ---
+            const openModalButton = document.getElementById('open-edit-review-modal-btn');
+            const editModalElement = document.getElementById('editReviewModal');
+
+            if (openModalButton && editModalElement) {
+                const editModal = new bootstrap.Modal(editModalElement);
+
+                openModalButton.addEventListener('click', function () {
+                    const reviewData = document.getElementById('your-review-data');
+                    const score = reviewData.getAttribute('data-score');
+                    const comment = document.getElementById('your-review-comment').innerText;
+
+                    // Reset preview và file input trong form sửa trước khi mở
+                    const editForm = document.getElementById('edit-review-form');
+                    if (editForm) {
+                       const fileInput = editForm.querySelector('#edit-mediaFile');
+                       if (fileInput) fileInput.value = ''; // Xóa file đã chọn trước đó
+                       // Gọi hàm reset preview cho form sửa
+                        const imgBox = document.getElementById('edit-image-preview-box');
+                        const img = document.getElementById('edit-image-preview');
+                        const videoBox = document.getElementById('edit-video-preview-box');
+                        const video = document.getElementById('edit-video-preview');
+                        if (imgBox) imgBox.style.display = 'none';
+                        if (videoBox) videoBox.style.display = 'none';
+                        if (img) img.src = '';
+                        if (video) {
+                           if (video.src && video.src.startsWith('blob:')) URL.revokeObjectURL(video.src);
+                           video.src = '';
+                        }
+                       document.getElementById('edit-mediaName').textContent = '';
+                       document.getElementById('edit-mediaError').textContent = '';
+                       document.getElementById('edit-mediaError').style.display = 'none';
+                    }
+
+
+                    const modalForm = document.getElementById('edit-review-form');
+                    if(modalForm) {
+                        modalForm.querySelector('#edit-comment').value = comment;
+                        const starRadio = modalForm.querySelector('input[name="rating"][value="' + score + '"]');
+                        if (starRadio) starRadio.checked = true;
+                    }
+                    editModal.show();
+                });
+            }
+
+            // Ngăn nhập số lượng > max hoặc < 1
+            $('.pro-qty input').on('input', function() {
+                 var $input = $(this);
+                 var currentVal = parseInt($input.val());
+                 var max = parseInt($input.attr('max'));
+                 var min = parseInt($input.attr('min') || 1);
+
+                 if (isNaN(currentVal) || currentVal < min) {
+                     $input.val(min);
+                 } else if (currentVal > max) {
+                     $input.val(max);
+                 }
+            });
+
+        });
+    </script>
+</th:block>
+</body>
+</html>

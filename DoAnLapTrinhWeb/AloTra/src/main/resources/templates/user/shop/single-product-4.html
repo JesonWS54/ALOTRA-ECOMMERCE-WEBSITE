@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/user}">
+<head>
+    <title>Chi Tiết Sản Phẩm</title>
+</head>
+<body>
+
+<div layout:fragment="content">
+    <div class="axil-single-product-area bg-color-white">
+        <div class="single-product-thumb axil-section-gap pb--20 pb_sm--0 bg-vista-white">
+            <div class="container">
+                <div class="row row--50">
+                    <div class="col-lg-6 mb--40">
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div class="product-large-thumbnail-2 single-product-thumbnail axil-product slick-layout-wrapper--15 axil-slick-arrow arrow-both-side-3">
+                                    <div class="thumbnail">
+                                        <img th:src="@{${product.hinhAnh}}" alt="Product Images">
+                                    </div>
+                                    </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 mb--40">
+                        <div class="single-product-content">
+                            <div class="inner">
+                                <h2 class="product-title" th:text="${product.tenSanPham}">Tên sản phẩm</h2>
+                                
+                                <span class="price-amount" th:text="${#numbers.formatCurrency(product.giaBan)}">$155.00</span>
+                                
+                                <div class="product-rating">
+                                    </div>
+                                
+                                <p class="description" th:text="${product.moTa}">Mô tả sản phẩm...</p>
+
+                                <div class="product-action-wrapper d-flex-center">
+                                    <div class="pro-qty mr--20"><input type="text" value="1"></div>
+                                    <ul class="product-action d-flex-center mb--0">
+                                        <li class="add-to-cart"><a th:href="@{'/add-to-cart/' + ${product.maSanPham}}" class="axil-btn btn-bg-primary">Thêm vào giỏ</a></li>
+                                        <li class="wishlist"><a th:href="@{'/add-to-wishlist/' + ${product.maSanPham}}" class="axil-btn wishlist-btn"><i class="far fa-heart"></i></a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

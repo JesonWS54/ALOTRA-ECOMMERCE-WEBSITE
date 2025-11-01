@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layouts/user}">
+<head>
+    <title>Liên Hệ</title>
+</head>
+<body>
+
+<div layout:fragment="content">
+    <div class="axil-breadcrumb-area">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6 col-md-8">
+                    <div class="inner">
+                        <ul class="axil-breadcrumb">
+                            <li class="axil-breadcrumb-item"><a th:href="@{/}">Trang chủ</a></li>
+                            <li class="separator"></li>
+                            <li class="axil-breadcrumb-item active" aria-current="page">Liên Hệ</li>
+                        </ul>
+                        <h1 class="title">Liên hệ với chúng tôi</h1>
+                    </div>
+                </div>
+                <div class="col-lg-6 col-md-4">
+                    <div class="inner">
+                        <div class="bradcrumb-thumb">
+                            <img th:src="@{/web/assets/images/product/product-45.png}" alt="Image">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="axil-contact-page-area axil-section-gap">
+        <div class="container">
+            <div class="axil-contact-page">
+                <div class="row row--30">
+                    <div class="col-lg-8">
+                        <div class="contact-form">
+                            <h3 class="title mb--10">Chúng tôi rất cần sự góp ý từ bạn.</h3>
+                            <p>Nếu bạn có thắc mắc nào, hãy liên hệ với chúng tôi.</p>
+
+                            <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+                            <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+
+                            <div sec:authorize="!isAuthenticated()">
+                                <div class="alert alert-warning">
+                                    Vui lòng <a th:href="@{/sign-in}" class="axil-btn btn-bg-primary btn-sm">Đăng nhập</a> để gửi liên hệ.
+                                </div>
+                            </div>
+
+                            <div sec:authorize="isAuthenticated()">
+                                <form th:action="@{/contact}" method="POST" class="axil-contact-form">
+                                    <div class="row row--10">
+                                        <div class="col-lg-4">
+                                            <div class="form-group">
+                                                <label for="contact-name">Tên <span>*</span></label>
+                                                <input type="text" name="contact-name" id="contact-name" th:value="${currentUser?.hoTen}" required readonly class="form-control">
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-4">
+                                            <div class="form-group">
+                                                <label for="contact-phone">Điện thoại <span>*</span></label>
+                                                <input type="text" name="contact-phone" id="contact-phone" th:value="${currentUser?.soDienThoai}" required readonly class="form-control">
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-4">
+                                            <div class="form-group">
+                                                <label for="contact-email">E-mail <span>*</span></label>
+                                                <input type="email" name="contact-email" id="contact-email" th:value="${currentUser?.email}" required readonly class="form-control">
+                                            </div>
+                                        </div>
+                                        <div class="col-12">
+                                            <div class="form-group">
+                                                <label for="contact-subject">Chủ đề <span>*</span></label>
+                                                <input type="text" name="contact-subject" id="contact-subject" required class="form-control">
+                                            </div>
+                                        </div>
+                                        <div class="col-12">
+                                            <div class="form-group">
+                                                <label for="contact-message">Tin nhắn của bạn <span>*</span></label>
+                                                <textarea name="contact-message" id="contact-message" cols="1" rows="5" required class="form-control"></textarea>
+                                            </div>
+                                        </div>
+                                        <div class="col-12">
+                                            <div class="form-group mb--0">
+                                                <button name="submit" type="submit" id="submit" class="axil-btn btn-bg-primary">Gửi tin nhắn</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="contact-location mb--40">
+                            <h4 class="title mb--20">Địa chỉ của chúng tôi</h4>
+                            <span class="address mb--20">Số 1, Võ Văn Ngân, Phường Linh Chiểu, Thành phố Thủ Đức, Thành phố Hồ Chí Minh</span>
+                            <span class="phone">Điện thoại: 0977959750 </span>
+                            <span class="email">Email: AloTra@gmail.com</span>
+                        </div>
+                        <div class="opening-hour">
+                            <h4 class="title mb--20">Giờ làm việc:</h4>
+                            <p>
+                                Thứ Hai - Chủ Nhật:  7:30am - 5:00pm <br>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <iframe
+                    src="http://google.com/maps/embed?pb=!1m18!1m12!1m3!1d3918.484226194483!2d106.7533633152314!3d10.850720492271097!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3175270ad28d48ab%3A0xa6c02de0a7c40d6c!2zVHLGsOG7nW5nIMSQ4bqhaSBo4buNYyBTxrAgcGjhuqFtIEvhu7kgdGh14bqtdCBUcC4gSOG7kyBDaMOtIE1pbmg!5e0!3m2!1svi!2s!4v1668670894569!5m2!1svi!2s"
+                    width="100%"
+                    height="450"
+                    style="border:0;"
+                    allowfullscreen=""
+                    loading="lazy"
+                    referrerpolicy="no-referrer-when-downgrade">
+            </iframe>
+
+        </div>
+    </div>
+</div>
+</body>
+</html>
